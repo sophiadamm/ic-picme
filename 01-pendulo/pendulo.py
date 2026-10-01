@@ -70,31 +70,45 @@ m = 500
 h = T / (m + 1)
 t_i = np.linspace(h, T - h, m)
 
-chute_inicial = 0.7 * np.ones(m)
+theta_0_24a = 0.7*np.cos(t_i) + 0.5*np.sin(t_i) 
+theta_0_24b = 0.7 * np.ones(m)
+theta_0_25 = 0.7 + np.sin(t_i/2)
+theta_0 = 0.7 + np.sin(t_i*4)
 
-# Chama a função principal
-theta_solucao = newton(T, m, alpha, beta, chute_inicial)
+theta_sol_24a = newton(T, m, alpha, beta, theta_0_24a)
+theta_sol_24b = newton(T, m, alpha, beta, theta_0_24b)
+theta_sol_25  = newton(T, m, alpha, beta, theta_0_25)
+theta_sol = newton(T, m, alpha, beta, theta_0) 
 
-print("\n--- Resultados ---")
-print("Solução encontrada para os nós i:")
-print(np.round(theta_solucao, 4))
-
-
-### Plotagem 
 t_tot = np.linspace(0, T, m + 2)
-theta_tot = np.concatenate(([alpha], theta_solucao, [beta]))
-chute_tot = np.concatenate(([alpha], chute_inicial, [beta]))
 
+theta_tot_24a = np.concatenate(([alpha], theta_sol_24a, [beta]))
+theta_tot_24b = np.concatenate(([alpha], theta_sol_24b, [beta]))
+theta_tot_25  = np.concatenate(([alpha], theta_sol_25, [beta]))
+theta_tot= np.concatenate(([alpha], theta_sol, [beta]))
 
-plt.figure(figsize=(8, 5))
-plt.plot(t_tot, theta_tot, marker='o', color='blue', label='Solução Encontrada')
-plt.plot(t_tot, chute_tot, linestyle='--', color='gray', label='Chute Inicial')
+chute_tot_24a = np.concatenate(([alpha], theta_0_24a, [beta]))
+chute_tot_24b = np.concatenate(([alpha], theta_0_24b, [beta]))
+chute_tot_25  = np.concatenate(([alpha], theta_0_25, [beta]))
+chute_tot = np.concatenate(([alpha], theta_0, [beta]))
 
-plt.title('Teste Provisório: Pêndulo Não Linear')
+plt.figure(figsize=(10, 6))
+
+plt.plot(t_tot, theta_tot_24a, marker='o', color='blue', label='Solução 24a')
+plt.plot(t_tot, theta_tot_24b, marker='s', color='green', label='Solução 24b')
+plt.plot(t_tot, theta_tot_25, marker='^', color='red', label='Solução 25')
+plt.plot(t_tot, theta_tot, marker='*', color='purple', markersize=8, label='Solução Customizada')
+
+plt.plot(t_tot, chute_tot_24a, linestyle='--', color='blue', alpha=0.4, label='Chute 24a')
+plt.plot(t_tot, chute_tot_24b, linestyle='--', color='green', alpha=0.4, label='Chute 24b')
+plt.plot(t_tot, chute_tot_25, linestyle='--', color='red', alpha=0.4, label='Chute 25')
+plt.plot(t_tot, chute_tot, linestyle='--', color='purple', alpha=0.5, label='Chute Customizado')
+
+plt.title('Comparação de Diferentes Chutes Iniciais no Pêndulo Não Linear')
 plt.xlabel('Tempo t')
 plt.ylabel('Ângulo θ(t)')
-plt.legend()
+plt.legend(loc='best', fontsize='small') 
 plt.grid(True)
 
-plt.savefig('graficos/teste_pendulo3.png', dpi=300, bbox_inches='tight')
-print("Gráfico salvo como 'teste_pendulo.png' na pasta atual!")
+plt.savefig('graficos/comparacao_pendulo1.png', dpi=300, bbox_inches='tight')
+print("Gráfico salvo como 'comparacao_pendulo.png' na pasta graficos!")
