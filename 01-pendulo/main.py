@@ -9,7 +9,7 @@ import pendulo as pdl
 # =============================================================================
 
 def plotar_comparacao(t_tot, resultados, alpha, beta, filename):
-    """Versão original: tudo em um único gráfico, com transparência."""
+    """Versão original: chutes e resultados em um único gráfico"""
     plt.figure(figsize=(12, 7))
     cores = {'24a': 'blue', '24b': 'green', '25': 'red'}
 
