@@ -29,7 +29,7 @@ Stack: Python + NumPy + Matplotlib + pytest.
 - [ ] Introdução/Objetivos do item a
 - [ ] Implementação 
 - [ ] Resultados e Discussão 
-  - [ ] Entender (Comparação dos dois métodos e verificação da teoria)
+  - [ ] Entender (Comparação dos dois métodos e verificação da teoria(?))
   - [ ] Escrever
 
 **Pronto quando:** testes da solução exata passam e a figura se parece com a Fig. 12.2.
@@ -37,3 +37,30 @@ Stack: Python + NumPy + Matplotlib + pytest.
 ---
 
 ## Item B:  Métodos Explícitos ( Euler e Runge-Kutta de Quarta Ordem)
+
+**Implementar**
+- [✓] `rf4` em `metodos.py`  
+- [✓] `exp_b_rf4.py` e `plotagem.py` -> resultados (tabelas e graficos)
+
+**Relatório**
+- [ ] Introdução/Objetivos do item b
+- [ ] Implementação 
+- [ ] Resultados e Discussão 
+  - [ ] Entender (Comparação dos dois métodos e verificação da teoria)
+  - [ ] Escrever ! Descrição Crítica
+
+**Pronto quando:** 
+
+## Item C:  Métodos Implícitos ( Euler e Adams Moulton(2-step))
+**Implementar**
+- [✓] `adams_moulton` em `metodos.py`  
+- [✓] `exp_c_adams_moulton.py` e `plotagem.py` -> resultados (tabelas e graficos)
+
+**Relatório**
+- [ ] Introdução/Objetivos do item c
+- [ ] Implementação 
+- [ ] Resultados e Discussão 
+  - [ ] Entender (Comparação dos dois métodos e verificação da teoria)
+  - [ ] Escrever ! Descrição Crítica
+
+**Pronto quando:** 

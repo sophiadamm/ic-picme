@@ -50,10 +50,10 @@ def plot_fig122(prob, solucoes, ks, tspan, titulo, caminho):
     _salvar(fig, caminho)
 
 
-def plot_comparacao(prob, sol_explicito, sol_implicito, ks, tspan, caminho):
-    """Euler avançado e Euler recuado lado a lado, com o mesmo eixo y."""
+def plot_comparacao(prob, sol1, sol2, ks, tspan, titulo1, titulo2, caminho):
+    """Compara dois métodos numéricos lado a lado, com o mesmo eixo y."""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.5), sharey=True)
-    _desenhar(ax1, prob, sol_explicito, ks, tspan, "Euler avançado (explícito)")
-    _desenhar(ax2, prob, sol_implicito, ks, tspan, "Euler recuado (implícito)")
-    ax2.set_ylabel("")
+    _desenhar(ax1, prob, sol1, ks, tspan, titulo1)
+    _desenhar(ax2, prob, sol2, ks, tspan, titulo2)
+    ax2.set_ylabel("")  # O segundo gráfico não precisa de rótulo no eixo Y porque divide com o primeiro
     _salvar(fig, caminho)

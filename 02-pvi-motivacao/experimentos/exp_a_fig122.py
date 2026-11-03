@@ -29,8 +29,12 @@ def executar():
                 "Euler avançado (explícito)", f"{PASTA_FIG}/a_euler_avancado")
     plot_fig122(prob, sol_imp, K, tspan,
                 "Euler recuado (implícito)", f"{PASTA_FIG}/a_euler_recuado")
-    plot_comparacao(prob, sol_exp, sol_imp, K, tspan,
-                    f"{PASTA_FIG}/a_comparacao")
+    plot_comparacao(
+        prob, sol_exp, sol_imp, KS, tspan,
+        titulo1="Euler avançado (explícito)", 
+        titulo2="Euler recuado (implícito)",
+        caminho=f"{PASTA_FIG}/a_comparacao"
+    )
 
     tabela_erros(prob, "Euler avançado", sol_exp, K)
     tabela_erros(prob, "Euler recuado", sol_imp, K)
