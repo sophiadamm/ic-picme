@@ -53,8 +53,8 @@ Stack: Python + NumPy + Matplotlib + pytest.
 
 ## Item C:  Métodos Implícitos ( Euler e Adams Moulton(2-step))
 **Implementar**
-- [✓] `adams_moulton` em `metodos.py`  
-- [✓] `exp_c_adams_moulton.py` e `plotagem.py` -> resultados (tabelas e graficos)
+- [] `adams_moulton` em `metodos.py`  
+- [] `exp_c_adams_moulton.py` e `plotagem.py` -> resultados (tabelas e graficos)
 
 **Relatório**
 - [ ] Introdução/Objetivos do item c

@@ -28,7 +28,7 @@ def executar():
     sol_euler = [resolver(euler_implicito, prob, k) for k in K]
 
     plot_fig122(prob, sol_rk4, K, tspan,
-                "Runge-Kutta de 4ª Ordem (RK4)", f"{PASTA_FIG}/a_rk4")
+                "Runge-Kutta de 4ª Ordem (RK4)", f"{PASTA_FIG}/b_rk4")
 
     plot_comparacao(
         prob, sol_rk4, sol_euler, K, tspan,
