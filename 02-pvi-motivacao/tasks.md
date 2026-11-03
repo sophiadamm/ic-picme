@@ -16,5 +16,5 @@ Stack: Python + NumPy + Matplotlib + pytest.
   ```
 - [✓] Criar `pyproject.toml` e `requirements.txt` (versões fixadas)
 - [✓] Criar o ambiente virtual e rodar `pip install -e .`
-- [ ] Organizar edição laTEX no VS Code
+- [✓] Organizar edição laTEX no VS Code
 - [ ] Criar o `README.md` com um esqueleto de "como rodar"

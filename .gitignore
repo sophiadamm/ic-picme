@@ -218,3 +218,17 @@ __marimo__/
 .streamlit/secrets.toml
 .venv/
 __pycache__/
+
+# Arquivos auxiliares do LaTeX
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+_minted-*/
+
+*.egg-info/
