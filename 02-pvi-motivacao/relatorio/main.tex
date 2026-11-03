@@ -12,6 +12,12 @@
 \usepackage{float}
 \usepackage{xcolor}
 \usepackage[font=small, labelfont=bf, textfont=it]{caption}
+\usepackage[utf8]{inputenc}  \usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath,amssymb,graphicx,booktabs,float,hyperref}
+\usepackage{algorithm,algpseudocode,listings}
+\graphicspath{{../resultados/figuras/}}
+
 
 % Configuração do pacote Minted para códigos mais elegantes
 \usepackage{minted}
@@ -39,9 +45,68 @@
 \maketitle
 
 \begin{abstract}
-Este documento apresenta o estudo direcionado referente à 
+Este documento apresenta 
 \end{abstract}
 
-\section{Introdução Teórica}
+\section{Introdução}
+
+\subsection{O problema}
+O PVI de Motivação, já com o sinal corrigido conforme a anotação do
+enunciado, é
+\begin{equation}\label{eq:pvi}
+  y'(x) = y(x)^2 - g(x), \qquad y(0) = 2, \qquad
+  g(x) = \frac{x^4 - 6x^3 + 12x^2 - 14x + 9}{(1+x)^2},
+\end{equation}
+cuja solução exata é
+\begin{equation}\label{eq:exata}
+  y(x) = \frac{(1-x)(2-x)}{1+x} = x - 4 + \frac{6}{1+x}, \qquad x > -1.
+\end{equation}
+
+\paragraph{Verificação.} Derivando~\eqref{eq:exata},
+\[
+  y'(x) = 1 - \frac{6}{(1+x)^2} = \frac{x^2 + 2x - 5}{(1+x)^2}.
+\]
+Como $y(x) = \dfrac{x^2 - 3x + 2}{1+x}$ e
+$(x^2 - 3x + 2)^2 = x^4 - 6x^3 + 13x^2 - 12x + 4$,
+\[
+  y^2 - y' = \frac{(x^4 - 6x^3 + 13x^2 - 12x + 4) - (x^2 + 2x - 5)}{(1+x)^2}
+           = \frac{x^4 - 6x^3 + 12x^2 - 14x + 9}{(1+x)^2} = g(x),
+\]
+isto é, $y' = y^2 - g$. Além disso, $y(0) = 2$. Com o sinal original
+$y' = y^2 + g$ a função~\eqref{eq:exata} \emph{não} seria solução, o que
+justifica a correção.
+
+\paragraph{Propriedades usadas na análise.} Da forma
+$y' = 1 - 6/(1+x)^2$ seguem
+\begin{equation}\label{eq:props}
+  y''(x) = \frac{12}{(1+x)^3} > 0 \ \ (x > -1), \qquad
+  \frac{\partial f}{\partial y}(x, y) = 2y .
+\end{equation}
+Ou seja, a solução exata é \emph{convexa}, e a sensibilidade a
+perturbações é positiva ($\partial f/\partial y > 0$) enquanto $y > 0$,
+isto é, para $x < 1$. Há ainda uma singularidade em $x = -1$, que será
+importante no item (d).
+
+\subsection{Ambiente computacional}
+
+As simulações foram feitas em Python [PREENCHER: versão], com NumPy
+[PREENCHER], SciPy [PREENCHER] e Matplotlib [PREENCHER], em
+[PREENCHER: sistema operacional e processador]. As listagens completas
+estão no Apêndice~\ref{ap:codigo}.
+
+\section{Item (a): Euler avançado e Euler recuado}
+\label{sec:item-a}
+
+\subsection{Objetivo}
+
+Implementar os métodos de Euler avançado (explícito) e Euler recuado
+(implícito) e reproduzir a Figura~12.2 de Süli e Mayers~\cite{suli2003}
+para o PVI de Motivação no intervalo $[0,\,1{,}6]$, com passos
+$k = 0{,}2$, $0{,}1$ e $0{,}05$ (8, 16 e 32 passos). Além da reprodução,
+o objetivo é \emph{explicar} o comportamento observado, relacionando os
+resultados numéricos à teoria de erro de truncamento e de propagação de
+erro.
+
+\subsection{Métodos}
 
 \end{document}
