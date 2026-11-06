@@ -6,15 +6,12 @@ from pvi.metodos import euler_explicito, euler_implicito
 from pvi.plotagem import configurar_estilo, plot_comparacao, plot_fig122
 import os
 
-# ----------------------------- parâmetros ---------------------------------
-TF = 1.6                   # fim do intervalo (o início vem de prob.t0)
-# ---------------------------------------------------------------------------
 
 
 def erro_max(prob, t, U):
     return np.max(np.abs(U - prob.solucao(t)))
 
-def resolver(metodo, prob, k):
+def resolver(metodo, prob, k, TF):
     """Roda o método e devolve (t, U, stats)."""
     n = round((TF - prob.t0) / k)
     t, U, stats = metodo(prob, n, k)
