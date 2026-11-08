@@ -12,12 +12,11 @@
 \usepackage{float}
 \usepackage{xcolor}
 \usepackage[font=small, labelfont=bf, textfont=it]{caption}
-\usepackage[utf8]{inputenc}  \usepackage[T1]{fontenc}
-\usepackage[brazil]{babel}
-\usepackage{amsmath,amssymb,graphicx,booktabs,float,hyperref}
+\usepackage{booktabs}
 \usepackage{algorithm,algpseudocode,listings}
-\usepackage{amssymb}
-\graphicspath{{../resultados/figuras/}}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows.meta,positioning}
+\graphicspath{{../resultados/introducao/figuras/}{../resultados/item_a/figuras/}{../resultados/item_b/figuras/}}
 
 % Configuração do pacote Minted para códigos mais elegantes
 \usepackage{minted}
@@ -51,28 +50,44 @@
 \label{sec:introducao}
 
 \begin{quote}
-\textit{"Não importa o quão bela seja a sua teoria, não importa o quão inteligente você seja. Se ela não concorda com a experiência, ela está errada."} — Richard Feynman
+\textit{"Não importa o quão bela seja a sua teoria, não importa o quão inteligente
+você seja. Se ela não concorda com a experiência, ela está errada."} — Richard
+Feynman
 \end{quote}
 
-A análise numérica clássica de Problemas de Valor Inicial (PVIs) repousa sobre alicerces teóricos de profunda elegância. 
-Munidos de teoremas clássicos de convergência~\cite{leveque2007,suli2003}, aprendemos que, desde que um método seja consistente e 
-estável, a matemática garante que a solução aproximada encontrará a solução exata. No papel, essas demonstrações são belas e 
-inquestionáveis. Contudo, como adverte Feynman, a beleza de uma teoria encontra o seu verdadeiro limite na experiência: 
+A análise numérica clássica de Problemas de Valor Inicial (PVIs) repousa sobre
+alicerces teóricos de profunda elegância.
+Munidos de teoremas clássicos de convergência~\cite{leveque2007,suli2003}, aprendemos
+que, desde que um método seja consistente e
+estável, a matemática garante que a solução aproximada encontrará a solução exata. No
+papel, essas demonstrações são belas e
+inquestionáveis. Contudo, como adverte Feynman, a beleza de uma teoria encontra o seu
+verdadeiro limite na experiência:
 na matemática aplicada, a experiência é a execução computacional. 
-Existe um abismo entre a utopia teórica de um passo infinitesimal ($k \to 0$) e a realidade incontornável de um algoritmo que 
+Existe um abismo entre a utopia teórica de um passo infinitesimal ($k \to 0$) e a
+realidade incontornável de um algoritmo que
 precisa avançar em passos finitos ($k > 0$).
 
-Neste abismo, o computador atua como o meio final. Ele não é um artífice de milagres capaz de consertar as nossas escolhas, mas 
+Neste abismo, o computador atua como o meio final. Ele não é um artífice de milagres
+capaz de consertar as nossas escolhas, mas
 sim um executor implacável e cegamente fiel à formulação que lhe é imposta. 
-É nesse contexto que a célebre provocação de Pablo Picasso de que \textit{"computadores são inúteis, eles só conseguem te dar respostas"} ganha um significado literal. 
-A máquina devolverá, com obediência irrestrita, a resposta exata produzida pelo método numérico implementado. Todavia, se o algoritmo adotado ignorar a topologia real do problema, essa resposta não passará de uma perigosa ilusão matemática.
+É nesse contexto que a célebre provocação de Pablo Picasso de que
+\textit{"computadores são inúteis, eles só conseguem te dar respostas"} ganha um
+significado literal.
+A máquina devolverá, com obediência irrestrita, a resposta exata produzida pelo
+método numérico implementado. Todavia, se o algoritmo adotado ignorar a topologia
+real do problema, essa resposta não passará de uma perigosa ilusão matemática.
 
-Este trabalho propõe, assim, uma reflexão crítica sobre essa delicada interação entre teoria, método e máquina através da investigação de um PVI proposto.
-Ao longo de quatro etapas, investiga-se: no \textbf{Item~(a)}, [preencher]; no \textbf{Item~(b)}, [preencher]; no \textbf{Item~(c)}, [preencher]; e, no \textbf{Item~(d)}, [preencher].
+Este trabalho propõe, assim, uma reflexão crítica sobre essa delicada interação entre
+teoria, método e máquina através da investigação de um PVI proposto.
+Ao longo de quatro etapas, investiga-se: no \textbf{Item~(a)}, [preencher]; no
+\textbf{Item~(b)}, [preencher]; no \textbf{Item~(c)}, [preencher]; e, no
+\textbf{Item~(d)}, [preencher].
 \subsection{O Problema de Valor Inicial Proposto}
 \label{sec:problema}
 
-O objeto central deste estudo é o PVI não linear do tipo equação de Riccati~\cite{suli2003,leveque2007}:
+O objeto central deste estudo, extraído de Süli e Mayers~\cite{suli2003}, é o PVI
+não linear do tipo equação de Riccati~\cite{reid1972,polyanin2018}:
 \begin{equation}\label{eq:pvi}
   y'(x) = y(x)^2 - g(x), \qquad y(0) = 2, \qquad
   g(x) = \frac{x^4 - 6x^3 + 12x^2 - 14x + 9}{(1+x)^2},
@@ -82,7 +97,8 @@ cuja solução analítica exata é dada por
   y(x) = \frac{(1-x)(2-x)}{1+x} = x - 4 + \frac{6}{1+x}.
 \end{equation}
 
-\paragraph{Verificação e estrutura diferencial.} Derivando~\eqref{eq:exata}, obtêm-se as derivadas de primeira, segunda e
+\paragraph{Verificação e estrutura diferencial.} Derivando~\eqref{eq:exata}, obtêm-se
+as derivadas de primeira, segunda e
 $m$-ésima ordens da solução exata:
 \begin{equation}\label{eq:derivadas-exata}
   y'(x) = 1 - \frac{6}{(1+x)^2} = \frac{x^2 + 2x - 5}{(1+x)^2}, \qquad
@@ -95,51 +111,295 @@ Como $(x^2 - 3x + 2)^2 = x^4 - 6x^3 + 13x^2 - 12x + 4$, verifica-se imediatament
                  = \frac{x^4 - 6x^3 + 12x^2 - 14x + 9}{(1+x)^2} = g(x).
 \]
 
+Este PVI apresenta particularidades analíticas fundamentais que condicionam
+diretamente o comportamento dos métodos numéricos investigados neste relatório.
+
+\paragraph{Comportamento Assintótico e Singularidade.}
+Pela avaliação direta da solução exata em~\eqref{eq:exata}, identifica-se que quando
+$x \to -1^+$, a fração $\frac{6}{1+x} \to +\infty$. Consequentemente, tem-se uma
+assíntota vertical no ponto $x = -1$:
+\begin{equation}\label{eq:blowup}
+  \lim_{x \to -1^+} y(x) = +\infty.
+\end{equation}
+Essa singularidade caracteriza o problema como um PVI com fenômeno de \emph{blow-up}
+(explosão em tempo finito)~\cite{hairer1993,hirota2006,polyanin2018}. Na literatura
+especializada de integração numérica de soluções com
+explosão~\cite{hirota2006,polyanin2018}, a vizinhança de $x = -1$ impõe severos
+desafios operacionais por dois fatores distintos: (i) $g(x)$ possui um polo duplo em
+$x = -1$, de modo que $f(x,y) = y^2 - g(x)$ deixa até mesmo de ser contínua em $x$; e
+(ii) como $\partial f/\partial y = 2y$ é contínua, $f$ é localmente Lipschitz em $y$
+onde está definida, mas nunca globalmente Lipschitz, o que permite a explosão em tempo
+finito. Trata-se de um comportamento analítico
+intrínseco da própria EDO, e não de uma falha de formulação do esquema computacional.
+
+Por outro lado, quando $x \to +\infty$, a fração $\frac{6}{1+x}$ tende a zero:
+\begin{equation}\label{eq:assintota-infinita}
+  \lim_{x \to +\infty} \left[ y(x) - (x - 4) \right] = \lim_{x \to +\infty} \frac{6}{1+x} = 0.
+\end{equation}
+
+Assim, a solução analítica aproxima-se assintoticamente da reta oblíqua $y = x - 4$. Sob a perspectiva da EDO~\eqref{eq:pvi}, isso ocorre graças a um cancelamento estrutural perfeito: para valores elevados de $x$, o termo não linear $y^2$ e a função forçante $g(x)$ anulam-se mutuamente em suas componentes dominantes. Como resultado, a taxa de variação converge para a unidade ($y' \to 1$), ditando um crescimento puramente linear. 
+Assim, uma noção intuitiva nos diria que o comportamento conforme $x \to +\infty$ deve ser
+benigno numericamente.
+
+De maneira análoga, para a expressão racional~\eqref{eq:exata} quando $x \to -\infty$,
+a fração $\frac{6}{1+x}$ também se anula:
+\begin{equation}\label{eq:assintota-menos-infinita}
+  \lim_{x \to -\infty} \left[ y(x) - (x - 4) \right] = \lim_{x \to -\infty} \frac{6}{1+x} = 0^-,
+\end{equation}
+tendo a mesma assíntota oblíqua $y = x - 4$, enquanto pela esquerda da singularidade
+tem-se $\lim_{x \to -1^-} y(x) = -\infty$ (configurando bilateralidade na assíntota
+vertical $x = -1$). Ressalta-se, porém, que o PVI~\eqref{eq:pvi} — definido pela
+condição inicial em $x_0 = 0$ — vive exclusivamente no domínio maximal $x > -1$; para
+$x < -1$, a mesma fórmula algébrica representa outro ramo da curva que não continua a
+solução do PVI através do polo.
+
+A Figura~\ref{fig:intro-solucao-assintotas} sintetiza visualmente o comportamento
+assintótico global no maior intervalo de interesse do enunciado ($x \in [-5,\, 40]$) e
+oferece um detalhe da região de integração dos experimentos numéricos.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{intro_solucao_assintotas}
+  \caption{Comportamento assintótico da solução analítica exata $y(x) = x - 4 + \frac{6}{1+x}$.
+  \textbf{Esquerda:} visão global no intervalo estendido $[-5,\, 40]$, evidenciando os
+  dois ramos da curva, a assíntota vertical em $x = -1$ e a assíntota oblíqua $y = x - 4$.
+  \textbf{Direita:} detalhe local no entorno da singularidade e dos intervalos dos
+  experimentos ($[-1{,}5,\, 5]$), destacando a condição inicial $(0, 2)$, as raízes
+  $x = 1$ e $x = 2$, e o intervalo de integração $[0,\, 1{,}6]$.}
+  \label{fig:intro-solucao-assintotas}
+\end{figure}
+
+\paragraph{Autovalores Locais e Estabilidade da EDO.}
+Autores clássicos em análise numérica de equações diferenciais, como
+Lambert~\cite{lambert1991}, Hairer, Nørsett e Wanner~\cite{hairer1993} e
+LeVeque~\cite{leveque2007}, enfatizam a distinção fundamental entre:
+\begin{enumerate}
+    \item \textbf{A estabilidade (ou condicionamento) do próprio PVI}: mede
+          a sensibilidade intrínseca do fluxo contínuo da equação
+          diferencial a pequenas perturbações nas condições iniciais ou ao
+          longo da trajetória;
+    \item \textbf{A estabilidade do método numérico}: diz respeito à
+          capacidade do esquema discretizado de controlar e não amplificar
+          artificialmente os erros locais de truncamento e arredondamento
+          ao longo das iterações com passo $k$.
+\end{enumerate}
+Essa separação conceitual é determinante para a análise desenvolvida neste trabalho:
+as divergências e ordens observadas computacionalmente podem derivar tanto da
+adequação do método ao problema quanto da natureza inerentemente amplificadora da própria
+equação diferencial.
+
+Para quantificar a estabilidade local da EDO, recorre-se ao conceito de
+\textbf{autovalor local} da Jacobiana unidimensional, fundamentado na clássica
+equação de teste de Dahlquist $y'(x) = \lambda y(x)$~\cite{lambert1991,leveque2007}.
+Considerando uma solução perturbada $\tilde{y}(x) = y(x) + \epsilon(x)$, onde
+$\epsilon(x)$ representa uma perturbação infinitesimal em relação à solução exata
+$y(x)$, a sua evolução temporal obedece a:
+\begin{equation}
+  \tilde{y}'(x) = f\bigl(x,\, \tilde{y}(x)\bigr) = f\bigl(x,\, y(x) + \epsilon(x)\bigr).
+\end{equation}
+Expandindo $f(x,\, y + \epsilon)$ em série de Taylor em torno de $y(x)$:
+\begin{equation}
+  f\bigl(x,\, y(x) + \epsilon(x)\bigr) = f\bigl(x,\, y(x)\bigr) + \frac{\partial f}{\partial y}\bigl(x,\, y(x)\bigr)\,\epsilon(x) + \mathcal{O}\bigl(\epsilon(x)^2\bigr).
+\end{equation}
+Como $y'(x) = f(x,\, y(x))$, subtraindo membro a membro e desprezando termos de ordem
+superior $\mathcal{O}(\epsilon^2)$, deduz-se a equação linearizada governante da
+dinâmica do erro:
+\begin{equation}\label{eq:linearizacao-perturba}
+  \epsilon'(x) \approx \lambda(x)\,\epsilon(x), \qquad \text{com} \quad \lambda(x) \equiv \frac{\partial f}{\partial y}\bigl(x,\, y(x)\bigr).
+\end{equation}
+No problema em apreço, dado que $f(x,y) = y^2 - g(x)$, a derivada parcial independe
+da função de forçamento $g(x)$:
+\begin{equation}
+  \frac{\partial f}{\partial y}(x, y) = 2y.
+\end{equation}
+Portanto, avaliado rigorosamente ao longo da trajetória exata~\eqref{eq:exata}, o
+autovalor local é dado por:
+\begin{equation}\label{eq:autovalor-exato}
+  \lambda(x) = 2\,y(x) = 2\,\frac{(1-x)(2-x)}{1+x} = 2\left(x - 4 + \frac{6}{1+x}\right).
+\end{equation}
+
+A solução da equação diferencial linearizada~\eqref{eq:linearizacao-perturba} é dada
+formalmente por $\epsilon(x) \approx \epsilon(x_0)\,\exp\left(\int_{x_0}^x
+\lambda(s)\,\mathrm{d}s\right)$. Dessa relação decorrem dois regimes operacionais
+opostos:
+\begin{itemize}
+    \item \textbf{Quando $y(x) > 0 \implies \lambda(x) > 0$ (Regime
+          Inerentemente Instável)}:
+    A taxa de variação do erro possui o mesmo sinal da perturbação ($\epsilon'(x) >
+    0$ se $\epsilon > 0$, e $\epsilon'(x) < 0$ se $\epsilon < 0$). Dessa forma, o
+    módulo $|\epsilon(x)|$ cresce exponencialmente enquanto $|\epsilon(x)| \ll |y(x)|$;
+    quando a perturbação deixa de ser pequena, o termo quadrático $\mathcal{O}(\epsilon^2)$
+    desprezado na linearização ($\epsilon' = 2y\epsilon + \epsilon^2$) passa a dominar
+    e faz com que soluções vizinhas explodam em tempo finito. Nesse regime, a dinâmica da
+    própria EDO atua como um amplificador intrínseco de quaisquer erros
+    computacionais inevitáveis de arredondamento e discretização.
+    \item \textbf{Quando $y(x) < 0 \implies \lambda(x) < 0$ (Regime
+          Inerentemente Estável)}:
+    A taxa de variação tem sinal oposto à perturbação ($\epsilon'(x) < 0$ se
+    $\epsilon > 0$, e $\epsilon'(x) > 0$ se $\epsilon < 0$). Consequentemente,
+    $|\epsilon(x)|$ é amortecido espontaneamente ao longo do avanço em $x$. A própria
+    EDO apresenta um comportamento corretivo e dissipativo, atraindo trajetórias
+    perturbadas de volta para a solução de referência.
+\end{itemize}
+
+Analisando os sinais de $\lambda(x) = 2\,\frac{(1-x)(2-x)}{1+x}$ no domínio $x \ge
+0$, a Tabela~\ref{tab:autovalores-regimes} sintetiza os regimes dinâmicos do autovalor
+local, a taxa de propagação do erro e o comportamento intrínseco da EDO.
+
+\begin{table}[H]
+\centering
+\caption{Dinâmica do autovalor local $\lambda(x) = 2y(x)$, evolução da perturbação e
+estabilidade intrínseca da EDO.}\label{tab:autovalores-regimes}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{ccccc}
+\toprule
+\textbf{Intervalo} & \textbf{Sinal de $y(x)$} & \textbf{Autovalor $\lambda(x)$} & \textbf{Dinâmica do Erro $\epsilon(x)$} & \textbf{Regime da EDO} \\
+\midrule
+$x \in [0,\, 1)$       & $y > 0$ & $\lambda > 0$ ($\lambda(0) = 4$)                  & Amplificação ($|\epsilon| \uparrow$)    & Inerentemente instável \\
+$x = 1$                 & $y = 0$ & $\lambda = 0$                                     & Neutra ($\epsilon' = 0$)                & Transição \\
+$x \in (1,\, 2)$       & $y < 0$ & $\lambda < 0$ ($\lambda_{\min} \approx -0{,}202$) & Amortecimento ($|\epsilon| \downarrow$) & Dissipativo (estável) \\
+$x = 2$                 & $y = 0$ & $\lambda = 0$                                     & Neutra ($\epsilon' = 0$)                & Transição \\
+$x \in (2,\, +\infty)$ & $y > 0$ & $\lambda > 0$ ($\lambda \to +\infty$)             & Divergência acelerada                   & Fortemente instável \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+Constata-se, assim, que o PVI proposto é inerentemente instável na maior parte do
+domínio ($x \in [0,\, 1) \cup (2,\, +\infty)$), porém com intensidades muito distintas:
+em $[0,\, 1{,}6]$, a amplificação total acumulada $\exp\bigl(\int_0^x \lambda(s)\,\mathrm{d}s\bigr)$
+é modesta (cerca de $3{,}7$ em $x = 1$ e $3{,}4$ em $x = 1{,}6$), ao passo que para
+$x > 2$ ela cresce de forma severa (atingindo $\approx 6{,}7 \times 10^2$ já em $x = 5$).
+
+
+
+% Como consequência direta dessa dinâmica de autovalores, a
+% Figura~\ref{fig:intro-figB-navalha} (gerada por
+% \texttt{experimentos/exp\_intro\_estabilidade.py}, sem o emprego de esquemas
+% discretos de EDO) ilustra que a solução analítica exata atua como um verdadeiro ``fio
+% da navalha'' repulsor: uma perturbação infinitesimal de apenas $\delta = \pm 10^{-4}$
+% ($0{,}005\%$ em relação à condição inicial $y(0) = 2$), avaliada exatamente via a
+% equação de Bernoulli governante do erro ($\epsilon' = 2y\epsilon + \epsilon^2$), é
+% suficiente para fazer a trajetória superior ($\delta > 0$) divergir explosivamente em
+% tempo finito em $x^* \approx 5{,}9$, enquanto a trajetória inferior ($\delta < 0$)
+% precipita-se para o ramo estável $y \approx 4 - x$. 
+
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics[width=0.82\textwidth]{figB_fio_navalha}
+%   \caption{Sensibilidade intrínseca do PVI (``fio da navalha''): evolução analítica
+%   exata para perturbações de $0{,}005\%$ na condição inicial ($y(0) = 2 \pm 10^{-4}$),
+%   evidenciando a explosão em tempo finito em $x^* \approx 5{,}9$ para $\delta = +10^{-4}$
+%   e o desvio para $y \approx 4 - x$ para $\delta = -10^{-4}$.}
+%   \label{fig:intro-figB-navalha}
+% \end{figure}
+
 \subsection{Notação e Ambiente Computacional}
-Ao longo das seções seguintes, a variável independente é denotada por $t$ (com $t \equiv x$ na Eq.~\eqref{eq:pvi}), o
-passo uniforme por $k$, os nós da malha por $t_n = t_0 + nk$ e a aproximação numérica de $y(t_n)$ por $U_n$, seguindo a
+Ao longo das seções seguintes, a variável independente é denotada por $t$ (com $t
+\equiv x$ na Eq.~\eqref{eq:pvi}), o
+passo uniforme por $k$, os nós da malha por $t_n = t_0 + nk$ e a aproximação numérica
+de $y(t_n)$ por $U_n$, seguindo a
 notação de LeVeque~\cite{leveque2007}.
 
-As simulações foram desenvolvidas em Python~3.12, utilizando as bibliotecas científicas NumPy (alocação e operações
-vetorizadas), SciPy (\texttt{scipy.optimize.newton} para resolução não linear nos esquemas implícitos) e Matplotlib~3.11
-(geração gráfica), executadas em ambiente Linux (kernel~6.14, arquitetura \texttt{x86\_64}) equipado com processador
-Intel Core i5-1135G7 (2{,}40\,GHz). A implementação foi estruturada de forma modular no pacote \texttt{src/pvi/} —
-contendo os módulos \texttt{problemas.py} (definição da classe \texttt{PVI} e função \texttt{motivacao}),
-\texttt{metodos.py} (integradores numéricos), \texttt{uteis.py} (cálculo de erros, ordens observadas e exportação
-automatizada de tabelas \texttt{.csv} e \texttt{.tex}) e \texttt{plotagem.py} —, enquanto os roteiros reprodutíveis de
+As simulações foram desenvolvidas em Python~3.12, utilizando as bibliotecas
+científicas NumPy (alocação e operações
+vetorizadas), SciPy (\texttt{scipy.optimize.newton} para resolução não linear nos
+esquemas implícitos) e Matplotlib~3.11
+(geração gráfica), executadas em ambiente Linux (kernel~6.14, arquitetura
+\texttt{x86\_64}) equipado com processador
+Intel Core i5-1135G7 (2{,}40\,GHz). A implementação foi estruturada de forma modular
+no pacote \texttt{src/pvi/} —
+contendo os módulos \texttt{problemas.py} (definição da classe \texttt{PVI} e função
+\texttt{motivacao}),
+\texttt{metodos.py} (integradores numéricos), \texttt{uteis.py} (cálculo de erros,
+ordens observadas e exportação
+automatizada de tabelas \texttt{.csv} e \texttt{.tex}) e \texttt{plotagem.py} —,
+enquanto os roteiros reprodutíveis de
 cada item residem no diretório \texttt{experimentos/}.
 
-Todo código fonte produzido e utilizado está disponível em: \url{https://github.com/sophiadamm/ic-picme/tree/main/02-pvi-motivacao}
+Todo código fonte produzido e utilizado está disponível em:
+\url{https://github.com/sophiadamm/ic-picme/tree/main/02-pvi-motivacao}
 
 \paragraph{Organização do repositório e fluxo de trabalho.}
-A arquitetura do projeto e o encadeamento dos dados entre os módulos foram estruturados para assegurar modularidade, desacoplamento e reprodutibilidade estrita. O fluxo operacional e a hierarquia dos diretórios são sintetizados no Esquema~\ref{diag:fluxo-trabalho}.
+A arquitetura do projeto e o encadeamento dos dados entre os módulos foram
+estruturados para assegurar modularidade, desacoplamento e reprodutibilidade estrita.
+O fluxo operacional e a hierarquia dos diretórios são sintetizados no
+Esquema~\ref{diag:fluxo-trabalho}.
 
 \begin{figure}[H]
 \centering
-\small
-\begin{minipage}{0.95\textwidth}
-\begin{verbatim}
-                          ARQUITETURA DO PROJETO E FLUXO DE EXECUÇÃO
-                          ==========================================
+\begin{tikzpicture}[
+    box/.style={
+        rectangle, 
+        rounded corners=4pt, 
+        draw=black!55, 
+        thick, 
+        fill=gray!4, 
+        text width=6.8cm, 
+        inner sep=7pt
+    },
+    arr/.style={
+        ->, 
+        >=Stealth, 
+        very thick, 
+        draw=blue!75!black
+    },
+    lbl/.style={
+        font=\scriptsize\itshape, 
+        fill=white, 
+        inner sep=2pt,
+        text=black!80
+    }
+]
 
-  Definição e Métodos (src/pvi/)              Execução e Análise (experimentos/)
-  +----------------------------------+        +----------------------------------------+
-  | problemas.py: PVI, motivacao()   |        | exp_a_fig122.py: Euler Av. vs Rec.     |
-  | metodos.py:   Euler, RK4, AM2    | -----> | exp_b_rf4.py:    RK4 e Comparações     |
-  | uteis.py:     resolver, erros    |        | exp_c_adams_moulton.py: AM2 vs Euler   |
-  | plotagem.py:  gráficos Matplotlib|        | exp_d_geral.py:  Estabilidade Global   |
-  +----------------------------------+        +-------------------+--------------------+
-                                                                  |
-                                                                  v (geração automatizada)
-  Relatório LaTeX (relatorio/)                Resultados Numéricos (resultados/)
-  +----------------------------------+        +----------------------------------------+
-  | main.tex: Documento principal    | <===== | tabelas/: tabelas formatadas (.tex)    |
-  | main.pdf: Relatório compilado    |        | dados/:   séries e trajetórias (.csv)  |
-  | _minted/: Listagens de código    | <===== | figuras/: gráficos vetoriais (.pdf/.png|
-  +----------------------------------+        +----------------------------------------+
-\end{verbatim}
-\end{minipage}
-\caption{Fluxo de trabalho computacional e organização das pastas do projeto: os módulos em \texttt{src/pvi/} fornecem o núcleo dos métodos; os roteiros em \texttt{experimentos/} executam as simulações e geram automaticamente saídas em \texttt{resultados/}; os arquivos \texttt{.tex} e figuras vetoriais são incorporados diretamente na compilação do relatório em \texttt{relatorio/main.tex}.}\label{diag:fluxo-trabalho}
+\node[box] (src) {
+    \textbf{Definição e Métodos} (\texttt{src/pvi/})\par
+    \vspace{2pt}\hrule\vspace{4pt}
+    \footnotesize
+    $\bullet$ \texttt{problemas.py}: PVI e função $g(x)$\\
+    $\bullet$ \texttt{metodos.py}: Euler, RK4, Adams-Moulton\\
+    $\bullet$ \texttt{uteis.py}: cálculo de erros e tabelas\\
+    $\bullet$ \texttt{plotagem.py}: rotinas de gráficos
+};
+
+\node[box, right=0.8cm of src] (exp) {
+    \textbf{Execução e Análise} (\texttt{experimentos/})\par
+    \vspace{2pt}\hrule\vspace{4pt}
+    \footnotesize
+    $\bullet$ \texttt{exp\_a\_fig122.py}: Euler Av. vs. Rec.\\
+    $\bullet$ \texttt{exp\_b\_rf4.py}: RK4 e comparações\\
+    $\bullet$ \texttt{exp\_c\_adams\_moulton.py}: AM2\\
+    $\bullet$ \texttt{exp\_d\_geral.py}: Estabilidade global
+};
+
+\node[box, below=1.0cm of src] (rel) {
+    \textbf{Relatório \LaTeX} (\texttt{relatorio/})\par
+    \vspace{2pt}\hrule\vspace{4pt}
+    \footnotesize
+    $\bullet$ \texttt{main.tex}: documento principal\\
+    $\bullet$ \texttt{main.pdf}: relatório compilado final\\
+    $\bullet$ Inclusão direta de tabelas e figuras
+};
+
+\node[box, below=1.0cm of exp] (res) {
+    \textbf{Resultados Numéricos} (\texttt{resultados/})\par
+    \vspace{2pt}\hrule\vspace{4pt}
+    \footnotesize
+    $\bullet$ \texttt{introducao/}: figuras analíticas e estabilidade\\
+    $\bullet$ \texttt{item\_a/}: figuras, tabelas e dados de Euler\\
+    $\bullet$ \texttt{item\_b/}: figuras, tabelas e dados de RK4
+};
+
+\draw[arr] (src) -- node[lbl, above] {importa rotinas} (exp);
+\draw[arr] (exp) -- node[lbl, right] {gera saídas} (res);
+\draw[arr] (res) -- node[lbl, above] {incorporação de saídas} (rel);
+
+\end{tikzpicture}
+\caption{Fluxo de trabalho computacional e organização modular do projeto: os módulos
+em \texttt{src/pvi/} fornecem o núcleo dos métodos; os roteiros em
+\texttt{experimentos/} executam as simulações e geram automaticamente os dados e
+gráficos em \texttt{resultados/}; os arquivos \texttt{.tex} e figuras vetoriais são
+incorporados diretamente na compilação do relatório em
+\texttt{relatorio/main.tex}.}\label{diag:fluxo-trabalho}
 \end{figure}
 
 
@@ -159,8 +419,10 @@ o objetivo é \emph{explicar} o comportamento observado.
 
 \subsection{Fundamentação Teórica}
 \label{sec:a-teoria}
-Para iniciar as tentativas e análise do PVI (Eq.~\eqref{eq:pvi}), recorremos inicialmente 
-ao método mais clássico: O Método de Euler. Para obtê-lo, podemos escrever o PVI na forma $y' = f(t,y)$, com
+Para iniciar as tentativas e análise do PVI (Eq.~\eqref{eq:pvi}), recorremos
+inicialmente
+ao método mais clássico: O Método de Euler. Para obtê-lo, podemos escrever o PVI na
+forma $y' = f(t,y)$, com
 $f(t,y) = y^2 - g(t)$.
 Pela interpretação com o cálculo integral, obtemos a identidade exata
 \begin{equation}\label{eq:integral}
@@ -176,8 +438,10 @@ A diferença estrutural é que em~\eqref{eq:be} a incógnita $U_{n+1}$
 aparece dos dois lados: a cada passo é preciso resolver uma equação
 (em geral não linear) para avançar. 
 
-\paragraph{Convergência: Consistência e Zero-Estabilidade} Substituindo a solução exata nos
-esquemas e expandindo em série de Taylor, é possível concluir que os erros de truncamento locais
+\paragraph{Convergência: Consistência e Zero-Estabilidade} Substituindo a solução
+exata nos
+esquemas e expandindo em série de Taylor, é possível concluir que os erros de
+truncamento locais
 são~\cite{leveque2007,suli2003}
 \begin{equation}\label{eq:lte}
   \tau^{\text{FE}}_n = \frac{k}{2}\,y''(\xi_n), \qquad
@@ -210,24 +474,35 @@ os métodos convergem com ordem~1} quando $k \to 0$.
 \subsection{Implementação dos Métodos}
 \label{sec:a-implementacao}
 
-Todos os métodos numéricos foram implementados em um mesmo módulo em Python (\texttt{src/pvi/metodos.py}).
-Ambas as rotinas recebem a instância que representa o PVI (contendo $f$, $\partial f/\partial y$, $y_0$ e $t_0$),
-o número de passos $n$ e o comprimento do passo $k$. Como retorno, devolvem os vetores da malha $(t_i)_{i=0}^m$ e da
-solução numérica $(U_i)_{i=0}^m$ (onde $m \le n$ reflete eventuais interrupções por divergência), além de um dicionário
-com estatísticas computacionais: número total de avaliações de função (\texttt{nfev}) e tempo de CPU (\texttt{runtime}),
+Todos os métodos numéricos foram implementados em um mesmo módulo em Python
+(\texttt{src/pvi/metodos.py}).
+Ambas as rotinas recebem a instância que representa o PVI (contendo $f$, $\partial
+f/\partial y$, $y_0$ e $t_0$),
+o número de passos $n$ e o comprimento do passo $k$. Como retorno, devolvem os
+vetores da malha $(t_i)_{i=0}^m$ e da
+solução numérica $(U_i)_{i=0}^m$ (onde $m \le n$ reflete eventuais interrupções por
+divergência), além de um dicionário
+com estatísticas computacionais: número total de avaliações de função (\texttt{nfev})
+e tempo de CPU (\texttt{runtime}),
 mensurado via \texttt{time.perf\_counter}.
 
-Para mitigar a propagação de erros de arredondamento inerentes à aritmética de ponto flutuante, os nós da malha não são
-acumulados recursivamente ($t \leftarrow t + k$), mas sim computados diretamente por $t_{i} = t_0 + i \cdot k$.
+Para mitigar a propagação de erros de arredondamento inerentes à aritmética de ponto
+flutuante, os nós da malha não são
+acumulados recursivamente ($t \leftarrow t + k$), mas sim computados diretamente por
+$t_{i} = t_0 + i \cdot k$.
 
 \subsubsection{Euler Explícito (Avançado)}
 
-No método de Euler explícito, cada passo requer uma única avaliação da função vetorial $f(t_n, U_n)$. A pré-alocação dos
-vetores em NumPy assegura eficiência de memória, e uma verificação condicional com \texttt{np.isfinite} interrompe o laço
-caso ocorra estouro numérico (\emph{overflow}). A implementação em Python com comentários
+No método de Euler explícito, cada passo requer uma única avaliação da função
+vetorial $f(t_n, U_n)$. A pré-alocação dos
+vetores em NumPy assegura eficiência de memória, e uma verificação condicional com
+\texttt{np.isfinite} interrompe o laço
+caso ocorra estouro numérico (\emph{overflow}). A implementação em Python com
+comentários
 explicativos é apresentada em Código~\ref{lst:euler-explicito}.
 \begin{listing}[H]
-\caption{Implementação do método de Euler Avançado em Python.}\label{lst:euler-explicito}
+\caption{Implementação do método de Euler Avançado em
+Python.}\label{lst:euler-explicito}
 \begin{minted}[linenos, frame=lines, framesep=2mm, fontsize=\footnotesize]{python}
 def euler_explicito(pvi, n, k):
     # Marca o início de execução para medição do tempo de CPU
@@ -279,12 +554,17 @@ Para o Euler implícito, cada passo exige determinar a raiz da equação não li
 \begin{equation}\label{eq:residuo-be}
   F(U) = U - U_n - k\, f(t_{n+1}, U) = 0.
 \end{equation}
-A resolução é efetuada por meio do método de Newton (\texttt{scipy.optimize.newton}) com derivada analítica exata
-$F'(U) = 1 - k\,\frac{\partial f}{\partial y}(t_{n+1}, U)$, tolerância de convergência $10^{-12}$ e limite de 50 iterações.
+A resolução é efetuada por meio do método de Newton (\texttt{scipy.optimize.newton})
+com derivada analítica exata
+$F'(U) = 1 - k\,\frac{\partial f}{\partial y}(t_{n+1}, U)$, tolerância de
+convergência $10^{-12}$ e limite de 50 iterações.
 
-Um ponto chave da implementação é o fornecimento da aproximação inicial: adota-se o preditor de Euler explícito,
-$U^{(0)} = U_n + k\,f(t_n, U_n)$. Por possuir erro local $O(k^2)$ em relação à raiz procurada, esse chute garante
-convergência rápida e direciona o método estritamente para o ramo fisicamente consistente com o PVI. De fato, para
+Um ponto chave da implementação é o fornecimento da aproximação inicial: adota-se o
+preditor de Euler explícito,
+$U^{(0)} = U_n + k\,f(t_n, U_n)$. Por possuir erro local $O(k^2)$ em relação à raiz
+procurada, esse chute garante
+convergência rápida e direciona o método estritamente para o ramo fisicamente
+consistente com o PVI. De fato, para
 $f(t, U) = U^2 - g(t)$, a equação~\eqref{eq:residuo-be} é quadrática:
 \begin{equation}\label{eq:be-quad}
   k\,U^2 - U + c_n = 0, \qquad c_n := U_n - k\,g(t_{n+1}),
@@ -293,17 +573,24 @@ cujas raízes são
 \begin{equation}\label{eq:be-raizes}
   U_{n+1}^{\pm} = \frac{1 \pm \sqrt{\Delta_n}}{2k}, \qquad \Delta_n = 1 - 4k\,c_n.
 \end{equation}
-Expandindo $\sqrt{1 - 4k c_n} = 1 - 2k c_n - 2k^2 c_n^2 + O(k^3)$, verifica-se que a menor raiz satisfaz
-$U_{n+1}^{-} = U_n + k(U_n^2 - g(t_{n+1})) + O(k^2) \to U_n$ quando $k \to 0$ (ramo físico), enquanto
-$U_{n+1}^{+} = \frac{1}{k} - U_n + O(k) \to +\infty$ (ramo espúrio), resultando em $|U^{(0)} - U_{n+1}^{-}| = O(k^2)$.
-Além disso, como $F(U) = -kU^2 + U - c_n$ é côncava ($F''(U) = -2k < 0$) com máximo no vértice $U^* = \frac{1}{2k}$,
-qualquer chute inicial $U^{(0)} < \frac{1}{2k}$ situa-se à esquerda do vértice (onde $F'(U) > 0$), garantindo que as
-iteradas de Newton convergem monotonicamente para $U_{n+1}^{-}$ sem saltar para $U_{n+1}^{+}$.
+Expandindo $\sqrt{1 - 4k c_n} = 1 - 2k c_n - 2k^2 c_n^2 + O(k^3)$, verifica-se que a
+menor raiz satisfaz
+$U_{n+1}^{-} = U_n + k(U_n^2 - g(t_{n+1})) + O(k^2) \to U_n$ quando $k \to 0$ (ramo
+físico), enquanto
+$U_{n+1}^{+} = \frac{1}{k} - U_n + O(k) \to +\infty$ (ramo espúrio), resultando em
+$|U^{(0)} - U_{n+1}^{-}| = O(k^2)$.
+Além disso, como $F(U) = -kU^2 + U - c_n$ é côncava ($F''(U) = -2k < 0$) com máximo
+no vértice $U^* = \frac{1}{2k}$,
+qualquer chute inicial $U^{(0)} < \frac{1}{2k}$ situa-se à esquerda do vértice (onde
+$F'(U) > 0$), garantindo que as
+iteradas de Newton convergem monotonicamente para $U_{n+1}^{-}$ sem saltar para
+$U_{n+1}^{+}$.
 O código fonte em Python é detalhado no
 Código~\ref{lst:euler-implicito}.
 
 \begin{listing}[H]
-\caption{Implementação do método de Euler Implícito com Newton em Python.}\label{lst:euler-implicito}
+\caption{Implementação do método de Euler Implícito com Newton em
+Python.}\label{lst:euler-implicito}
 \begin{minted}[linenos, frame=lines, framesep=2mm, fontsize=\footnotesize]{python}
 def euler_implicito(pvi, n, k):
     t0_cpu = time.perf_counter()
@@ -367,12 +654,18 @@ def euler_implicito(pvi, n, k):
 
 O experimento matemático rodado para este item foi o seguinte:
 
-Integrou-se o PVI de Motivação~\eqref{eq:pvi} a partir de $t_0 = 0$ com condição inicial $y(0) = 2$ (script
-\texttt{experimentos/exp\_a\_fig122.py}), primeiramente no intervalo $[0,\,1{,}6]$ (conforme a Figura~12.2 de Süli e
-Mayers~\cite{suli2003}) e, adicionalmente, no intervalo estendido $[0,\,5]$ para investigar a dinâmica em tempos mais
-longos. Empregaram-se os passos $k \in \{0{,}2;\, 0{,}1;\, 0{,}05\}$ (correspondentes a $n = 8, 16$ e $32$ passos em
-$[0, 1{,}6]$), além de malhas mais refinadas ($k = 0{,}025;\, 0{,}0125;\, 0{,}00625$) para aferir o regime assintótico
-de convergência, registrando-se o erro máximo $E(k) = \max_i |U_i - y(t_i)|$, a ordem observada $p_{\text{obs}}$, o
+Integrou-se o PVI de Motivação~\eqref{eq:pvi} a partir de $t_0 = 0$ com condição
+inicial $y(0) = 2$ (script
+\texttt{experimentos/exp\_a\_fig122.py}), primeiramente no intervalo $[0,\,1{,}6]$
+(conforme a Figura~12.2 de Süli e
+Mayers~\cite{suli2003}) e, adicionalmente, no intervalo estendido $[0,\,5]$ para
+investigar a dinâmica em tempos mais
+longos. Empregaram-se os passos $k \in \{0{,}2;\, 0{,}1;\, 0{,}05\}$ (correspondentes
+a $n = 8, 16$ e $32$ passos em
+$[0, 1{,}6]$), além de malhas mais refinadas ($k = 0{,}025;\, 0{,}0125;\, 0{,}00625$)
+para aferir o regime assintótico
+de convergência, registrando-se o erro máximo $E(k) = \max_i |U_i - y(t_i)|$, a ordem
+observada $p_{\text{obs}}$, o
 número de avaliações de função (NFEV) e o tempo de CPU.
 
 \subsubsection{Reprodução da Figura 12.2 no intervalo $[0,\,1{,}6]$}
@@ -393,10 +686,12 @@ para evidenciar o regime assintótico.
   \label{fig:a-comparacao}
 \end{figure}
 
-\input{../resultados/tabelas/erros_euler_avancado.tex}
-\input{../resultados/tabelas/erros_euler_recuado.tex}
+\input{../resultados/item_a/tabelas/erros_euler_avancado.tex}
+\input{../resultados/item_a/tabelas/erros_euler_recuado.tex}
 
-A análise conjunta da Figura~\ref{fig:a-comparacao} e das Tabelas~\ref{tab:erros_euler_avancado} e~\ref{tab:erros_euler_recuado} evidencia quatro fenômenos teóricos
+A análise conjunta da Figura~\ref{fig:a-comparacao} e das
+Tabelas~\ref{tab:erros_euler_avancado} e~\ref{tab:erros_euler_recuado} evidencia
+quatro fenômenos teóricos
 fundamentais:
 
 \paragraph{1. Posição geométrica das trajetórias e sinal de $y''(t)$.}
@@ -404,54 +699,82 @@ Derivando duas vezes a solução exata $y(t) = t - 4 + \frac{6}{1+t}$, obtém-se
 \begin{equation}\label{eq:convexidade}
   y''(t) = \frac{12}{(1+t)^3} > 0, \qquad \forall\, t > -1.
 \end{equation}
-Como a solução exata é estritamente convexa em todo o intervalo, as expressões do erro de truncamento local~\eqref{eq:lte}
-explicam imediatamente a disposição visual dos pontos na Figura~\ref{fig:a-comparacao}: no Euler avançado, a aproximação
-pela reta tangente em $t_n$ subestima a curva convexa ($\tau_n^{\text{FE}} > 0 \implies U_n < y(t_n)$), posicionando
-todas as trajetórias numéricas \emph{abaixo} da solução exata. No Euler recuado, o uso da inclinação futura em $t_{n+1}$
-superestima a solução ($\tau_n^{\text{BE}} < 0 \implies U_n > y(t_n)$), posicionando todas as trajetórias \emph{acima}
+Como a solução exata é estritamente convexa em todo o intervalo, as expressões do
+erro de truncamento local~\eqref{eq:lte}
+explicam imediatamente a disposição visual dos pontos na
+Figura~\ref{fig:a-comparacao}: no Euler avançado, a aproximação
+pela reta tangente em $t_n$ subestima a curva convexa ($\tau_n^{\text{FE}} > 0
+\implies U_n < y(t_n)$), posicionando
+todas as trajetórias numéricas \emph{abaixo} da solução exata. No Euler recuado, o
+uso da inclinação futura em $t_{n+1}$
+superestima a solução ($\tau_n^{\text{BE}} < 0 \implies U_n > y(t_n)$), posicionando
+todas as trajetórias \emph{acima}
 da curva exata.
 
 \paragraph{2. Explicação algébrica da falha do Euler recuado em $k = 0{,}2$.}
-As Tabelas~\ref{tab:trajetoria_euler_avancado_k02} e~\ref{tab:trajetoria_euler_recuado_k02} mostram a evolução passo a passo dos dois métodos para $k = 0{,}2$.
+As Tabelas~\ref{tab:trajetoria_euler_avancado_k02}
+e~\ref{tab:trajetoria_euler_recuado_k02} mostram a evolução passo a passo dos dois
+métodos para $k = 0{,}2$.
 
-\input{../resultados/tabelas/trajetoria_euler_avancado_k02.tex}
-\input{../resultados/tabelas/trajetoria_euler_recuado_k02.tex}
+\input{../resultados/item_a/tabelas/trajetoria_euler_avancado_k02.tex}
+\input{../resultados/item_a/tabelas/trajetoria_euler_recuado_k02.tex}
 
-Para que a equação do Euler recuado~\eqref{eq:be-quad} admita solução real no passo $i$, é necessário e suficiente que
+Para que a equação do Euler recuado~\eqref{eq:be-quad} admita solução real no passo
+$i$, é necessário e suficiente que
 \[
-  \Delta_{i-1} = 1 - 4k\,c_{i-1} \ge 0 \iff c_{i-1} = U_{i-1} - k\,g(t_i) \le \frac{1}{4k}.
+  \Delta_{i-1} = 1 - 4k\,c_{i-1} \ge 0 \iff c_{i-1} = U_{i-1} - k\,g(t_i) \le
+  \frac{1}{4k}.
 \]
-Para $k = 0{,}2$, esse limiar crítico é $\frac{1}{4k} = 1{,}25$. Nos dois primeiros passos ($t_1 = 0{,}2$ e $t_2 = 0{,}4$),
-o erro de truncamento positivo combinado à amplificação não linear mantém $U_2 \approx 1{,}5465$ muito acima do valor
-exato $y(0{,}4) \approx 0{,}6857$. Ao avançar para $t_3 = 0{,}6$ (onde $g(0{,}6) = 1{,}46625$), obtém-se
+Para $k = 0{,}2$, esse limiar crítico é $\frac{1}{4k} = 1{,}25$. Nos dois primeiros
+passos ($t_1 = 0{,}2$ e $t_2 = 0{,}4$),
+o erro de truncamento positivo combinado à amplificação não linear mantém $U_2
+\approx 1{,}5465$ muito acima do valor
+exato $y(0{,}4) \approx 0{,}6857$. Ao avançar para $t_3 = 0{,}6$ (onde $g(0{,}6) =
+1{,}46625$), obtém-se
 \[
   c_2 = U_2 - 0{,}2\,g(0{,}6) \approx 1{,}546458 - 0{,}293250 = 1{,}253208 > 1{,}25
   \implies \Delta_2 \approx -0{,}002566 < 0.
 \]
 Completando quadrados no resíduo~\eqref{eq:be-quad}, vê-se que
 \[
-  F(U) = -0{,}2\,(U - 2{,}5)^2 - 0{,}003208 \;\le\; -0{,}003208 < 0, \qquad \forall\, U \in \mathbb{R}.
+  F(U) = -0{,}2\,(U - 2{,}5)^2 - 0{,}003208 \;\le\; -0{,}003208 < 0, \qquad \forall\,
+  U \in \mathbb{R}.
 \]
-Portanto, a parábola $F(U)$ situa-se inteiramente abaixo do eixo real e possui apenas raízes complexas conjugadas
-($U_3 = 2{,}5 \pm 0{,}1266\,i$). Fica provado que a falha em $k = 0{,}2$ \emph{não} decorre de má escolha do chute
-inicial ou do algoritmo de Newton, mas sim da \emph{inexistência de solução real} do esquema implícito quando o passo $k$
-viola a barreira de solubilidade $k\,\frac{\partial f}{\partial y} < 1$ (polo $z = 1$ de $R_{\text{BE}}(z)$). Uma busca
-numérica em malhas uniformes $k = 1{,}6/n$ mostra que o maior passo que permite ao Euler recuado completar $[0, 1{,}6]$
+Portanto, a parábola $F(U)$ situa-se inteiramente abaixo do eixo real e possui apenas
+raízes complexas conjugadas
+($U_3 = 2{,}5 \pm 0{,}1266\,i$). Fica provado que a falha em $k = 0{,}2$ \emph{não}
+decorre de má escolha do chute
+inicial ou do algoritmo de Newton, mas sim da \emph{inexistência de solução real} do
+esquema implícito quando o passo $k$
+viola a barreira de solubilidade $k\,\frac{\partial f}{\partial y} < 1$ (polo $z = 1$
+de $R_{\text{BE}}(z)$). Uma busca
+numérica em malhas uniformes $k = 1{,}6/n$ mostra que o maior passo que permite ao
+Euler recuado completar $[0, 1{,}6]$
 é $k = 1{,}6/13 \approx 0{,}1231$ ($n = 13$ passos).
 
 \paragraph{4. Ordem de convergência e custo computacional.}
-Nas Tabelas~\ref{tab:erros_euler_avancado} e~\ref{tab:erros_euler_recuado}, à medida que $k \to 0$, a ordem empírica $p_{\text{obs}}$ de ambos os métodos converge para
-o valor teórico $p = 1$ ($0{,}97$ no explícito e $1{,}03$ no implícito em $k = 0{,}00625$). O valor aparente
-$p_{\text{obs}} = 1{,}83$ na transição de $k = 0{,}1$ para $k = 0{,}05$ no Euler recuado não significa precisão de
-segunda ordem: ele ocorre porque $k = 0{,}1$ está próximo do limiar de perda de existência de raiz ($k \approx 0{,}123$),
-sofrendo forte amplificação pré-assintótica. Quanto ao custo, o Euler recuado exigiu em média de $3$ a $4$ iterações de
-Newton por passo (totalizando $7$ a $9$ avaliações de função por passo contra apenas $1$ do Euler avançado) e um tempo de
-CPU substancialmente superior, sendo simultaneamente mais custoso e menos preciso neste problema.
+Nas Tabelas~\ref{tab:erros_euler_avancado} e~\ref{tab:erros_euler_recuado}, à medida
+que $k \to 0$, a ordem empírica $p_{\text{obs}}$ de ambos os métodos converge para
+o valor teórico $p = 1$ ($0{,}97$ no explícito e $1{,}03$ no implícito em $k =
+0{,}00625$). O valor aparente
+$p_{\text{obs}} = 1{,}83$ na transição de $k = 0{,}1$ para $k = 0{,}05$ no Euler
+recuado não significa precisão de
+segunda ordem: ele ocorre porque $k = 0{,}1$ está próximo do limiar de perda de
+existência de raiz ($k \approx 0{,}123$),
+sofrendo forte amplificação pré-assintótica. Quanto ao custo, o Euler recuado exigiu
+em média de $3$ a $4$ iterações de
+Newton por passo (totalizando $7$ a $9$ avaliações de função por passo contra apenas
+$1$ do Euler avançado) e um tempo de
+CPU substancialmente superior, sendo simultaneamente mais custoso e menos preciso
+neste problema.
 
 \subsubsection{Comportamento em Longo Prazo: Extensão para o Intervalo $[0,\,5]$}
 
-Para investigar como a estabilidade não linear afeta a integração em intervalos mais longos — e ainda mais distantes da
-singularidade em $t = -1$ —, a Figura~\ref{fig:a-T5} e as Tabelas~\ref{tab:erros_euler_avancado,_tf_=_5} e~\ref{tab:erros_euler_recuado,_tf_=_5} apresentam os resultados para $t \in [0, 5]$.
+Para investigar como a estabilidade não linear afeta a integração em intervalos mais
+longos — e ainda mais distantes da
+singularidade em $t = -1$ —, a Figura~\ref{fig:a-T5} e as
+Tabelas~\ref{tab:erros_euler_avancado,_tf_=_5}
+e~\ref{tab:erros_euler_recuado,_tf_=_5} apresentam os resultados para $t \in [0, 5]$.
 
 \begin{figure}[H]
   \centering
@@ -463,56 +786,88 @@ singularidade em $t = -1$ —, a Figura~\ref{fig:a-T5} e as Tabelas~\ref{tab:err
     \centering
     \includegraphics[width=\linewidth]{a_euler_recuadoT5}
   \end{minipage}
-  \caption{Soluções numéricas no intervalo estendido $[0, 5]$ para o Euler avançado (esquerda) e Euler recuado (direita).}
+  \caption{Soluções numéricas no intervalo estendido $[0, 5]$ para o Euler avançado
+  (esquerda) e Euler recuado (direita).}
   \label{fig:a-T5}
 \end{figure}
 
-\input{../resultados/tabelas/erros_euler_avancado,_tf_=_5.tex}
-\input{../resultados/tabelas/erros_euler_recuado,_tf_=_5.tex}
+\input{../resultados/item_a/tabelas/erros_euler_avancado,_tf_=_5.tex}
+\input{../resultados/item_a/tabelas/erros_euler_recuado,_tf_=_5.tex}
 
-Os resultados em $[0, 5]$ expõem o papel da solução exata $y(t)$ como uma \textbf{separatriz instável} (curva repulsora)
+Os resultados em $[0, 5]$ expõem o papel da solução exata $y(t)$ como uma
+\textbf{separatriz instável} (curva repulsora)
 da equação de Riccati $y' = y^2 - g(t)$:
 \begin{itemize}
-  \item \textbf{Explosão em tempo finito (\emph{blow-up}) no Euler Recuado:} Como o erro local mantém $U_n > y(t_n)$,
-    quando a solução exata volta a ficar positiva ($t > 2$), a perturbação positiva $e = U - y > 0$ entra no regime
-    dominado pelo termo quadrático $e' = 2y\,e + e^2 \approx e^2$, que possui assíntota vertical em tempo finito. Em
-    todas as malhas testadas, $U_n$ dispara até violar a condição $\Delta_n \ge 0$ (sendo necessário reduzir o passo até
+  \item \textbf{Explosão em tempo finito (\emph{blow-up}) no Euler Recuado:}
+        Como o erro local mantém $U_n > y(t_n)$,
+    quando a solução exata volta a ficar positiva ($t > 2$), a perturbação positiva
+    $e = U - y > 0$ entra no regime
+    dominado pelo termo quadrático $e' = 2y\,e + e^2 \approx e^2$, que possui
+    assíntota vertical em tempo finito. Em
+    todas as malhas testadas, $U_n$ dispara até violar a condição $\Delta_n \ge 0$
+    (sendo necessário reduzir o passo até
     $k \le 5/1462 \approx 0{,}00342$ para que o Euler recuado alcance $t = 5$).
-  \item \textbf{Captura por atrator espúrio no Euler Avançado:} Embora o método explícito não exploda, suas trajetórias
-    sofrem uma bifurcação qualitativa severa. No trecho $t \in (1{,}462;\, 3{,}508)$, tem-se $g(t) < 0$, de modo que
-    $f(t, U) = U^2 - g(t) > 0$ para todo $U$, fazendo as soluções numéricas subirem acompanhando (por baixo) a solução
-    exata. Contudo, para $t > 3{,}508$, $g(t)$ volta a ser positiva e surgem as curvas isóclinas de derivada nula
-    $U = \pm\sqrt{g(t)}$. Enquanto a solução exata permanece acima da isóclina repulsora $+\sqrt{g(t)}$ e continua
-    crescendo até $y(5) = 2$, as aproximações do Euler explícito — por estarem defasadas para baixo — são interceptadas
-    pela curva $U = +\sqrt{g(t)}$ em torno de $t \approx 3{,}6\text{--}3{,}8$. A partir desse cruzamento, $U_n^2 < g(t_n)
-    \implies f(t_n, U_n) < 0$: a derivada muda de sinal, as trajetórias atingem um máximo local e mergulham para a
-    região $U < 0$, onde $\frac{\partial f}{\partial y} = 2U < 0$ é fortemente atrativa, sendo capturadas pelo ramo
+  \item \textbf{Captura por atrator espúrio no Euler Avançado:} Embora o
+        método explícito não exploda, suas trajetórias
+    sofrem uma bifurcação qualitativa severa. No trecho $t \in (1{,}462;\, 3{,}508)$,
+    tem-se $g(t) < 0$, de modo que
+    $f(t, U) = U^2 - g(t) > 0$ para todo $U$, fazendo as soluções numéricas subirem
+    acompanhando (por baixo) a solução
+    exata. Contudo, para $t > 3{,}508$, $g(t)$ volta a ser positiva e surgem as
+    curvas isóclinas de derivada nula
+    $U = \pm\sqrt{g(t)}$. Enquanto a solução exata permanece acima da isóclina
+    repulsora $+\sqrt{g(t)}$ e continua
+    crescendo até $y(5) = 2$, as aproximações do Euler explícito — por estarem
+    defasadas para baixo — são interceptadas
+    pela curva $U = +\sqrt{g(t)}$ em torno de $t \approx 3{,}6\text{--}3{,}8$. A
+    partir desse cruzamento, $U_n^2 < g(t_n)
+    \implies f(t_n, U_n) < 0$: a derivada muda de sinal, as trajetórias atingem um
+    máximo local e mergulham para a
+    região $U < 0$, onde $\frac{\partial f}{\partial y} = 2U < 0$ é fortemente
+    atrativa, sendo capturadas pelo ramo
     assintoticamente estável (porém incorreto) $U(t) \approx -\sqrt{g(t)}$.
 \end{itemize}
 
 \subsubsection{Síntese Crítica: Comparação entre Euler Explícito e Implícito}
 
-A investigação realizada neste item permite formular três conclusões críticas que desmistificam a aplicação automática
+A investigação realizada neste item permite formular três conclusões críticas que
+desmistificam a aplicação automática
 de métodos implícitos em PVIs não lineares:
 \begin{enumerate}
-  \item \textbf{Irrelevância da distância à singularidade frente à instabilidade intrínseca:} Mesmo integrando em
-    $[0, 1{,}6]$ ou $[0, 5]$ — regiões onde a solução exata $y(t)$ é perfeitamente suave e afastada do polo em
-    $t = -1$ —, ambos os métodos enfrentam severa degradação. A proximidade da singularidade em $t = 0$ apenas eleva a
-    curvatura inicial ($y''(0) = 12$), mas o fator determinante para a divergência subsequente é a instabilidade
+  \item \textbf{Irrelevância da distância à singularidade frente à
+        instabilidade intrínseca:} Mesmo integrando em
+    $[0, 1{,}6]$ ou $[0, 5]$ — regiões onde a solução exata $y(t)$ é perfeitamente
+    suave e afastada do polo em
+    $t = -1$ —, ambos os métodos enfrentam severa degradação. A proximidade da
+    singularidade em $t = 0$ apenas eleva a
+    curvatura inicial ($y''(0) = 12$), mas o fator determinante para a divergência
+    subsequente é a instabilidade
     dinâmica da própria EDO ($\frac{\partial f}{\partial y} = 2y > 0$).
-  \item \textbf{A A-estabilidade não protege contra modos crescentes nem contra erros no lado repulsivo:} O Euler
-    implícito é incondicionalmente estável apenas quando $\frac{\partial f}{\partial y} < 0$. Neste PVI, a combinação de
-    convexidade ($y'' > 0$, que força o Euler implícito a errar para cima) com Jacobiana positiva ($\frac{\partial f}{\partial y} = 2y > 0$)
-    empurra a aproximação implícita diretamente para a bacia de explosão (*blow-up*) da equação de Riccati e amplifica o
-    erro a uma taxa $(1 - z)^{-1} > e^z$. Já o Euler explícito, ao errar para baixo, beneficia-se do amortecimento na
-    região $U + y < 0$ em $[0, 1{,}6]$, mas em intervalos longos ($[0, 5]$) acaba capturado pelo atrator espúrio
+  \item \textbf{A A-estabilidade não protege contra modos crescentes nem
+        contra erros no lado repulsivo:} O Euler
+    implícito é incondicionalmente estável apenas quando $\frac{\partial f}{\partial
+    y} < 0$. Neste PVI, a combinação de
+    convexidade ($y'' > 0$, que força o Euler implícito a errar para cima) com
+    Jacobiana positiva ($\frac{\partial f}{\partial y} = 2y > 0$)
+    empurra a aproximação implícita diretamente para a bacia de explosão (*blow-up*)
+    da equação de Riccati e amplifica o
+    erro a uma taxa $(1 - z)^{-1} > e^z$. Já o Euler explícito, ao errar para baixo,
+    beneficia-se do amortecimento na
+    região $U + y < 0$ em $[0, 1{,}6]$, mas em intervalos longos ($[0, 5]$) acaba
+    capturado pelo atrator espúrio
     $-\sqrt{g(t)}$.
-  \item \textbf{Restrição de passo por solubilidade no método implícito:} Enquanto métodos explícitos sofrem restrição
-    de passo por estabilidade em problemas rígidos ($\lambda \ll 0$), o Euler implícito sofre aqui uma restrição severa
-    de passo ($k < 0{,}123$ em $[0, 1{,}6]$ e $k < 0{,}00342$ em $[0, 5]$) para garantir a própria \emph{existência de
-    raiz real} ($\Delta_n \ge 0$, ligada a $k\,\frac{\partial f}{\partial y} < 1$). Assim, com ordem de precisão baixa
-    ($p = 1$), o pagamento do alto custo computacional das iterações de Newton no Euler recuado não traz qualquer
-    benefício, motivando diretamente o emprego de métodos de ordem superior nos itens~(b) e~(c).
+  \item \textbf{Restrição de passo por solubilidade no método implícito:}
+        Enquanto métodos explícitos sofrem restrição
+    de passo por estabilidade em problemas rígidos ($\lambda \ll 0$), o Euler
+    implícito sofre aqui uma restrição severa
+    de passo ($k < 0{,}123$ em $[0, 1{,}6]$ e $k < 0{,}00342$ em $[0, 5]$) para
+    garantir a própria \emph{existência de
+    raiz real} ($\Delta_n \ge 0$, ligada a $k\,\frac{\partial f}{\partial y} < 1$).
+    Assim, com ordem de precisão baixa
+    ($p = 1$), o pagamento do alto custo computacional das iterações de Newton no
+    Euler recuado não traz qualquer
+    benefício, motivando diretamente o emprego de métodos de ordem superior nos
+    itens~(b) e~(c).
 \end{enumerate}
 
 %=====================================================================================
@@ -522,9 +877,13 @@ de métodos implícitos em PVIs não lineares:
 
 \subsection{Objetivo}
 
-Implementar o método explícito clássico de Runge-Kutta de quarta ordem (RK4), conforme descrito no Exemplo~5.13 de
-LeVeque~\cite{leveque2007} (p.~126), resolver novamente o PVI de Motivação~\eqref{eq:pvi} e apresentar uma descrição
-crítica comparativa entre o método explícito RK4 e o método explícito de Euler avançado, discutindo suas vantagens e
+Implementar o método explícito clássico de Runge-Kutta de quarta ordem (RK4),
+conforme descrito no Exemplo~5.13 de
+LeVeque~\cite{leveque2007} (p.~126) e na literatura geral de métodos de
+Runge-Kutta~\cite{butcher1985}, resolver novamente o PVI de
+Motivação~\eqref{eq:pvi} e apresentar uma descrição crítica comparativa entre o
+método explícito RK4 e o método explícito de Euler avançado, discutindo suas
+vantagens e
 desvantagens computacionais e teóricas.
 
 %-------------------------------------------------------------------------------------
@@ -539,14 +898,19 @@ desvantagens computacionais e teóricas.
 \subsection{Implementação do Método}
 \label{sec:b-implementacao}
 
-O método RK4 foi implementado na função \texttt{rk4} dentro do mesmo módulo \texttt{src/pvi/metodos.py}, seguindo
-exatamente a mesma interface das rotinas de Euler. Em cada iteração do laço principal, calculam-se sequencialmente os
-quatro estágios explícitos~\eqref{eq:rk4-s1}--\eqref{eq:rk4-s4}, contabilizando exatamente $4$ avaliações da função $f$
-por passo (\texttt{nfev += 4}), sem necessidade de derivada $\partial f/\partial y$ nem de solucionadores iterativos. O
+O método RK4 foi implementado na função \texttt{rk4} dentro do mesmo módulo
+\texttt{src/pvi/metodos.py}, seguindo
+exatamente a mesma interface das rotinas de Euler. Em cada iteração do laço
+principal, calculam-se sequencialmente os
+quatro estágios explícitos~\eqref{eq:rk4-s1}--\eqref{eq:rk4-s4}, contabilizando
+exatamente $4$ avaliações da função $f$
+por passo (\texttt{nfev += 4}), sem necessidade de derivada $\partial f/\partial y$
+nem de solucionadores iterativos. O
 código em Python comentado é exibido no Código~\ref{lst:rk4}.
 
 \begin{listing}[H]
-\caption{Implementação do método explícito de Runge-Kutta de 4ª Ordem (RK4) em Python.}\label{lst:rk4}
+\caption{Implementação do método explícito de Runge-Kutta de 4ª Ordem (RK4) em
+Python.}\label{lst:rk4}
 \begin{minted}[linenos, frame=lines, framesep=2mm, fontsize=\footnotesize]{python}
 def rk4(pvi, n, k):
     # Marca o início de execução para medição do tempo de CPU
@@ -625,10 +989,14 @@ def rk4(pvi, n, k):
 
 \subsection{Objetivo}
 
-Implementar o método implícito de múltiplos passos lineares de Adams-Moulton de 2 passos (\emph{2-step Adams-Moulton}),
-conforme apresentado na página~132 de R.~J.~LeVeque~\cite{leveque2007}, resolver novamente o PVI de
-Motivação~\eqref{eq:pvi} e apresentar uma descrição crítica comparativa entre os dois métodos implícitos analisados — o
-método de Adams-Moulton de 2 passos e o método de Euler recuado —, discutindo suas vantagens e desvantagens teóricas e
+Implementar o método implícito de múltiplos passos lineares de Adams-Moulton de 2
+passos (\emph{2-step Adams-Moulton}),
+conforme apresentado na página~132 de R.~J.~LeVeque~\cite{leveque2007}, resolver
+novamente o PVI de
+Motivação~\eqref{eq:pvi} e apresentar uma descrição crítica comparativa entre os dois
+métodos implícitos analisados — o
+método de Adams-Moulton de 2 passos e o método de Euler recuado —, discutindo suas
+vantagens e desvantagens teóricas e
 computacionais.
 
 %-------------------------------------------------------------------------------------
@@ -653,20 +1021,59 @@ computacionais.
 
 \subsection{Objetivo}
 
-Integrar criticamente os resultados teóricos e computacionais obtidos nos Itens~(a), (b) e~(c) para discutir as
-vantagens, desvantagens e critérios de seleção entre \textbf{Métodos Explícitos} e \textbf{Métodos Implícitos} na
-resolução numérica de Problemas de Valor Inicial (PVIs) de um modo geral. Adicionalmente, investigar teórica e
-experimentalmente o que ocorre ao tentar resolver o PVI de Motivação~\eqref{eq:pvi} nos intervalos $[0,\,5]$, $[-2,\,2]$
+Integrar criticamente os resultados teóricos e computacionais obtidos nos Itens~(a),
+(b) e~(c) para discutir as
+vantagens, desvantagens e critérios de seleção entre \textbf{Métodos Explícitos} e
+\textbf{Métodos Implícitos} na
+resolução numérica de Problemas de Valor Inicial (PVIs) de um modo geral.
+Adicionalmente, investigar teórica e
+experimentalmente o que ocorre ao tentar resolver o PVI de Motivação~\eqref{eq:pvi}
+nos intervalos $[0,\,5]$, $[-2,\,2]$
 e $[-5,\,40]$ (bem como $[0,\,40]$).
 
 %-------------------------------------------------------------------------------------
+\begin{thebibliography}{99}
 
-\begin{thebibliography}{9}
-\bibitem{suli2003} E.~Süli e D.~F.~Mayers. \emph{An Introduction to
-  Numerical Analysis}. Cambridge University Press, 2003.
-\bibitem{leveque2007} R.~J.~LeVeque. \emph{Finite Difference Methods for
-  Ordinary and Partial Differential Equations: Steady-State and
-  Time-Dependent Problems}. SIAM, 2007.
+\bibitem{butcher1985}
+J.~C.~Butcher.
+\newblock General linear methods: A survey.
+\newblock \emph{Applied Numerical Mathematics}, vol.~1, no.~4, pp.~273--284, 1985.
+
+\bibitem{hairer1993}
+E.~Hairer, S.~P.~Nørsett e G.~Wanner.
+\newblock \emph{Solving Ordinary Differential Equations I: Nonstiff Problems}.
+\newblock 2\textordfeminine~ed., Springer-Verlag, Berlim, 1993.
+
+\bibitem{hirota2006}
+C.~Hirota e K.~Ozawa.
+\newblock Numerical method of estimating the blow-up time and rate of the solution of ordinary differential equations --- An application to the blow-up problems of partial differential equations.
+\newblock \emph{Journal of Computational and Applied Mathematics}, vol.~193, no.~2, pp.~614--637, 2006.
+
+\bibitem{lambert1991}
+J.~D.~Lambert.
+\newblock \emph{Numerical Methods for Ordinary Differential Systems: The Initial Value Problem}.
+\newblock John Wiley \& Sons, Chichester, 1991.
+
+\bibitem{leveque2007}
+R.~J.~LeVeque.
+\newblock \emph{Finite Difference Methods for Ordinary and Partial Differential Equations: Steady-State and Time-Dependent Problems}.
+\newblock SIAM, Filadélfia, 2007.
+
+\bibitem{polyanin2018}
+A.~D.~Polyanin e I.~K.~Shingareva.
+\newblock Nonlinear problems with blow-up solutions: Numerical integration based on differential and nonlocal transformations, and differential constraints.
+\newblock \emph{Applied Mathematics and Computation}, vol.~336, pp.~107--137, 2018.
+
+\bibitem{reid1972}
+W.~T.~Reid.
+\newblock \emph{Riccati Differential Equations}.
+\newblock Academic Press, Nova York, 1972.
+
+\bibitem{suli2003}
+E.~Süli e D.~F.~Mayers.
+\newblock \emph{An Introduction to Numerical Analysis}.
+\newblock Cambridge University Press, Cambridge, 2003.
+
 \end{thebibliography}
 
 

@@ -17,7 +17,7 @@ def resolver(metodo, prob, k, TF):
     t, U, stats = metodo(prob, n, k)
     return t, U, stats
 
-def tabela_passo_a_passo(prob, nome, k, t_vals, U_vals, export_tex=True, export_csv=True):
+def tabela_passo_a_passo(prob, nome, k, t_vals, U_vals, export_tex=True, export_csv=True, pasta_tab=None, pasta_dados=None):
     """Gera uma tabela detalhada com a trajetória e o erro em cada passo i."""
     
     # Se nenhuma opção foi escolhida, não faz sentido rodar
@@ -32,8 +32,9 @@ def tabela_passo_a_passo(prob, nome, k, t_vals, U_vals, export_tex=True, export_
     
     # 1. Exportação LaTeX
     if export_tex:
-        os.makedirs("resultados/tabelas", exist_ok=True)
-        caminho_tex = f"resultados/tabelas/{nome_arquivo}.tex"
+        dir_tex = pasta_tab or "resultados/item_a/tabelas"
+        os.makedirs(dir_tex, exist_ok=True)
+        caminho_tex = os.path.join(dir_tex, f"{nome_arquivo}.tex")
         
         with open(caminho_tex, "w", encoding="utf-8") as f:
             f.write("\\begin{table}[H]\n")
@@ -52,8 +53,9 @@ def tabela_passo_a_passo(prob, nome, k, t_vals, U_vals, export_tex=True, export_
         
     # 2. Exportação CSV
     if export_csv:
-        os.makedirs("resultados/dados", exist_ok=True)
-        caminho_csv = f"resultados/dados/{nome_arquivo}.csv"
+        dir_csv = pasta_dados or "resultados/item_a/dados"
+        os.makedirs(dir_csv, exist_ok=True)
+        caminho_csv = os.path.join(dir_csv, f"{nome_arquivo}.csv")
         
         with open(caminho_csv, "w", encoding="utf-8") as f:
             f.write("i,t_i,U_i,y_exato,erro_abs\n")
@@ -62,15 +64,17 @@ def tabela_passo_a_passo(prob, nome, k, t_vals, U_vals, export_tex=True, export_
                 f.write(f"{i},{t_vals[i]:.4f},{U_vals[i]:.10f},{solucao_vals[i]:.10f},{erros[i]:.10e}\n")
 
 
-def tabela_erros(prob, nome, solucoes, K):
+def tabela_erros(prob, nome, solucoes, K, pasta_tab=None, pasta_dados=None):
     """Calcula erros, imprime no console e exporta para LaTeX e CSV com estatísticas completas."""
 
-    os.makedirs("resultados/tabelas", exist_ok=True)
-    os.makedirs("resultados/dados", exist_ok=True)
+    dir_tex = pasta_tab or "resultados/item_a/tabelas"
+    dir_csv = pasta_dados or "resultados/item_a/dados"
+    os.makedirs(dir_tex, exist_ok=True)
+    os.makedirs(dir_csv, exist_ok=True)
     
     nome_arquivo = nome.lower().replace(" ", "_").replace("ç", "c").replace("ã", "a")
-    caminho_tex = f"resultados/tabelas/erros_{nome_arquivo}.tex"
-    caminho_csv = f"resultados/dados/erros_{nome_arquivo}.csv"
+    caminho_tex = os.path.join(dir_tex, f"erros_{nome_arquivo}.tex")
+    caminho_csv = os.path.join(dir_csv, f"erros_{nome_arquivo}.csv")
     
     print(f"\n--- {nome} ---")
     print(f"{'k':>8} | {'passos':>6} | {'NFEV':>6} | {'CPU(ms)':>8} | {'erro máx':>12} | {'ordem obs.':>10}")

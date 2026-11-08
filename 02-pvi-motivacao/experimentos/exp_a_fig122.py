@@ -15,7 +15,11 @@ from pvi.uteis import resolver, tabela_erros, tabela_passo_a_passo # Importando 
 TF = 1.6                   
 K = (0.2, 0.1, 0.05)      
 K_TABELA = (0.2, 0.1, 0.05, 0.025, 0.0125, 0.00625)
-PASTA_FIG = os.path.abspath(os.path.join(DIR_ATUAL, '..', 'resultados', 'figuras'))
+K2 = (0.0125, 0.00625, 0.000125, 0.000025)
+PASTA_ITEM = os.path.abspath(os.path.join(DIR_ATUAL, '..', 'resultados', 'item_a'))
+PASTA_FIG = os.path.join(PASTA_ITEM, 'figuras')
+PASTA_TAB = os.path.join(PASTA_ITEM, 'tabelas')
+PASTA_DADOS = os.path.join(PASTA_ITEM, 'dados')
 # ---------------------------------------------------------------------------
 
 def executar():
@@ -39,8 +43,8 @@ def executar():
         caminho=f"{PASTA_FIG}/a_comparacao"
     )
 
-    tabela_erros(prob, "Euler avançado", sol_exp_tab, K_TABELA)
-    tabela_erros(prob, "Euler recuado", sol_imp_tab, K_TABELA)
+    tabela_erros(prob, "Euler avançado", sol_exp_tab, K_TABELA, pasta_tab=PASTA_TAB, pasta_dados=PASTA_DADOS)
+    tabela_erros(prob, "Euler recuado", sol_imp_tab, K_TABELA, pasta_tab=PASTA_TAB, pasta_dados=PASTA_DADOS)
 
     for i_k in [0, 1]:  
         k_atual = K[i_k]
@@ -49,25 +53,27 @@ def executar():
         t_imp, U_imp, _ = sol_imp[i_k]
         
         tabela_passo_a_passo(prob, "Euler avancado", k_atual, t_exp, U_exp, 
-                             export_tex=(i_k == 0), export_csv=True)
+                             export_tex=(i_k == 0), export_csv=True,
+                             pasta_tab=PASTA_TAB, pasta_dados=PASTA_DADOS)
         tabela_passo_a_passo(prob, "Euler recuado", k_atual, t_imp, U_imp, 
-                             export_tex=(i_k == 0), export_csv=True)
+                             export_tex=(i_k == 0), export_csv=True,
+                             pasta_tab=PASTA_TAB, pasta_dados=PASTA_DADOS)
 
     # Experimento estendido em [0, 5]
     TF_LONGO = 5.0
     tspan_longo = (prob.t0, TF_LONGO)
     sol_exp_T5_tab = [resolver(euler_explicito, prob, k, TF_LONGO) for k in K_TABELA]
     sol_imp_T5_tab = [resolver(euler_implicito, prob, k, TF_LONGO) for k in K_TABELA]
-    sol_exp_T5 = sol_exp_T5_tab[:len(K)]
-    sol_imp_T5 = sol_imp_T5_tab[:len(K)]
+    sol_exp_T5 = sol_exp_T5_tab[:len(K2)]
+    sol_imp_T5 = sol_imp_T5_tab[:len(K2)]
 
-    plot_fig122(prob, sol_exp_T5, K, tspan_longo,
+    plot_fig122(prob, sol_exp_T5, K2, tspan_longo,
                 "Euler avançado (explícito)", f"{PASTA_FIG}/a_euler_avancadoT5")
-    plot_fig122(prob, sol_imp_T5, K, tspan_longo,
+    plot_fig122(prob, sol_imp_T5, K2, tspan_longo,
                 "Euler recuado (implícito)", f"{PASTA_FIG}/a_euler_recuadoT5")
 
-    tabela_erros(prob, "Euler avançado, TF = 5", sol_exp_T5_tab, K_TABELA)
-    tabela_erros(prob, "Euler recuado, TF = 5", sol_imp_T5_tab, K_TABELA)
+    tabela_erros(prob, "Euler avançado, TF = 5", sol_exp_T5_tab, K_TABELA, pasta_tab=PASTA_TAB, pasta_dados=PASTA_DADOS)
+    tabela_erros(prob, "Euler recuado, TF = 5", sol_imp_T5_tab, K_TABELA, pasta_tab=PASTA_TAB, pasta_dados=PASTA_DADOS)
 
 if __name__ == "__main__":
     executar()

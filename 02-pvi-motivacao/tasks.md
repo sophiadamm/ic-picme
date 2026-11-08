@@ -10,8 +10,7 @@ Stack: Python + NumPy + Matplotlib + pytest.
 - [✓] Criar `pyproject.toml` e `requirements.txt` (versões fixadas)
 - [✓] Criar o ambiente virtual e rodar `pip install -e .`
 - [✓] Organizar edição laTEX no VS Code
-- [ ] Criar o `README.md` com um esqueleto de "como rodar"
-- [ ] Introdução do Relatório
+- [✓]  Introdução do Relatório
 
 
 ## Item A: Problema + Euler avançado + Euler recuado 
@@ -29,12 +28,8 @@ Stack: Python + NumPy + Matplotlib + pytest.
 
 **Relatório**
 - [✓] Introdução/Objetivos do item a
-- [✓] Implementação 
-- [ ] Resultados e Discussão 
-  - [✓] Entender (Comparação dos dois métodos e verificação da teoria(?))
-  - [✓] Escrever -> Análise de Comparação 
-    - [✓] Incluir experimento com t_F = 5
-  - [ ] Aprofundar discussão com análise de autovalores (teoria)
+- Implementação 
+- [-] Resultados e Discussão 
 
 ---
 
@@ -66,3 +61,14 @@ Stack: Python + NumPy + Matplotlib + pytest.
   - [ ] Escrever ! Descrição Crítica
 
 **Pronto quando:** 
+
+## Finalizar/Revisão Geral do Relatório
+
+- [ ] Criar o `README.md` com um esqueleto de "como rodar"
+
+[Introdução]
+  - [] Completar descrição dos itens na primeira parte da introdução 
+  - [] Fazer resumo/abstract
+  - [] Revisar a parte de ambiente computacional 
+  [?] Resumir escrita
+  [?] É realmente necessário o experimento para mostrar a instabilidade da EDO (Faz sentido essa antecipação ou perde o propósito da atividade?)

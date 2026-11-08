@@ -1,0 +1,17 @@
+\begin{table}[H]
+    \centering
+    \begin{tabular}{ccccccc}
+        \hline
+        $k$ & Passos & NFEV & Tempo CPU (ms) & Erro Máximo & Ordem Observada \\
+        \hline
+        0.2 & 8 & 8 & 0.05  & 6.297e-01 & - \\
+        0.1 & 16 & 16 & 0.02  & 3.549e-01 & 0.83 \\
+        0.05 & 32 & 32 & 0.05  & 1.940e-01 & 0.87 \\
+        0.025 & 64 & 64 & 0.09  & 1.027e-01 & 0.92 \\
+        0.0125 & 128 & 128 & 0.16  & 5.310e-02 & 0.95 \\
+        0.00625 & 256 & 256 & 0.31  & 2.704e-02 & 0.97 \\
+        \hline
+    \end{tabular}
+    \caption{Análise computacional completa para o método Euler avançado.}
+    \label{tab:erros_euler_avancado}
+\end{table}
