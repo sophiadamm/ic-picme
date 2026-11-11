@@ -16,6 +16,7 @@
 \usepackage{booktabs}
 \usepackage{algorithm,algpseudocode,listings}
 \usepackage{tikz}
+\usepackage{subcaption}
 \usetikzlibrary{shapes,arrows.meta,positioning}
 \graphicspath{{../resultados/introducao/figuras/}{../resultados/item_a/figuras/}{../resultados/item_b/figuras/}}
 
@@ -285,29 +286,6 @@ domínio ($x \in [0,\, 1) \cup (2,\, +\infty)$), porém com intensidades muito d
 em $[0,\, 1{,}6]$, a amplificação total acumulada $\exp\bigl(\int_0^x \lambda(s)\,\mathrm{d}s\bigr)$
 é modesta (cerca de $3{,}7$ em $x = 1$ e $3{,}4$ em $x = 1{,}6$), ao passo que para
 $x > 2$ ela cresce de forma severa (atingindo $\approx 6{,}7 \times 10^2$ já em $x = 5$).
-
-
-
-% Como consequência direta dessa dinâmica de autovalores, a
-% Figura~\ref{fig:intro-figB-navalha} (gerada por
-% \texttt{experimentos/exp\_intro\_estabilidade.py}, sem o emprego de esquemas
-% discretos de EDO) ilustra que a solução analítica exata atua como um verdadeiro ``fio
-% da navalha'' repulsor: uma perturbação infinitesimal de apenas $\delta = \pm 10^{-4}$
-% ($0{,}005\%$ em relação à condição inicial $y(0) = 2$), avaliada exatamente via a
-% equação de Bernoulli governante do erro ($\epsilon' = 2y\epsilon + \epsilon^2$), é
-% suficiente para fazer a trajetória superior ($\delta > 0$) divergir explosivamente em
-% tempo finito em $x^* \approx 5{,}9$, enquanto a trajetória inferior ($\delta < 0$)
-% precipita-se para o ramo estável $y \approx 4 - x$. 
-
-% \begin{figure}[H]
-%   \centering
-%   \includegraphics[width=0.82\textwidth]{figB_fio_navalha}
-%   \caption{Sensibilidade intrínseca do PVI (``fio da navalha''): evolução analítica
-%   exata para perturbações de $0{,}005\%$ na condição inicial ($y(0) = 2 \pm 10^{-4}$),
-%   evidenciando a explosão em tempo finito em $x^* \approx 5{,}9$ para $\delta = +10^{-4}$
-%   e o desvio para $y \approx 4 - x$ para $\delta = -10^{-4}$.}
-%   \label{fig:intro-figB-navalha}
-% \end{figure}
 
 \subsection{Notação e Ambiente Computacional}
 Ao longo das seções seguintes, a variável independente é denotada por $t$ (com $t
@@ -912,7 +890,10 @@ A investigação teórica e experimental conduzida ao longo deste item desmistif
 \paragraph{1. O paradoxo da distância à singularidade vs. instabilidade intrínseca da EDO.}
 Como demonstrado na Seção~\ref{sec:problema}, a solução exata $y(t) = t - 4 + \frac{6}{1+t}$ possui um polo de explosão em $t = -1$, mas para $t \ge 0$ é perfeitamente suave ($C^\infty$) e aproxima-se assintoticamente da reta $y = t - 4$, com curvatura $y''(t) = \frac{12}{(1+t)^3}$ decaindo rapidamente a zero. Se o erro numérico dependesse apenas da suavidade local da curva (que dita o erro de truncamento local $|\tau_n| = \frac{k}{2}y''(\xi_n)$), integrar longe da singularidade em $t \in [2,\, 5]$ deveria ser muito mais fácil do que em $t \in [0,\, 1{,}6]$.
 
-Os experimentos provaram exatamente o oposto: a degradação severa em longo prazo não é causada pela singularidade em $t = -1$, mas pelo \textbf{mau condicionamento (instabilidade intrínseca) da própria EDO} quando $y(t) > 0$, regido pela equação exata de propagação do erro~\eqref{eq:erro-exata-bernoulli}, $e'(t) = \lambda(t)e(t) + e(t)^2$, onde $\lambda(t) = 2y(t)$. Enquanto em $[0,\, 1{,}6]$ o trecho instável $[0, 1)$ é curto e parcialmente compensado pela região dissipativa $t \in (1,\, 2)$ ($\lambda(t) < 0$), resultando em um fator de amplificação acumulado modesto ($\Phi(0, 1{,}6) \approx 3{,}4$), a reentrada permanente na região $\lambda(t) > 0$ para $t > 2$ faz a amplificação acumulada saltar para $\Phi(0, 5) \approx 665{,}1$. Assim, mesmo longe da singularidade e com erros locais $\tau_n$ minúsculos, a dinâmica repulsora da EDO amplifica exponencialmente qualquer desvio prévio.
+Os experimentos provaram exatamente o oposto: a degradação severa em longo prazo não é causada pela singularidade em $t = -1$, mas pela \textbf{instabilidade intrínseca da própria EDO} quando $y(t) > 0$, regido pela equação exata de propagação do erro~\eqref{eq:erro-exata-bernoulli}, $e'(t) = \lambda(t)e(t) + e(t)^2$, onde $\lambda(t) = 2y(t)$. Enquanto em $[0,\, 1{,}6]$ o trecho instável $[0, 1)$ é curto e parcialmente compensado pela região dissipativa $t \in (1,\, 2)$ ($\lambda(t) < 0$), resultando em um fator de amplificação acumulado modesto ($\Phi(0, 1{,}6) \approx 3{,}4$), a reentrada permanente na região $\lambda(t) > 0$ para $t > 2$ faz a amplificação acumulada saltar para $\Phi(0, 5) \approx 665{,}1$. Assim, mesmo longe da singularidade e com erros locais $\tau_n$ minúsculos, a dinâmica repulsora da EDO amplifica exponencialmente qualquer desvio prévio.
+
+\hl{Neste contexto, a diferenciação entre instabilidade do método e instabilidade de equação é fundamental. Apoiando-se na teoria discutida sobre estabilidade relativa e absoluta apresentadas, considerando os módulos máximo dos autovalores nos intervalos [0, 1.6] e [0, 5]. Temos:}
+
 
 \paragraph{2. Por que a A-estabilidade não garante convergência para qualquer passo $k$: autovalores positivos, estabilidade relativa e solubilidade de Newton.}
 A propriedade de $A$-estabilidade do Euler recuado ($|R_{\text{BE}}(z)| = |1 - z|^{-1} < 1$ para $\operatorname{Re}(z) < 0$) garante amortecimento incondicional \emph{apenas quando o autovalor local é negativo} ($\lambda < 0$, típico de sistemas rígidos dissipativos). Quando a EDO opera em regime de autovalor positivo ($\lambda(t) = 2y(t) > 0 \implies z = k\lambda > 0$), a $A$-estabilidade perde sua serventia e emergem dois obstáculos estruturais para o método implícito:
@@ -998,11 +979,50 @@ inclinações ($F_1, F_2, F_3, F_4$) a cada passo:
   U_{n+1} &= U_n + \frac{k}{6}\bigl(F_1 + 2F_2 + 2F_3 + F_4\bigr). \label{eq:rk4-comb}
 \end{align}
 \end{subequations}
-Geometricamente, $F_1$ é a inclinação no início do passo (usada para prever o ponto médio $Y_2$ via Euler explícito de
-passo $k/2$); $F_2$ é uma primeira inclinação no ponto médio (usada para corrigir a estimativa no ponto médio para
-$Y_3$); $F_3$ é a inclinação corrigida no ponto médio (usada para prever o extremo final $Y_4$ via regra do ponto médio);
-e $F_4$ é a inclinação no final do passo. Na combinação final~\eqref{eq:rk4-comb}, os pesos $(1/6, 2/6, 2/6, 1/6)$
-reproduzem exatamente a \emph{regra de quadratura de Simpson} caso $f$ dependa apenas de~$t$.
+
+\paragraph{Consistência} Expandindo a solução exata $y(t_{n+1})$ e os quatro estágios~\eqref{eq:rk4-s1}--\eqref{eq:rk4-s4}
+em série de Taylor bivariada em torno de $(t_n, y(t_n))$, verifica-se que os coeficientes satisfazem as oito condições
+algébricas de ordem de Butcher até quarta ordem~\cite{hairer1993,leveque2007}. Com isso, todos os termos até $O(k^4)$ na
+expansão de um passo se cancelam exatamente, resultando no erro de truncamento local:
+\begin{equation}\label{eq:lte-rk4}
+  \tau_n^{\text{RK4}} = \frac{y(t_{n+1}) - y(t_n)}{k} - \frac{1}{6}\bigl(F_1 + 2F_2 + 2F_3 + F_4\bigr) = C\,k^4 + O(k^5).
+\end{equation}
+Portanto, o método RK4 é consistente de \emph{quarta ordem} ($p = 4$), em contraste com a primeira ordem ($p = 1$) do
+Euler avançado. 
+
+\paragraph{Estabilidade} Em relação à estabilidade do método RK4, destacam-se três aspectos fundamentais:
+\begin{itemize}
+  \item \textbf{Zero-estabilidade e Convergência ($k \to 0$):} Escrevendo~\eqref{eq:rk4-comb} na forma geral de passo
+    único $U_{n+1} = U_n + k\,\Phi_{\text{RK4}}(t_n, U_n; k)$, se $f$ é Lipschitz contínua em $y$ com constante $L$,
+    então $\Phi_{\text{RK4}}$ também é Lipschitz contínua com constante
+    $L_{\Phi} = L\bigl(1 + \frac{1}{2}kL + \frac{1}{6}k^2L^2 + \frac{1}{24}k^3L^3\bigr)$~\cite{suli2003}. Logo, o método
+    é zero-estável e, sendo consistente de ordem~4, converge com erro global $O(k^4)$:
+    \begin{equation}\label{eq:cota-rk4}
+      \max_{0 \le n \le N} |U_n - y(t_n)| \;\le\; \frac{C\,k^4}{L_{\Phi}}\bigl(e^{L_{\Phi}(T - t_0)} - 1\bigr).
+    \end{equation}
+  \item \textbf{Estabilidade absoluta e região de estabilidade ($k > 0$):} Aplicando~\eqref{eq:rk4} ao problema-teste de
+    Dahlquist $y' = \lambda y$ ($z = k\lambda \in \mathbb{C}$), tem-se $F_1 = \lambda U_n$,
+    $F_2 = \lambda(1 + \frac{z}{2})U_n$, $F_3 = \lambda(1 + \frac{z}{2} + \frac{z^2}{4})U_n$ e
+    $F_4 = \lambda(1 + z + \frac{z^2}{2} + \frac{z^3}{6})U_n$, o que fornece $U_{n+1} = R_{\text{RK4}}(z)\,U_n$, onde a
+    função de estabilidade coincide com o polinômio de Taylor de grau~4 de $e^z$~\cite{leveque2007}:
+    \begin{equation}\label{eq:R-rk4}
+      R_{\text{RK4}}(z) = 1 + z + \frac{z^2}{2} + \frac{z^3}{6} + \frac{z^4}{24}.
+    \end{equation}
+    A região de estabilidade absoluta $\mathcal{S}_{\text{RK4}} = \{z \in \mathbb{C} : |R_{\text{RK4}}(z)| \le 1\}$ é
+    limitada (como em todo método explícito, pois $R_{\text{RK4}}(z)$ é um polinômio e $|R_{\text{RK4}}(z)| \to \infty$
+    quando $|z| \to \infty$), mas é substancialmente mais ampla que o disco $|1+z| \le 1$ do Euler avançado: no semieixo
+    real negativo, o intervalo de estabilidade estende-se até $z \approx -2{,}785$. O passo de integração $h$ fica condicionado a: $$ h \le \frac{2{,}785}{|\lambda|} $$ (Em comparação com o Euler Explícito, cujo limite é $h \le \frac{2}{|\lambda|}$
+  \item \textbf{Fidelidade de amplificação para $\operatorname{Re}(\lambda) > 0$:} Para modos fisicamente crescentes
+    ($z = k\,\frac{\partial f}{\partial y} > 0$, como ocorre na região $y > 0$ do PVI de Motivação), a diferença entre o
+    fator de crescimento exato $e^z$ e o numérico é apenas
+    \begin{equation}\label{eq:rk4-exp-diff}
+      e^z - R_{\text{RK4}}(z) = \frac{z^5}{120} + O(z^6), \qquad \text{contra} \qquad
+      e^z - R_{\text{FE}}(z) = \frac{z^2}{2} + O(z^3).
+    \end{equation}
+    Assim, além de introduzir uma perturbação local $O(k^5)$ muitíssimo menor a cada passo, o RK4 propaga a solução ao
+    longo do campo de direções com erro de fase e de amplitude $O(z^5)$, retardando drasticamente o desvio em relação a
+    separatrizes instáveis.
+\end{itemize}
 
 \subsection{Implementação do Método}
 \label{sec:b-implementacao}
@@ -1017,10 +1037,7 @@ código em Python comentado é exibido no Código~\ref{lst:rk4}.
 \caption{Implementação do método explícito de Runge-Kutta de 4ª Ordem (RK4) em Python.}\label{lst:rk4}
 \begin{minted}[linenos, frame=lines, framesep=2mm, fontsize=\footnotesize]{python}
 def rk4(pvi, n, k):
-    # Marca o início de execução para medição do tempo de CPU
     t0_cpu = time.perf_counter()
-    
-    # Pré-alocação dos vetores de tempo e solução numérica
     t_vals = np.zeros(n + 1)
     y_vals = np.zeros(n + 1)
     t_vals[0] = pvi.t0
@@ -1028,9 +1045,7 @@ def rk4(pvi, n, k):
 
     tn = pvi.t0
     Un = pvi.y0
-    nfev = 0  # Contador de avaliações da função f
-    
-    # Contador de pontos válidos (para truncamento caso ocorra divergência)
+    nfev = 0
     pts = 1 
 
     for i in range(n):
@@ -1082,122 +1097,159 @@ def rk4(pvi, n, k):
 \end{minted}
 \end{listing}
 
+
 %-------------------------------------------------------------------------------------
 \subsection{Resultados e Discussão}
 \label{sec:b-resultados}
+Os experimentos numéricos deste item, orquestrados pelos roteiros \texttt{experimentos/exp\_b\_padrao.py} e \texttt{experimentos/exp\_b\_expandido.py}, consistiram em reproduzir os mesmos cenários investigados na Seção~\ref{sec:a-resultados}, com o cômputo das mesmas métricas computacionais (erro máximo global, taxa assintótica observada, NFEV e tempo de CPU). 
+Além disso, estendeu-se a experimentação numérica com malhas refinadas para um horizonte temporal ainda mais longo: $t \in [0,\, 10]$.
 
-O experimento numérico deste item (\texttt{experimentos/exp\_b\_rf4.py}) consistiu em resolver o PVI de
-Motivação~\eqref{eq:pvi} nos intervalos $[0,\,1{,}6]$ e $[0,\,5]$ utilizando o método explícito RK4 e comparando-o
-diretamente ao método explícito de Euler avançado para as mesmas malhas $k \in \{0{,}2;\, 0{,}1;\, 0{,}05\}$ (e
-refinamentos até $k = 0{,}00625$).
 
-\subsubsection{Desempenho no Intervalo $[0,\,1{,}6]$: RK4 versus Euler Avançado}
+\subsubsection{Desempenho no Intervalo [0, 1.6] e [0, 5]}
+\label{sec:b-cenario1-2}
 
-A Figura~\ref{fig:b-comparacao} compara visualmente as aproximações de RK4 (esquerda) e de Euler avançado (direita) em
-$[0, 1{,}6]$. A Tabela~\ref{tab:erros_runge-kutta_4} (em conjunto com a Tabela~\ref{tab:erros_euler_avancado}) confronta o custo computacional (NFEV e tempo de CPU), o erro máximo $E(k)$ e a
-ordem observada $p_{\text{obs}}$ dos dois métodos explícitos, enquanto a Tabela~\ref{tab:trajetoria_runge-kutta_4_k02} detalha a evolução
-passo a passo para $k = 0{,}2$.
+A Figura~\ref{fig:comparacao_rk4} ilustra as soluções numéricas obtidas pelo método RK4 no intervalo padrão $[0,\, 1{,}6]$ e no intervalo estendido $[0,\, 5]$. O desempenho quantitativo detalhado é sumarizado nas Tabelas~\ref{tab:erros_runge-kutta_4} (para $[0,\, 1{,}6]$) e~\ref{tab:erros_runge-kutta_4,_tf_=_5} (para $[0,\, 5]$).
 
 \begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth]{b_comparacao_rk4_euler}
-  \caption{Comparação entre os dois métodos explícitos no intervalo $[0, 1{,}6]$: Runge-Kutta de 4ª Ordem (esquerda) e
-  Euler avançado (direita) para $k = 0{,}2$, $0{,}1$ e $0{,}05$.}
-  \label{fig:b-comparacao}
+    \centering
+    % Subfigura 1: Intervalo curto [0, 1.6]
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{b_rk4}
+        \caption{$t \in [0,\, 1{,}6]$ ($k$ padrão).}
+        \label{fig:rk4_curto}
+    \end{subfigure}
+    \hfill
+    % Subfigura 2: Intervalo estendido [0, 5] com k padrão
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{b_rk4_T5}
+        \caption{$t \in [0,\, 5]$ ($k$ padrão).}
+        \label{fig:rk4_medio}
+    \end{subfigure}
+    \hfill
+    % Subfigura 3: Intervalo estendido [0, 5] com k refinado
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{b_rk4_T5_ref}
+        \caption{$t \in [0,\, 5]$ ($k$ refinado).}
+        \label{fig:rk4_refinado}
+    \end{subfigure}
+
+    \caption{Comportamento numérico do método Runge-Kutta de 4ª ordem (RK4): (\subref{fig:rk4_curto}) no intervalo padrão $[0,\, 1{,}6]$ com passos clássicos $k \in \{0{,}2;\, 0{,}1;\, 0{,}05\}$; (\subref{fig:rk4_medio}) no intervalo estendido $[0,\, 5]$ com passos clássicos; (\subref{fig:rk4_refinado}) convergência com a malha refinada $k \in \{0{,}0125;\, 0{,}00625;\, 0{,}003125;\, 0{,}0015625\}$.}
+    \label{fig:comparacao_rk4}
 \end{figure}
 
 \input{../resultados/item_b/tabelas/erros_runge-kutta_4.tex}
-\input{../resultados/item_b/tabelas/trajetoria_runge-kutta_4_k02.tex}
+\input{../resultados/item_b/tabelas/erros_runge-kutta_4,_tf_=_5.tex}
 
-Os resultados em $[0, 1{,}6]$ permitem extrair três conclusões diretas:
+A análise conjunta da Figura~\ref{fig:comparacao_rk4} e das Tabelas~\ref{tab:erros_runge-kutta_4} e~\ref{tab:erros_runge-kutta_4,_tf_=_5} evidencia aspectos fundamentais do RK4:
+\begin{enumerate}
+    \item \textbf{Precisão e ordem observada no intervalo curto $[0,\, 1{,}6]$:} Conforme detalhado na Tabela~\ref{tab:erros_runge-kutta_4}, a convergência de quarta ordem manifesta-se prontamente à medida que $k$ é reduzido, convergindo rigorosamente para $p_{\text{obs}} \approx 4{,}00$. Mesmo no passo mais grosseiro ($k = 0{,}2$), o erro máximo é de apenas $4{,}27 \times 10^{-3}$, alcançando $1{,}14 \times 10^{-13}$ na malha mais refinada ($k \approx 3{,}9 \times 10^{-4}$). Visualmente (Figura~\ref{fig:rk4_curto}), todas as aproximações sobrepõem-se de maneira praticamente perfeita à curva analítica.
+    \item \textbf{Estabilidade no intervalo estendido $[0,\, 5]$:} Ao contrário do Euler avançado (que mergulha prematuramente rumo à isóclina atratora) e do Euler recuado (que sofre colapso por raízes complexas ou explosão numérica via realimentação quadrática), o método RK4 completa a integração em $[0,\, 5]$ com estabilidade exemplar para todas as malhas analisadas. Como a semente de erro local é de ordem $\mathcal{O}(k^5)$, o resíduo acumulado permanece diminuto durante todo o percurso, permitindo que as trajetórias superem com sucesso a estreita folga vertical em relação à isóclina repulsora.
+\end{enumerate}
 
+\subsubsection{Desempenho no Intervalo [0, 10]}
+\label{sec:b-cenario-t10}
 
-\paragraph{Consistência} 
-\paragraph{Estabilidade}
+Para investigar a robustez do método RK4 sob condições extremas de tempo longo e autovalor positivo crescente ($\lambda(t) \approx \frac{5}{3}t > 0$), estendeu-se o domínio de integração para $t \in [0,\, 10]$. As trajetórias numéricas obtidas sob malhas refinadas são apresentadas na Figura~\ref{fig:rk4_T10}, e o mecanismo geométrico de perda de aderência é elucidado pelo mapa de isóclinas na Figura~\ref{fig:rk4_isoclinas}.
 
-%-------------------------------------------------------------------------------------
-\subsection{Implementação do Método}
-\label{sec:b-implementacao}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{b_rk4T10}
+    \caption{Trajetórias numéricas do método RK4 no intervalo $[0,\, 10]$ sob passos refinados $k \in \{0{,}00625;\, 0{,}003125;\, 0{,}0015625\}$. Observa-se que, apesar da elevada precisão inicial, a amplificação exponencial contínua acaba provocando a perda de estabilidade e o mergulho das trajetórias no trecho final.}
+    \label{fig:rk4_T10}
+\end{figure}
 
-O método RK4 foi implementado na função \texttt{rk4} dentro do mesmo módulo
-\texttt{src/pvi/metodos.py}, seguindo
-exatamente a mesma interface das rotinas de Euler. Em cada iteração do laço
-principal, calculam-se sequencialmente os
-quatro estágios explícitos~\eqref{eq:rk4-s1}--\eqref{eq:rk4-s4}, contabilizando
-exatamente $4$ avaliações da função $f$
-por passo (\texttt{nfev += 4}), sem necessidade de derivada $\partial f/\partial y$
-nem de solucionadores iterativos. O
-código em Python comentado é exibido no Código~\ref{lst:rk4}.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{b_isoclinas_rk4}
+    \caption{Análise de isóclinas e campo de direções para o método RK4 em $[0,\, 10]$ sob os passos $k \in \{0{,}00625;\, 0{,}003125;\, 0{,}0015625\}$. \textbf{Esquerda:} visão global no plano $(t, y)$ evidenciando a zona de decrescimento ($y' < 0$, sombreada em laranja) delimitada pela isóclina repulsora $+\sqrt{g(t)}$ e pela isóclina atratora $-\sqrt{g(t)}$. \textbf{Direita:} ampliação no trecho $t \in [6{,}5,\, 8{,}0]$, destacando os pontos de inversão (marcadores dourados) nos quais as soluções aproximadas interceptam $+\sqrt{g(t)}$ e tombam em direção ao ramo atrator inferior.}
+    \label{fig:rk4_isoclinas}
+\end{figure}
 
-\begin{listing}[H]
-\caption{Implementação do método explícito de Runge-Kutta de 4ª Ordem (RK4) em
-Python.}\label{lst:rk4}
-\begin{minted}[linenos, frame=lines, framesep=2mm, fontsize=\footnotesize]{python}
-def rk4(pvi, n, k):
-    t0_cpu = time.perf_counter()
-    t_vals = np.zeros(n + 1)
-    y_vals = np.zeros(n + 1)
-    t_vals[0] = pvi.t0
-    y_vals[0] = pvi.y0
+A inspeção da Figura~\ref{fig:rk4_isoclinas} esclarece que o fenômeno que afeta o RK4 em $[0,\, 10]$ possui a mesma raiz geométrica observada anteriormente no método de Euler explícito:
+\begin{enumerate}
+    \item A folga entre a solução exata $y(t)$ e a isóclina repulsora $+\sqrt{g(t)}$ decresce assintoticamente como $y(t) - \sqrt{g(t)} \approx \frac{y'(t)}{2y(t)} \approx \frac{5/6}{2(5t/6)} = \frac{1}{2t}$. Em $t = 10$, essa margem de segurança contra desvios negativos é de meros $\approx 0{,}05$.
+    \item Conforme detalhado no painel direito da Figura~\ref{fig:rk4_isoclinas}, o cruzamento da fronteira repulsora ocorre sucessivamente em $t \approx 7{,}0$ ($k = 0{,}00625$), $t \approx 7{,}4$ ($k = 0{,}003125$) e $t \approx 7{,}7$ ($k = 0{,}0015625$). 
+    \item Embora a ordem 4 do RK4 retarde significativamente a captura da trajetória (empurrando a inversão de $t \approx 3{,}7$ no Euler explícito para $t > 7{,}0$ no RK4), um método explícito com passo uniforme fixo requer malhas extraordinariamente finas para suprimir o crescimento exponencial do erro numérico em horizontes de tempo arbitrariamente longos sobre EDOs não lineares intrinsecamente instáveis.
+\end{enumerate}
 
-    tn = pvi.t0
-    Un = pvi.y0
-    nfev = 0  # Contador de avaliações da função f
-    pts = 1 # Contador de pontos válidos 
+\subsection{Síntese Crítica: Confronto Quantitativo e Estrutural entre RK4 e Euler Avançado}
+\label{sec:b-sintese}
 
-    for i in range(n):
-        # Estágio 1: inclinação no início do passo (tn)
-        Y1 = Un
-        F1 = pvi.f(tn, Y1)
-        
-        # Estágio 2: estimativa no ponto médio (tn + k/2) usando F1
-        Y2 = Un + 0.5 * k * F1
-        F2 = pvi.f(tn + 0.5 * k, Y2)
-        
-        # Estágio 3: nova estimativa no ponto médio (tn + k/2) usando F2
-        Y3 = Un + 0.5 * k * F2
-        F3 = pvi.f(tn + 0.5 * k, Y3)
-        
-        # Estágio 4: estimativa no final do passo (tn + k) usando F3
-        Y4 = Un + k * F3
-        F4 = pvi.f(tn + k, Y4)
-        
-        # Combinação ponderada (regra de Simpson) para obter U_{n+1}
-        Un1 = Un + (k / 6.0) * (F1 + 2*F2 + 2*F3 + F4)
-        tn1 = pvi.t0 + (i + 1) * k
-        
-        # O método RK4 clássico avalia a função f exatamente 4 vezes por passo
-        nfev += 4  
+Para viabilizar o confronto direto entre os dois métodos explícitos de passo único — cujos dados originais encontram-se dispersos nas Tabelas~\ref{tab:erros_euler_avancado}, \ref{tab:erros_euler_avancado,_tf_=_5}, \ref{tab:erros_runge-kutta_4} e~\ref{tab:erros_runge-kutta_4,_tf_=_5} —, a Tabela~\ref{tab:b-confronto-direto} consolida lado a lado as métricas computacionais do Euler Avançado ($p=1$) e do Runge-Kutta de 4ª Ordem ($p=4$) sob malhas representativas nos horizontes $T = 1{,}6$ e $T = 5$.
 
-        # Interrupção preventiva caso a solução exploda (NaN ou Inf)
-        if not np.isfinite(Un1):
-            print(f"RK4 explodiu em t = {tn1:.4f} (com passo k = {k})")
-            break
+\begin{table}[H]
+\centering
+\small
+\caption{Confronto quantitativo direto entre Euler Avançado e RK4 nos intervalos $[0,\, 1{,}6]$ e $[0,\, 5]$ para malhas selecionadas, destacando o ganho de precisão $E_{\text{FE}}/E_{\text{RK4}}$.}\label{tab:b-confronto-direto}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{ccccccccc}
+\toprule
+& & \multicolumn{3}{c}{\textbf{Euler Avançado ($p = 1$, $\text{NFEV} = N$)}} & \multicolumn{3}{c}{\textbf{Runge-Kutta 4 ($p = 4$, $\text{NFEV} = 4N$)}} & \textbf{Razão} \\
+\cmidrule(lr){3-5} \cmidrule(lr){6-8}
+\textbf{Passo $k$} & \textbf{Passos $N$} & \textbf{CPU (ms)} & \textbf{Erro Máx. $E_{\text{FE}}$} & \textbf{$p_{\text{obs}}$} & \textbf{CPU (ms)} & \textbf{Erro Máx. $E_{\text{RK4}}$} & \textbf{$p_{\text{obs}}$} & \textbf{$E_{\text{FE}} / E_{\text{RK4}}$} \\
+\midrule
+\multicolumn{9}{l}{\textit{\textbf{Cenário Curto Prazo: Intervalo $t \in [0,\, 1{,}6]$} ($\Phi(0, 1{,}6) \approx 3{,}4$)}} \\
+$0{,}2$         & $8$    & $0{,}07$ & $6{,}297 \times 10^{-1}$ & ---     & $0{,}06$ & $4{,}274 \times 10^{-3}$  & ---     & $1{,}47 \times 10^{2}$ \\
+$0{,}05$        & $32$   & $0{,}05$ & $1{,}940 \times 10^{-1}$ & $0{,}87$ & $0{,}08$ & $2{,}702 \times 10^{-5}$  & $3{,}80$ & $7{,}18 \times 10^{3}$ \\
+$0{,}0125$      & $128$  & $0{,}18$ & $5{,}310 \times 10^{-2}$ & $0{,}95$ & $0{,}31$ & $1{,}151 \times 10^{-7}$  & $3{,}96$ & $4{,}61 \times 10^{5}$ \\
+$0{,}003125$    & $512$  & $0{,}85$ & $1{,}365 \times 10^{-2}$ & $0{,}99$ & $1{,}31$ & $4{,}581 \times 10^{-10}$ & $3{,}99$ & $2{,}98 \times 10^{7}$ \\
+$0{,}000390625$ & $4096$ & $7{,}90$ & $1{,}721 \times 10^{-3}$ & $1{,}00$ & $10{,}74$& $1{,}136 \times 10^{-13}$ & $3{,}98$ & $1{,}52 \times 10^{10}$ \\
+\midrule
+\multicolumn{9}{l}{\textit{\textbf{Cenário Médio Prazo: Intervalo Estendido $t \in [0,\, 5]$} ($\Phi(0, 5) \approx 665{,}1$)}} \\
+$0{,}2$         & $25$    & $0{,}08$ & $3{,}175 \times 10^{0}$  & ---     & $0{,}07$ & $6{,}183 \times 10^{-1}$  & ---     & $5{,}14 \times 10^{0}$ \\
+$0{,}05$        & $100$   & $0{,}12$ & $3{,}056 \times 10^{0}$  & $0{,}05$ & $0{,}26$ & $4{,}802 \times 10^{-3}$  & $3{,}77$ & $6{,}36 \times 10^{2}$ \\
+$0{,}0125$      & $400$   & $0{,}49$ & $2{,}526 \times 10^{0}$  & $0{,}18$ & $1{,}04$ & $2{,}048 \times 10^{-5}$  & $3{,}96$ & $1{,}23 \times 10^{5}$ \\
+$0{,}003125$    & $1600$  & $2{,}05$ & $1{,}497 \times 10^{0}$  & $0{,}46$ & $4{,}45$ & $8{,}155 \times 10^{-8}$  & $3{,}99$ & $1{,}84 \times 10^{7}$ \\
+$0{,}000390625$ & $12800$ & $15{,}68$& $3{,}129 \times 10^{-1}$ & $0{,}87$ & $33{,}40$& $2{,}026 \times 10^{-11}$ & $3{,}98$ & $1{,}54 \times 10^{10}$ \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
 
-        t_vals[i+1] = tn1
-        y_vals[i+1] = Un1
-        tn = tn1
-        Un = Un1
-        
-        pts += 1
-        
-    # Marca o fim da execução do método
-    tf_cpu = time.perf_counter()
-    
-    # Empacotamento das estatísticas computacionais
-    stats = {
-        'nfev': nfev,
-        'runtime': tf_cpu - t0_cpu,
-    }
-    
-    return t_vals[:pts], y_vals[:pts], stats
-\end{minted}
-\end{listing}
+A articulação entre os dados consolidados na Tabela~\ref{tab:b-confronto-direto}, os retratos de fase com isóclinas (Figuras~\ref{fig:a-isoclinas-T5}, \ref{fig:a-isoclinas-T5-refinado} e~\ref{fig:rk4_isoclinas}) e a fundamentação teórica das Seções~\ref{sec:problema}, \ref{sec:a-teoria} e~\ref{sec:b-teoria} permite sintetizar a análise crítica em três eixos fundamentais:
 
-%-------------------------------------------------------------------------------------
-\subsection{Resultados e Discussão}
-\label{sec:b-resultados}
+\paragraph{1. Eficiência Computacional e o \emph{Trade-off} entre NFEV e Ordem de Convergência.}
+Sob uma análise puramente local, a principal desvantagem estrutural do RK4 frente ao Euler avançado reside no custo por passo: a avaliação de quatro estágios intermediários exige exatamente $4$ chamadas da função $f(t, y)$ por iteração ($\text{NFEV} = 4N$, contra $\text{NFEV} = N$ no Euler), o que eleva o tempo de CPU para uma mesma malha em cerca de $1{,}5\times$ a $2{,}2\times$ (por exemplo, $33{,}40\,\text{ms}$ contra $15{,}68\,\text{ms}$ para $N = 12.800$ em $[0,\, 5]$.
 
+Todavia, na análise numérica prática, a eficiência de um integrador não se mede pelo custo de um passo isolado, mas pelo \textbf{custo total necessário para atingir uma tolerância de erro prefixada}. Sob essa métrica global, a vantagem do RK4 é esmagadora:
+\begin{itemize}
+    \item Em $t \in [0,\, 1{,}6]$, o RK4 já na malha mais grosseira ($k = 0{,}2$, apenas $8$ passos, $32$ NFEV e $0{,}06\,\text{ms}$) entrega um erro máximo de $4{,}27 \times 10^{-3}$ — superando a precisão que o Euler avançado só consegue alcançar após $1.024$ a $2.048$ passos ($E_{\text{FE}} = 3{,}44 \times 10^{-3}$ em $k = 0{,}00078125$, exigindo $2.048$ NFEV e $3{,}03\,\text{ms}$, ou seja, $64\times$ mais avaliações funcionais e $50\times$ mais tempo de CPU).
+    \item Em $t \in [0,\, 5]$, essa disparidade torna-se ainda mais dramática: enquanto o Euler avançado na malha mais fina ($N = 12.800$ passos, $12.800$ NFEV, $15{,}68\,\text{ms}$) ainda apresenta um erro grosseiro de $E_{\text{FE}} = 3{,}13 \times 10^{-1}$ (e uma ordem observada atrofiada em $p_{\text{obs}} = 0{,}87$), o RK4 com $k = 0{,}1$ ($N = 50$ passos, $200$ NFEV, $0{,}13\,\text{ms}$) já reduz o erro para $6{,}56 \times 10^{-2}$, e em $N = 12.800$ atinge precisão próxima ao limite de ponto flutuante ($2{,}03 \times 10^{-11}$, um ganho de $1{,}54 \times 10^{10}$ vezes).
+\end{itemize}
+Isso decorre diretamente da razão de redução assintótica: a cada refino $k \to k/2$, o erro global do RK4 cai por um fator $2^4 = 16$ (confirmado por $p_{\text{obs}} \to 4{,}00$ na Tabela~\ref{tab:b-confronto-direto}), contra meros $2^1 = 2$ no Euler explícito.
+
+\paragraph{2. A Semelhança Estrutural dos Métodos Explícitos: Subamplificação e Viés Direcional.}
+Apesar da abissal diferença de ordem, a extensão do horizonte para $t \in [0,\, 10]$ (Figuras~\ref{fig:rk4_T10} e~\ref{fig:rk4_isoclinas}) comprova um resultado teórico central: \textbf{qualitativamente, o RK4 padece exatamente do mesmo mecanismo de falha geométrica que o Euler avançado, apenas deslocado (``atrasado'') para um instante temporal posterior}.
+
+A explicação rigorosa para essa identidade de comportamento repousa sobre a estrutura algébrica comum às funções de estabilidade absoluta e relativa de ambos os métodos explícitos quando aplicados ao regime instável da EDO ($\lambda(t) = 2y(t) > 0 \implies z = k\lambda > 0$). Conforme deduzido nas Equações~\eqref{eq:comp-fe}, \eqref{eq:R-rk4} e~\eqref{eq:rk4-exp-diff}, tanto $R_{\text{FE}}(z)$ quanto $R_{\text{RK4}}(z)$ são truncamentos diretos da série de Taylor da exponencial exata $\mathrm{e}^z$:
+\begin{equation}\label{eq:comparacao-R-taylor}
+  R_{\text{FE}}(z) = 1 + z \;<\; R_{\text{RK4}}(z) = 1 + z + \frac{z^2}{2!} + \frac{z^3}{3!} + \frac{z^4}{4!} \;<\; \mathrm{e}^z = \sum_{m=0}^{\infty} \frac{z^m}{m!}, \qquad \forall\, z > 0.
+\end{equation}
+Como todos os termos omitidos da série ($\sum_{m = p+1}^{\infty} z^m/m!$) são estritamente positivos para $z > 0$ — e todas as derivadas de ordem superior da solução exata $y^{(m)}(t)$ são positivas à medida que a curva ascende em $t > 2$ —, decorrem duas propriedades compartilhadas:
+\begin{enumerate}
+    \item \emph{Subamplificação sistemática:} Ambos os esquemas subestimam a taxa de crescimento contínua da EDO ($\mathrm{e}^z - R_{\text{FE}}(z) = \frac{z^2}{2} + \mathcal{O}(z^3) > 0$ e $\mathrm{e}^z - R_{\text{RK4}}(z) = \frac{z^5}{120} + \mathcal{O}(z^6) > 0$).
+    \item \emph{Erro global negativo ($e_n = U_n - y(t_n) < 0$):} Ambos geram trajetórias numéricas que caminham sistematicamente \emph{por baixo} da solução analítica exata $y(t)$.
+\end{enumerate}
+Consequentemente, na equação diferencial exata do erro~\eqref{eq:erro-exata-bernoulli}, $e'(t) = \lambda(t)e(t) + e(t)^2$, ambos os métodos entram no regime em que o termo linear $\lambda(t)e < 0$ puxa a aproximação para baixo, em direção à isóclina repulsora $+\sqrt{g(t)}$, enquanto o termo quadrático $+e^2 > 0$ atua como freio no ramo inferior, capturando a solução no atrator espúrio $-\sqrt{g(t)}$ sem explosão para $-\infty$.
+
+\paragraph{3. A Mecânica do ``Atraso'' no RK4: Semente $\mathcal{O}(k^4)$ versus Estreitamento do Corredor e Amplificação Exponencial.}
+Se a patologia dinâmica é a mesma, por que o Euler avançado colapsa já em $t \in [3{,}60;\, 4{,}89]$ dentro de $[0,\, 5]$, enquanto o RK4 atravessa $t = 5$ incólume e só sofre inversão em $t \in [7{,}0;\, 7{,}7]$ no horizonte $[0,\, 10]$?
+
+A resposta reside na competição assintótica entre a **semente de erro do método** ($\propto k^p$) e o **condicionamento geométrico da EDO** ($\Phi(0, t)$ versus a largura do corredor de estabilidade). Como demonstrado na Equação~\eqref{eq:largura-corredor} e na Seção~\ref{sec:b-cenario-t10}, para permanecer no ramo crescente ($y' > 0$), o módulo do erro negativo $|e(t)|$ não pode exceder a folga vertical entre a solução exata e a isóclina repulsora $+\sqrt{g(t)}$:
+\begin{equation}\label{eq:condicao-inversao}
+  |e(t)| \;\approx\; C_p\,k^p\,\Phi(0, t) \;\ge\; y(t) - \sqrt{g(t)} \;\approx\; \frac{y'(t)}{2\,y(t)} \;\sim\; \frac{1}{2\,t - 8}.
+\end{equation}
+A Equação~\eqref{eq:condicao-inversao} sintetiza com exatidão matemática o fenômeno do ``atraso'':
+\begin{itemize}
+    \item \textbf{O que muda com o método ($k^p$):} Ao passar de $p = 1$ (Euler) para $p = 4$ (RK4), a semente de erro acumulada na fase inicial é reduzida em muitas ordens de grandeza ($k^4 \ll k$). Por exemplo, para $k = 0{,}00625$, tem-se $k^1 = 6{,}25 \times 10^{-3}$ contra $k^4 \approx 1{,}53 \times 10^{-9}$ (seis ordens de grandeza menor).
+    \item \textbf{O que é implacável na EDO ($\Phi(0, t)$):} O fator de amplificação intrínseco da equação diferencial, $\Phi(0, t) = (1+t)^{12}\mathrm{e}^{t(t-8)}$, cresce superexponencialmente ($\sim \mathrm{e}^{t^2}$) para $t > 2$, ao mesmo tempo em que a margem de segurança $y(t) - \sqrt{g(t)}$ encolhe para zero ($\approx 0{,}22$ em $t = 5$, caindo para $\approx 0{,}08$ em $t = 10$).
+    \item \textbf{O ponto de ruptura deslocado:} Em $t = 5$, o fator $\Phi(0, 5) \approx 6{,}65 \times 10^2$ é suficiente para multiplicar a semente grande $\mathcal{O}(k)$ do Euler até romper a folga de $0{,}22$, mas é totalmente incapaz de amplificar a semente microscópica $\mathcal{O}(k^4)$ do RK4. Contudo, ao avançar para $t \in [7,\, 8]$, o fator de amplificação explode para $\Phi(0, 7) \approx 2{,}5 \times 10^7$ e $\Phi(0, 8) \approx 6{,}9 \times 10^{10}$. Essa amplificação colossal finalmente anula a vantagem de seis a nove ordens de grandeza do termo $k^4$, fazendo com que $|e_{\text{RK4}}(t)|$ atinja a estreita fronteira $+\sqrt{g(t)}$ e reproduza, com atraso temporal ($\Delta t \approx +3{,}0$ unidades de tempo para o mesmo $k$), exatamente a mesma queda observada no método de Euler.
+\end{itemize}
+
+Conclui-se, portanto, que elevar a ordem de um método explícito de $p = 1$ para $p = 4$ proporciona um ganho extraordinário de precisão e custo-benefício em horizontes finitos moderados, mas **não altera a natureza repulsora do fluxo contínuo**. Em problemas governados por autovalores positivos crescentes ($\lambda(t) \to +\infty$), qualquer método numérico de passo fixo está meramente comprando tempo contra a amplificação exponencial $\Phi(0, t)$ — uma constatação que motiva investigar, a seguir, se métodos implícitos de ordem superior (Item~c) ou análises globais de estabilidade (Item~d) podem alterar esse panorama.
 %=====================================================================================
 \newpage
 \section{Item (c): Método Implícito de Adams-Moulton de Dois Passos}
