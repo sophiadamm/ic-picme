@@ -57,7 +57,7 @@ def executar():
 
     # 4. Análise do Discriminante no intervalo padrão [0, 1.6]
     plot_discriminante_euler(prob, K, TF, f"{PASTA_FIG}/a_discriminante_euler", g_func=g)
-    exportar_tabela_discriminante_tex(prob, k=0.2)
+    exportar_tabela_discriminante_tex(prob, k=0.2, pasta_tab=PASTA_TAB, pasta_dados=PASTA_DADOS)
 
     # 5. Tabelas de erro e convergência assintótica
     tabela_erros(prob, "Euler avançado", sol_exp_tab, K_TABELA, pasta_tab=PASTA_TAB, pasta_dados=PASTA_DADOS)

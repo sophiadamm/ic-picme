@@ -203,19 +203,43 @@ def diagnosticar_cruzamento_isoclina(prob, metodo, ks, tf=5.0):
             print(f"k = {k:<10} | Permaneceu acima da isóclina até t = {tf} | U(5) = {U[-1]:+.4f}")
 
 
-def exportar_tabela_discriminante_tex(prob, k=0.2, caminho_tab=None):
-    """Gera a tabela LaTeX com os 3 passos de k=0.2 comparando o discriminante exato e simulado."""
-    os.makedirs(PASTA_TAB, exist_ok=True)
-    caminho = caminho_tab or os.path.join(PASTA_TAB, "discriminante_euler_k02.tex")
+def exportar_tabela_discriminante(
+    prob,
+    k=0.2,
+    n_passos=3,
+    g_func=None,
+    export_tex=True,
+    export_csv=True,
+    pasta_tab=None,
+    pasta_dados=None,
+    caminho_tab=None,
+):
+    """
+    Gera a tabela analítica (LaTeX e opcionalmente CSV) acompanhando passo a passo
+    a evolução do discriminante Delta_n = 1 - 4k c_n no método de Euler recuado,
+    comparando os valores teóricos sobre a curva exata com a trajetória simulada.
+    """
+    if g_func is None:
+        g_func = g
+
+    nome_sufixo = f"k{str(k).replace('.', '')}"
+    nome_arquivo = f"discriminante_euler_{nome_sufixo}"
+
+    dir_tex = pasta_tab or "resultados/item_a/tabelas"
+    dir_csv = pasta_dados or "resultados/item_a/dados"
 
     linhas = []
+    linhas_dados = []
     u = prob.y0
-    for step in range(3):
+    passo_falha = None
+    c_falha = None
+
+    for step in range(n_passos):
         tn = prob.t0 + step * k
         tn1 = tn + k
-        c_num = u - k * g(tn1)
+        c_num = u - k * g_func(tn1)
         delta_num = 1.0 - 4.0 * k * c_num
-        c_exato = prob.solucao(tn) - k * g(tn1)
+        c_exato = prob.solucao(tn) - k * g_func(tn1)
         delta_exato = 1.0 - 4.0 * k * c_exato
 
         d_num_str = f"\\mathbf{{{delta_num:+.6f}}}" if delta_num < 0 else f"{delta_num:+.6f}"
@@ -225,10 +249,39 @@ def exportar_tabela_discriminante_tex(prob, k=0.2, caminho_tab=None):
             f"${c_exato:.6f}$ & ${c_num:.6f}$ & "
             f"${delta_exato:+.6f}$ & ${d_num_str}$ \\\\"
         )
-        if delta_num >= 0:
-            u = (1.0 - delta_num**0.5) / (2.0 * k)
+        linhas_dados.append({
+            "passo": f"{step}->{step+1}",
+            "tn": tn,
+            "tn1": tn1,
+            "y_exato": prob.solucao(tn),
+            "u_num": u,
+            "c_exato": c_exato,
+            "c_num": c_num,
+            "delta_exato": delta_exato,
+            "delta_num": delta_num,
+        })
 
-    conteudo = (
+        if delta_num < 0:
+            passo_falha = (step, step + 1, tn1)
+            c_falha = c_num
+            break
+
+        u = (1.0 - delta_num**0.5) / (2.0 * k)
+
+    c_crit = 1.0 / (4.0 * k)
+    if passo_falha:
+        s_de, s_para, t_f = passo_falha
+        texto_falha = (
+            f"No passo ${s_de} \\to {s_para}$ ($t_{{n+1}} = {t_f:.1f}$), a barreira crítica "
+            f"$c_n \\le \\frac{{1}}{{4k}} = {c_crit:.2f}$ é violada ($c_{s_de}^{{\\text{{num}}}} \\approx {c_falha:.4f}$), "
+            f"tornando $\\Delta_{s_de}^{{\\text{{num}}}} < 0$ e impossibilitando a existência de qualquer raiz real."
+        )
+    else:
+        texto_falha = (
+            f"O discriminante numérico $\\Delta_n^{{\\text{{num}}}}$ permaneceu não-negativo em todos os passos calculados."
+        )
+
+    conteudo_tex = (
         "\\begin{table}[H]\n"
         "    \\centering\n"
         "    \\small\n"
@@ -241,11 +294,37 @@ def exportar_tabela_discriminante_tex(prob, k=0.2, caminho_tab=None):
         "        \\hline\n"
         "    \\end{tabular}\n"
         f"    \\caption{{Evolução algébrica do discriminante $\\Delta_n = 1 - 4k c_n$ no método de Euler recuado com $k = {k}$. "
-        f"No passo $2 \\to 3$ ($t_{{n+1}} = 0{{,}}6$), a barreira crítica $c_n \\le \\frac{{1}}{{4k}} = {1/(4*k):.2f}$ é violada "
-        f"($c_2^{{\\text{{num}}}} \\approx 1{{,}}2532$), tornando $\\Delta_2^{{\\text{{num}}}} < 0$ e impossibilitando a existência de qualquer raiz real.}}\n"
-        "    \\label{tab:discriminante_euler_k02}\n"
+        f"{texto_falha}}}\n"
+        f"    \\label{{tab:{nome_arquivo}}}\n"
         "\\end{table}\n"
     )
-    with open(caminho, "w", encoding="utf-8") as f:
-        f.write(conteudo)
-    print(f"Tabela de discriminante salva em: {caminho}")
+
+    if export_tex:
+        if caminho_tab:
+            caminho_tex = caminho_tab
+            os.makedirs(os.path.dirname(caminho_tex) or ".", exist_ok=True)
+        else:
+            os.makedirs(dir_tex, exist_ok=True)
+            caminho_tex = os.path.join(dir_tex, f"{nome_arquivo}.tex")
+
+        with open(caminho_tex, "w", encoding="utf-8") as f:
+            f.write(conteudo_tex)
+        print(f"Tabela de discriminante salva em: {caminho_tex}")
+
+    if export_csv:
+        os.makedirs(dir_csv, exist_ok=True)
+        caminho_csv = os.path.join(dir_csv, f"{nome_arquivo}.csv")
+        with open(caminho_csv, "w", encoding="utf-8") as f:
+            f.write("passo,tn,tn1,y_exato,u_num,c_exato,c_num,delta_exato,delta_num\n")
+            for d in linhas_dados:
+                f.write(
+                    f"{d['passo']},{d['tn']:.4f},{d['tn1']:.4f},{d['y_exato']:.10f},"
+                    f"{d['u_num']:.10f},{d['c_exato']:.10f},{d['c_num']:.10f},"
+                    f"{d['delta_exato']:.10f},{d['delta_num']:.10f}\n"
+                )
+
+    return linhas_dados
+
+
+# Alias para retrocompatibilidade
+exportar_tabela_discriminante_tex = exportar_tabela_discriminante

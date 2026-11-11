@@ -16,7 +16,7 @@ from pvi.plotagem import (
     plot_isoclinas,
     plot_discriminante_euler,
 )
-from pvi.uteis import resolver, tabela_erros, diagnosticar_cruzamento_isoclina, exportar_tabela_discriminante_tex
+from pvi.uteis import resolver, tabela_erros, diagnosticar_cruzamento_isoclina
 
 # ----------------------------- parâmetros ---------------------------------
 TF = 5.0
