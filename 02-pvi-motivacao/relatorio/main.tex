@@ -11,6 +11,7 @@
 \usepackage{hyperref}
 \usepackage{float}
 \usepackage{xcolor}
+\usepackage{soul}
 \usepackage[font=small, labelfont=bf, textfont=it]{caption}
 \usepackage{booktabs}
 \usepackage{algorithm,algpseudocode,listings}
@@ -43,9 +44,8 @@
 
 \maketitle
 
-\begin{abstract}
-[FAZER]
-\end{abstract}
+\tableofcontents
+
 \section{Introdução}
 \label{sec:introducao}
 
@@ -125,11 +125,11 @@ Essa singularidade caracteriza o problema como um PVI com fenômeno de \emph{blo
 (explosão em tempo finito)~\cite{hairer1993,hirota2006,polyanin2018}. Na literatura
 especializada de integração numérica de soluções com
 explosão~\cite{hirota2006,polyanin2018}, a vizinhança de $x = -1$ impõe severos
-desafios operacionais por dois fatores distintos: (i) $g(x)$ possui um polo duplo em
+desafios operacionais por dois fatores distintos: \hl{(i) $g(x)$ possui um polo duplo em
 $x = -1$, de modo que $f(x,y) = y^2 - g(x)$ deixa até mesmo de ser contínua em $x$; e
 (ii) como $\partial f/\partial y = 2y$ é contínua, $f$ é localmente Lipschitz em $y$
 onde está definida, mas nunca globalmente Lipschitz, o que permite a explosão em tempo
-finito. Trata-se de um comportamento analítico
+finito}. Trata-se de um comportamento analítico
 intrínseco da própria EDO, e não de uma falha de formulação do esquema computacional.
 
 Por outro lado, quando $x \to +\infty$, a fração $\frac{6}{1+x}$ tende a zero:
@@ -137,7 +137,7 @@ Por outro lado, quando $x \to +\infty$, a fração $\frac{6}{1+x}$ tende a zero:
   \lim_{x \to +\infty} \left[ y(x) - (x - 4) \right] = \lim_{x \to +\infty} \frac{6}{1+x} = 0.
 \end{equation}
 
-Assim, a solução analítica aproxima-se assintoticamente da reta oblíqua $y = x - 4$. Sob a perspectiva da EDO~\eqref{eq:pvi}, isso ocorre graças a um cancelamento estrutural perfeito: para valores elevados de $x$, o termo não linear $y^2$ e a função forçante $g(x)$ anulam-se mutuamente em suas componentes dominantes. Como resultado, a taxa de variação converge para a unidade ($y' \to 1$), ditando um crescimento puramente linear. 
+Assim, a solução analítica aproxima-se assintoticamente da reta oblíqua $y = x - 4$. 
 Assim, uma noção intuitiva nos diria que o comportamento conforme $x \to +\infty$ deve ser
 benigno numericamente.
 
@@ -149,13 +149,12 @@ a fração $\frac{6}{1+x}$ também se anula:
 tendo a mesma assíntota oblíqua $y = x - 4$, enquanto pela esquerda da singularidade
 tem-se $\lim_{x \to -1^-} y(x) = -\infty$ (configurando bilateralidade na assíntota
 vertical $x = -1$). Ressalta-se, porém, que o PVI~\eqref{eq:pvi} — definido pela
-condição inicial em $x_0 = 0$ — vive exclusivamente no domínio maximal $x > -1$; para
+condição inicial em $x_0 = 0$ — \hl{vive exclusivamente no domínio maximal $x > -1$; para
 $x < -1$, a mesma fórmula algébrica representa outro ramo da curva que não continua a
-solução do PVI através do polo.
+solução do PVI através do polo}
 
 A Figura~\ref{fig:intro-solucao-assintotas} sintetiza visualmente o comportamento
-assintótico global no maior intervalo de interesse do enunciado ($x \in [-5,\, 40]$) e
-oferece um detalhe da região de integração dos experimentos numéricos.
+assintótico global no maior intervalo de interesse do enunciado ($x \in [-5,\, 40]$).
 
 \begin{figure}[H]
   \centering
@@ -188,56 +187,51 @@ as divergências e ordens observadas computacionalmente podem derivar tanto da
 adequação do método ao problema quanto da natureza inerentemente amplificadora da própria
 equação diferencial.
 
-Para quantificar a estabilidade local da EDO, recorre-se ao conceito de
+Para quantificar a estabilidade local e não linear da EDO, recorre-se ao conceito de
 \textbf{autovalor local} da Jacobiana unidimensional, fundamentado na clássica
-equação de teste de Dahlquist $y'(x) = \lambda y(x)$~\cite{lambert1991,leveque2007}.
-Considerando uma solução perturbada $\tilde{y}(x) = y(x) + \epsilon(x)$, onde
-$\epsilon(x)$ representa uma perturbação infinitesimal em relação à solução exata
-$y(x)$, a sua evolução temporal obedece a:
+equação de teste de Dahlquist $y'(x) = \lambda y(x)$~\cite{lambert1991,leveque2007},
+aliado à dedução exata da equação diferencial do erro.
+Considerando uma solução perturbada $\tilde{y}(x) = y(x) + e(x)$, onde
+$e(x) = \tilde{y}(x) - y(x)$ representa o desvio (erro) em relação à solução exata
+$y(x)$, a sua taxa de variação temporal obedece exatamente a:
 \begin{equation}
-  \tilde{y}'(x) = f\bigl(x,\, \tilde{y}(x)\bigr) = f\bigl(x,\, y(x) + \epsilon(x)\bigr).
+  e'(x) = \tilde{y}'(x) - y'(x) = f\bigl(x,\, y(x) + e(x)\bigr) - f\bigl(x,\, y(x)\bigr).
 \end{equation}
-Expandindo $f(x,\, y + \epsilon)$ em série de Taylor em torno de $y(x)$:
+Expandindo $f(x,\, y + e)$ em série de Taylor em torno da trajetória exata $y(x)$, tem-se:
 \begin{equation}
-  f\bigl(x,\, y(x) + \epsilon(x)\bigr) = f\bigl(x,\, y(x)\bigr) + \frac{\partial f}{\partial y}\bigl(x,\, y(x)\bigr)\,\epsilon(x) + \mathcal{O}\bigl(\epsilon(x)^2\bigr).
+  f\bigl(x,\, y(x) + e(x)\bigr) = f\bigl(x,\, y(x)\bigr) + \frac{\partial f}{\partial y}\bigl(x,\, y(x)\bigr)\,e(x) + \frac{1}{2}\frac{\partial^2 f}{\partial y^2}\bigl(x,\, y(x)\bigr)\,e(x)^2 + \mathcal{O}\bigl(e(x)^3\bigr).
 \end{equation}
-Como $y'(x) = f(x,\, y(x))$, subtraindo membro a membro e desprezando termos de ordem
-superior $\mathcal{O}(\epsilon^2)$, deduz-se a equação linearizada governante da
-dinâmica do erro:
-\begin{equation}\label{eq:linearizacao-perturba}
-  \epsilon'(x) \approx \lambda(x)\,\epsilon(x), \qquad \text{com} \quad \lambda(x) \equiv \frac{\partial f}{\partial y}\bigl(x,\, y(x)\bigr).
-\end{equation}
-No problema em apreço, dado que $f(x,y) = y^2 - g(x)$, a derivada parcial independe
-da função de forçamento $g(x)$:
-\begin{equation}
-  \frac{\partial f}{\partial y}(x, y) = 2y.
-\end{equation}
-Portanto, avaliado rigorosamente ao longo da trajetória exata~\eqref{eq:exata}, o
-autovalor local é dado por:
+No problema em apreço, dado que $f(x,y) = y^2 - g(x)$, as derivadas parciais em relação a $y$ independem do termo forçante $g(x)$ e truncam-se exatamente na segunda ordem ($\frac{\partial f}{\partial y} = 2y$, $\frac{\partial^2 f}{\partial y^2} = 2$ e $\frac{\partial^m f}{\partial y^m} = 0$ para $m \ge 3$). Definindo o autovalor local ao longo da solução exata~\eqref{eq:exata} como:
 \begin{equation}\label{eq:autovalor-exato}
-  \lambda(x) = 2\,y(x) = 2\,\frac{(1-x)(2-x)}{1+x} = 2\left(x - 4 + \frac{6}{1+x}\right).
+  \lambda(x) \equiv \frac{\partial f}{\partial y}\bigl(x,\, y(x)\bigr) = 2\,y(x) = 2\,\frac{(1-x)(2-x)}{1+x} = 2\left(x - 4 + \frac{6}{1+x}\right),
+\end{equation}
+a subtração direta $\bigl[(y + e)^2 - g(x)\bigr] - \bigl[y^2 - g(x)\bigr] = 2y\,e + e^2$ fornece a \textbf{equação diferencial não linear exata do erro}:
+\begin{equation}\label{eq:erro-exata-bernoulli}
+  e'(x) = \lambda(x)\,e(x) + e(x)^2 = 2\,y(x)\,e(x) + e(x)^2 = e(x)\,\bigl(\lambda(x) + e(x)\bigr).
 \end{equation}
 
-A solução da equação diferencial linearizada~\eqref{eq:linearizacao-perturba} é dada
-formalmente por $\epsilon(x) \approx \epsilon(x_0)\,\exp\left(\int_{x_0}^x
-\lambda(s)\,\mathrm{d}s\right)$. Dessa relação decorrem dois regimes operacionais
-opostos:
+Enquanto a perturbação permanece pequena frente à escala da solução ($|e(x)| \ll |\lambda(x)|$), o termo quadrático $e(x)^2$ é de segunda ordem e a dinâmica é governada pela equação linearizada:
+\begin{equation}\label{eq:linearizacao-perturba}
+  e'(x) \approx \lambda(x)\,e(x) = 2\,y(x)\,e(x).
+\end{equation}
+Integrando~\eqref{eq:linearizacao-perturba} de um instante inicial $x_0$ até $x$, obtém-se a evolução propagada da perturbação e o \textbf{fator de amplificação intrínseco} $\Phi(x_0, x)$ da EDO:
+\begin{equation}\label{eq:fator-amplificacao}
+  e(x) \approx e(x_0)\,\Phi(x_0, x), \qquad \Phi(x_0, x) \equiv \exp\!\left(\int_{x_0}^x \lambda(s)\,\mathrm{d}s\right) = \exp\!\left(2\int_{x_0}^x y(s)\,\mathrm{d}s\right).
+\end{equation}
+Para $x_0 = 0$, a integral analítica de $\lambda(s) = 2\bigl(s - 4 + \frac{6}{1+s}\bigr)$ fornece explicitamente $\int_0^x \lambda(s)\,\mathrm{d}s = x^2 - 8x + 12\ln(1+x)$, resultando no fator fechado $\Phi(0, x) = (1+x)^{12}\,\mathrm{e}^{x(x-8)}$. Da atuação conjunta de~\eqref{eq:erro-exata-bernoulli} e~\eqref{eq:fator-amplificacao} decorrem dois regimes operacionais opostos:
 \begin{itemize}
     \item \textbf{Quando $y(x) > 0 \implies \lambda(x) > 0$ (Regime
           Inerentemente Instável)}:
-    A taxa de variação do erro possui o mesmo sinal da perturbação ($\epsilon'(x) >
-    0$ se $\epsilon > 0$, e $\epsilon'(x) < 0$ se $\epsilon < 0$). Dessa forma, o
-    módulo $|\epsilon(x)|$ cresce exponencialmente enquanto $|\epsilon(x)| \ll |y(x)|$;
-    quando a perturbação deixa de ser pequena, o termo quadrático $\mathcal{O}(\epsilon^2)$
-    desprezado na linearização ($\epsilon' = 2y\epsilon + \epsilon^2$) passa a dominar
-    e faz com que soluções vizinhas explodam em tempo finito. Nesse regime, a dinâmica da
-    própria EDO atua como um amplificador intrínseco de quaisquer erros
-    computacionais inevitáveis de arredondamento e discretização.
+    No regime linearizado~\eqref{eq:linearizacao-perturba}, a taxa de variação $e'(x)$ possui o mesmo sinal do erro ($e'(x) > 0$ se $e > 0$, e $e'(x) < 0$ se $e < 0$), fazendo com que o módulo $|e(x)|$ seja amplificado exponencialmente pelo fator $\Phi(x_0, x) > 1$. À medida que $|e(x)|$ cresce e deixa de ser desprezível, entra em cena o termo quadrático $+e(x)^2$ da Equação~\eqref{eq:erro-exata-bernoulli}, que introduz uma assimetria crucial conforme o sinal do erro:
+    \begin{enumerate}
+        \item Se $e(x) > 0$ (erro por excesso), tanto $\lambda(x)e > 0$ quanto $+e^2 > 0$ atuam na mesma direção positiva, retroalimentando-se e provocando explosão (\emph{blow-up}) em tempo finito;
+        \item Se $e(x) < 0$ (erro por falta), o termo linear $\lambda(x)e < 0$ empurra a trajetória para baixo, mas o termo quadrático $+e^2 > 0$ possui sinal oposto e passa a frear a queda quando $e(x)$ se aproxima de $-\lambda(x) = -2y(x)$ (onde $e' = 0$).
+    \end{enumerate}
     \item \textbf{Quando $y(x) < 0 \implies \lambda(x) < 0$ (Regime
           Inerentemente Estável)}:
-    A taxa de variação tem sinal oposto à perturbação ($\epsilon'(x) < 0$ se
-    $\epsilon > 0$, e $\epsilon'(x) > 0$ se $\epsilon < 0$). Consequentemente,
-    $|\epsilon(x)|$ é amortecido espontaneamente ao longo do avanço em $x$. A própria
+    O termo dominante linear possui sinal oposto à perturbação ($e'(x) < 0$ se
+    $e > 0$, e $e'(x) > 0$ se $e < 0$). Consequentemente, a integral do autovalor decresce e
+    $|e(x)|$ é amortecido espontaneamente ao longo do avanço em $x$. A própria
     EDO apresenta um comportamento corretivo e dissipativo, atraindo trajetórias
     perturbadas de volta para a solução de referência.
 \end{itemize}
@@ -264,6 +258,28 @@ $x \in (2,\, +\infty)$ & $y > 0$ & $\lambda > 0$ ($\lambda \to +\infty$)        
 \end{tabular}%
 }
 \end{table}
+
+A Figura~\ref{fig:intro-autovalores} sintetiza visualmente os regimes dinâmicos
+tabelados, confrontando a perspectiva global no domínio estendido com o detalhe
+local no entorno da singularidade e dos intervalos de integração dos experimentos.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{intro_autovalores}
+  \caption{Comportamento do autovalor local $\lambda(x) = 2y(x) = 2\left(x - 4 + \frac{6}{1+x}\right)$.
+  \textbf{Esquerda:} visão global no intervalo estendido $[-5,\, 40]$, evidenciando a
+  assíntota vertical em $x = -1$, a assíntota oblíqua $\lambda(x) \approx 2x - 8$, o ponto
+  inicial $(0,\, 4)$, as raízes $x = 1$ e $x = 2$, o mínimo local em $x = \sqrt{6}-1 \approx
+  1{,}45$ ($\lambda_{\min} \approx -0{,}202$) e o máximo local do ramo esquerdo em
+  $x = -1-\sqrt{6} \approx -3{,}45$ ($\lambda_{\max} \approx -19{,}80$).
+  \textbf{Direita:} detalhe local no entorno da singularidade e dos intervalos dos
+  experimentos ($[-1{,}5,\, 5]$), destacando a condição inicial $\lambda(0) = 4$, a
+  mudança de sinal nas raízes $x = 1$ e $x = 2$, o regime dissipativo com o ponto de
+  mínimo $\lambda_{\min} \approx -0{,}202$, e a região de integração $[0,\, 1{,}6]$
+  utilizada nos esquemas discretos de passo fixo.}
+  \label{fig:intro-autovalores}
+\end{figure}
+
 Constata-se, assim, que o PVI proposto é inerentemente instável na maior parte do
 domínio ($x \in [0,\, 1) \cup (2,\, +\infty)$), porém com intensidades muito distintas:
 em $[0,\, 1{,}6]$, a amplificação total acumulada $\exp\bigl(\int_0^x \lambda(s)\,\mathrm{d}s\bigr)$
@@ -436,10 +452,10 @@ do retângulo, usando o valor do integrando em uma das extremidades:
 \end{align}
 A diferença estrutural é que em~\eqref{eq:be} a incógnita $U_{n+1}$
 aparece dos dois lados: a cada passo é preciso resolver uma equação
-(em geral não linear) para avançar. 
+(em geral não linear) para avançar.
 
-\paragraph{Convergência: Consistência e Zero-Estabilidade} Substituindo a solução
-exata nos
+\subsubsection{Convergência: Consistência e Zero-Estabilidade}
+Substituindo a solução exata nos
 esquemas e expandindo em série de Taylor, é possível concluir que os erros de
 truncamento locais
 são~\cite{leveque2007,suli2003}
@@ -454,22 +470,63 @@ têm a \emph{mesma magnitude} mas \emph{sinais opostos}: se $y'' > 0$, o
 Euler avançado tende a produzir valores abaixo da solução exata e o Euler
 recuado, valores acima.
 
-A \textbf{zero-estabilidade} decorre da continuidade de Lipschitz de $f$ em $y$
-(LeVeque~\cite{leveque2007}, Cap.~5). Aqui $f(x,y) = y^2 - g(x)$ tem
-$\partial f/\partial y = 2y$, que \emph{não} é limitada em $\mathbb{R}$; logo
-$f$ não é globalmente Lipschitz. Porém, ao longo da solução exata temos
-$-0{,}101 \le y \le 2$ em $[0, T]$, de modo que, numa vizinhança tubular
-da solução, $f$ é Lipschitz com $L \approx \max|2y| = 4$. A demonstração
-usual se aplica enquanto a solução numérica permanecer nesse tubo, o que
-ocorre para $k$ suficientemente pequeno. Para o Euler avançado,
-\begin{equation}\label{eq:cota}
-  |e_N| \;\le\; \frac{k}{2}\,\|y''\|_\infty\,\frac{e^{LT} - 1}{L}
-  \;=\; 6\,\frac{e^{6{,}4} - 1}{4}\,k \;\approx\; 9\times 10^{2}\,k ,
+A zero-estabilidade dos métodos de Euler decorre da continuidade de Lipschitz local da função $f(x,y) = y^2 - g(x)$~\cite{leveque2007}. Como $\partial f/\partial y = 2y$ não é limitada em todo o $\mathbb{R}$, $f$ não é globalmente Lipschitz. No entanto, ao longo da solução exata em um intervalo limitado $[0, T]$, o autovalor local permanece limitado (como nos casos de $T = 1{,}6$ e $T = 5$, identificados na Tabela~\ref{tab:autovalores-regimes}), assegurando uma constante de Lipschitz local $L = \max_{t \in [0,T]} |2y(t)| < \infty$. Assim, para $k$ suficientemente pequeno (garantindo a solubilidade do passo no método implícito), define-se a seguinte cota de erro global para ambos os métodos~\cite{suli2003}: 
+\begin{equation}\label{eq:cota_euler} 
+|e_N| \;\le\; \frac{k}{2}\,\|y''\|_\infty\,\frac{\mathrm{e}^{LT} - 1}{L}. 
+\end{equation} 
+Portanto, pelo Teorema da Equivalência de Dahlquist~\cite{leveque2007}, conclui-se que \textbf{ambos os métodos convergem com ordem 1} ($\mathcal{O}(k)$) quando $k \to 0$.
+
+\subsubsection{Estabilidade Absoluta e Fatores de Amplificação Discretos}
+\label{sec:a-estabilidade-fatores}
+Para além da convergência assintótica no limite $k \to 0$, a resposta dos esquemas sob
+passo finito $k > 0$ é analisada por meio da equação de teste linearizada $y' = \lambda
+y$, cuja solução analítica avança a cada passo por $y(t_{n+1}) = \mathrm{e}^z y(t_n)$, com variável
+adimensional $z = k\lambda \in \mathbb{R}$. A aplicação dos métodos de Euler a esse modelo
+conduz à relação de recorrência $U_{n+1} = R(z)\,U_n$, onde o fator de amplificação
+discreto $R(z)$ assume as formas:
+\begin{equation}\label{eq:fatores-amplificacao}
+  R_{\text{FE}}(z) = 1 + z, \qquad R_{\text{BE}}(z) = \frac{1}{1 - z}.
 \end{equation}
-(com $e_0 = 0$), e o Euler recuado satisfaz estimativa do mesmo tipo desde
-que $kL < 1$ (necessário para a unicidade da raiz do passo implícito).
-Consistência mais zero-estabilidade implicam, portanto, que \textbf{ambos
-os métodos convergem com ordem~1} quando $k \to 0$.
+A resposta matemática estrutura-se em dois regimes distintos segundo o sinal de $\lambda$:
+
+\begin{itemize}
+    \item \textbf{Região de Autovalor Negativo ($\lambda < 0$) --- Estabilidade Absoluta:}
+    O objetivo desta análise consiste em garantir que os erros numéricos decaiam assintoticamente
+    sem amplificação artificial quando a dinâmica contínua é atenuadora, o que impõe o
+    critério de estabilidade absoluta $|R(z)| \le 1$.
+    \begin{itemize}
+        \item \emph{Euler Avançado}: Exige $|1 + z| \le 1$. Para $z = -k|\lambda| < 0$, tem-se
+        $-1 \le 1 - k|\lambda| \le 1$, o que estabelece a restrição condicional de passo $k \le \frac{2}{|\lambda|}$~\cite{leveque2007,suli2003}.
+        \item \emph{Euler Recuado}: Como $|R_{\text{BE}}(z)| = \frac{1}{|1 - z|} < 1$ para todo
+        $z < 0$ (e em todo o semiplano complexo $\operatorname{Re}(z) < 0$), o método é
+        $A$-estável, amortecendo modos decrescentes sem restrição de passo ($k > 0$).
+    \end{itemize}
+
+    \item \textbf{Região de Autovalor Positivo ($\lambda > 0$) --- Estabilidade Relativa e Comparação dos Fatores de Amplificação:}
+    Quando a própria EDO possui modos crescentes ($z = k\lambda > 0$), a solução exata cresce por um fator $\mathrm{e}^z > 1$ a cada passo, e exigir $|R(z)| \le 1$ seria fisicamente incorreto. Nessa região, o critério relevante passa a ser a \emph{estabilidade relativa} (fidelidade com que o amplificador discreto $R(z)$ reproduz a taxa de crescimento contínua $\mathrm{e}^z$):
+    \begin{itemize}
+        \item \emph{Euler Explícito ($R_{\text{FE}}(z) = 1 + z$)}: Pela convexidade da função exponencial
+        ou pelo desenvolvimento em série de Taylor ($\mathrm{e}^z = 1 + z + \frac{z^2}{2} + \dots$),
+        verifica-se a desigualdade:
+        \begin{equation}\label{eq:comp-fe}
+          1 + z < \mathrm{e}^z, \qquad \forall\, z > 0.
+        \end{equation}
+        \item \emph{Euler Implícito ($R_{\text{BE}}(z) = \frac{1}{1 - z}$)}: Para passos no intervalo
+        $0 < z < 1$, a expansão em série geométrica fornece:
+        \begin{equation}\label{eq:comp-be}
+          \frac{1}{1 - z} = 1 + z + z^2 + z^3 + \dots
+        \end{equation}
+        Confrontando termo a termo com a série de Taylor de $\mathrm{e}^z$:
+        \begin{equation}\label{eq:taylor-exp}
+          \mathrm{e}^z = 1 + z + \frac{z^2}{2!} + \frac{z^3}{3!} + \dots + \frac{z^m}{m!} + \dots
+        \end{equation}
+        nota-se que, para cada potência $m \ge 2$, o coeficiente da série geométrica excede o
+        termo $\frac{1}{m!}$ da exponencial ($1 > \frac{1}{m!}$), estabelecendo que:
+        \begin{equation}\label{eq:desigualdade-be}
+          \frac{1}{1 - z} > \mathrm{e}^z > 1 + z, \qquad \forall\, z \in (0,\, 1).
+        \end{equation}
+    \end{itemize}
+\end{itemize}
 
 \subsection{Implementação dos Métodos}
 \label{sec:a-implementacao}
@@ -494,12 +551,9 @@ $t_{i} = t_0 + i \cdot k$.
 \subsubsection{Euler Explícito (Avançado)}
 
 No método de Euler explícito, cada passo requer uma única avaliação da função
-vetorial $f(t_n, U_n)$. A pré-alocação dos
-vetores em NumPy assegura eficiência de memória, e uma verificação condicional com
+vetorial $f(t_n, U_n)$. Uma verificação condicional com
 \texttt{np.isfinite} interrompe o laço
-caso ocorra estouro numérico (\emph{overflow}). A implementação em Python com
-comentários
-explicativos é apresentada em Código~\ref{lst:euler-explicito}.
+caso ocorra estouro numérico (\emph{overflow}). A implementação em Python é apresentada em Código~\ref{lst:euler-explicito}.
 \begin{listing}[H]
 \caption{Implementação do método de Euler Avançado em
 Python.}\label{lst:euler-explicito}
@@ -561,33 +615,9 @@ convergência $10^{-12}$ e limite de 50 iterações.
 
 Um ponto chave da implementação é o fornecimento da aproximação inicial: adota-se o
 preditor de Euler explícito,
-$U^{(0)} = U_n + k\,f(t_n, U_n)$. Por possuir erro local $O(k^2)$ em relação à raiz
-procurada, esse chute garante
-convergência rápida e direciona o método estritamente para o ramo fisicamente
-consistente com o PVI. De fato, para
-$f(t, U) = U^2 - g(t)$, a equação~\eqref{eq:residuo-be} é quadrática:
-\begin{equation}\label{eq:be-quad}
-  k\,U^2 - U + c_n = 0, \qquad c_n := U_n - k\,g(t_{n+1}),
-\end{equation}
-cujas raízes são
-\begin{equation}\label{eq:be-raizes}
-  U_{n+1}^{\pm} = \frac{1 \pm \sqrt{\Delta_n}}{2k}, \qquad \Delta_n = 1 - 4k\,c_n.
-\end{equation}
-Expandindo $\sqrt{1 - 4k c_n} = 1 - 2k c_n - 2k^2 c_n^2 + O(k^3)$, verifica-se que a
-menor raiz satisfaz
-$U_{n+1}^{-} = U_n + k(U_n^2 - g(t_{n+1})) + O(k^2) \to U_n$ quando $k \to 0$ (ramo
-físico), enquanto
-$U_{n+1}^{+} = \frac{1}{k} - U_n + O(k) \to +\infty$ (ramo espúrio), resultando em
-$|U^{(0)} - U_{n+1}^{-}| = O(k^2)$.
-Além disso, como $F(U) = -kU^2 + U - c_n$ é côncava ($F''(U) = -2k < 0$) com máximo
-no vértice $U^* = \frac{1}{2k}$,
-qualquer chute inicial $U^{(0)} < \frac{1}{2k}$ situa-se à esquerda do vértice (onde
-$F'(U) > 0$), garantindo que as
-iteradas de Newton convergem monotonicamente para $U_{n+1}^{-}$ sem saltar para
-$U_{n+1}^{+}$.
+$U^{(0)} = U_n + k\,f(t_n, U_n)$, que pertence à mesma família de métodos de um passo e satisfaz a paridade de ordem de acurácia ($p^* = p = 1$) em relação ao corretor \cite{lambert1991}. Essa escolha fornece um palpite inicial com erro local $\mathcal{O}(k^2)$, favorecendo a rápida convergência quadrática do método de Newton sem contaminar a ordem de convergência global $\mathcal{O}(k)$ do Euler implícito.
 O código fonte em Python é detalhado no
 Código~\ref{lst:euler-implicito}.
-
 \begin{listing}[H]
 \caption{Implementação do método de Euler Implícito com Newton em
 Python.}\label{lst:euler-implicito}
@@ -652,29 +682,23 @@ def euler_implicito(pvi, n, k):
 \subsection{Resultados e Discussão}
 \label{sec:a-resultados}
 
-O experimento matemático rodado para este item foi o seguinte:
+Para avaliar o desempenho prático e confrontar as previsões teóricas, integrou-se o PVI de Motivação~\eqref{eq:pvi} a partir de $t_0 = 0$ com condição inicial $y(0) = 2$ (roteiros \texttt{experimentos/exp\_a\_padrao.py} e \texttt{experimentos/exp\_a\_expandido.py}, orquestrados por \texttt{experimentos/exp\_a\_fig122.py}). A investigação foi estruturada em três cenários progressivos:
+\begin{enumerate}
+  \item \textbf{Cenário 1 (Curto Prazo):} integração no intervalo padrão $[0,\, 1{,}6]$ com as malhas clássicas $k \in \{0{,}2;\, 0{,}1;\, 0{,}05\}$ (reprodução da Figura~12.2 de Süli e Mayers~\cite{suli2003}) e malhas adicionais até $k = 0{,}003125$;
+  \item \textbf{Cenário 2 (Longo Prazo --- Malhas Clássicas):} extensão do horizonte para $[0,\, 5]$ mantendo os passos iniciais $k \in \{0{,}2;\, 0{,}1;\, 0{,}05\}$;
+  \item \textbf{Cenário 3 (Longo Prazo --- Malhas Refinadas):} refinamento sucessivo em $[0,\, 5]$ até $k = 0{,}000390625$ ($12.800$ passos).
+\end{enumerate}
+Em todos os experimentos, registraram-se o erro máximo global $E(k) = \max_i |U_i - y(t_i)|$, a ordem empírica observada $p_{\text{obs}}$, o número de avaliações de função (NFEV) e o tempo de CPU.
 
-Integrou-se o PVI de Motivação~\eqref{eq:pvi} a partir de $t_0 = 0$ com condição
-inicial $y(0) = 2$ (script
-\texttt{experimentos/exp\_a\_fig122.py}), primeiramente no intervalo $[0,\,1{,}6]$
-(conforme a Figura~12.2 de Süli e
-Mayers~\cite{suli2003}) e, adicionalmente, no intervalo estendido $[0,\,5]$ para
-investigar a dinâmica em tempos mais
-longos. Empregaram-se os passos $k \in \{0{,}2;\, 0{,}1;\, 0{,}05\}$ (correspondentes
-a $n = 8, 16$ e $32$ passos em
-$[0, 1{,}6]$), além de malhas mais refinadas ($k = 0{,}025;\, 0{,}0125;\, 0{,}00625$)
-para aferir o regime assintótico
-de convergência, registrando-se o erro máximo $E(k) = \max_i |U_i - y(t_i)|$, a ordem
-observada $p_{\text{obs}}$, o
-número de avaliações de função (NFEV) e o tempo de CPU.
-
-\subsubsection{Reprodução da Figura 12.2 no intervalo $[0,\,1{,}6]$}
+%-------------------------------------------------------------------------------------
+\subsubsection{Cenário 1: Intervalo Padrão $[0,\,1{,}6]$ (Reprodução da Figura 12.2)}
+\label{sec:a-cenario1}
 
 A Figura~\ref{fig:a-comparacao} mostra as aproximações obtidas pelos dois
-métodos com $k = 0{,}2$; $0{,}1$ e $0{,}05$. O painel da esquerda
+métodos com $k = 0{,}2$, $0{,}1$ e $0{,}05$. O painel da esquerda
 reproduz qualitativamente a Figura~12.2 de Süli e Mayers~\cite{suli2003}.
 As Tabelas~\ref{tab:erros_euler_avancado} e~\ref{tab:erros_euler_recuado}
-complementam a figura com o erro máximo em $[0, 1{,}6]$ e a ordem observada
+complementam a figura com o erro máximo em $[0,\, 1{,}6]$ e a ordem observada
 $p_{\text{obs}} = \log_2\bigl(E(2k)/E(k)\bigr)$, incluindo passos menores
 para evidenciar o regime assintótico.
 
@@ -682,7 +706,7 @@ para evidenciar o regime assintótico.
   \centering
   \includegraphics[width=\textwidth]{a_comparacao}
   \caption{Euler avançado (esquerda) e Euler recuado (direita) no intervalo
-  $[0, 1{,}6]$. Com $k=0{,}2$ o Euler recuado só consegue avançar 2 passos.}
+  $[0,\, 1{,}6]$. Com $k=0{,}2$ o Euler recuado só consegue avançar 2 passos.}
   \label{fig:a-comparacao}
 \end{figure}
 
@@ -690,91 +714,73 @@ para evidenciar o regime assintótico.
 \input{../resultados/item_a/tabelas/erros_euler_recuado.tex}
 
 A análise conjunta da Figura~\ref{fig:a-comparacao} e das
-Tabelas~\ref{tab:erros_euler_avancado} e~\ref{tab:erros_euler_recuado} evidencia
-quatro fenômenos teóricos
-fundamentais:
+Tabelas~\ref{tab:erros_euler_avancado} e~\ref{tab:erros_euler_recuado} destaca quatro fenômenos fundamentais:
 
 \paragraph{1. Posição geométrica das trajetórias e sinal de $y''(t)$.}
-Derivando duas vezes a solução exata $y(t) = t - 4 + \frac{6}{1+t}$, obtém-se
+Observa-se que, no Euler avançado, a aproximação pela reta tangente em $t_n$ subestima a curva convexa ($\tau_n^{\text{FE}} > 0 \implies U_n < y(t_n)$), posicionando todas as trajetórias numéricas \emph{abaixo} da solução exata. No Euler recuado, o uso da inclinação futura em $t_{n+1}$ superestima a solução ($\tau_n^{\text{BE}} < 0 \implies U_n > y(t_n)$), posicionando todas as trajetórias \emph{acima} da curva exata.
+
+Esse comportamento confirma a fundamentação teórica. Conforme deduzido na Seção~\ref{sec:problema} (Equação~\ref{eq:derivadas-exata}):
 \begin{equation}\label{eq:convexidade}
   y''(t) = \frac{12}{(1+t)^3} > 0, \qquad \forall\, t > -1.
 \end{equation}
-Como a solução exata é estritamente convexa em todo o intervalo, as expressões do
-erro de truncamento local~\eqref{eq:lte}
-explicam imediatamente a disposição visual dos pontos na
-Figura~\ref{fig:a-comparacao}: no Euler avançado, a aproximação
-pela reta tangente em $t_n$ subestima a curva convexa ($\tau_n^{\text{FE}} > 0
-\implies U_n < y(t_n)$), posicionando
-todas as trajetórias numéricas \emph{abaixo} da solução exata. No Euler recuado, o
-uso da inclinação futura em $t_{n+1}$
-superestima a solução ($\tau_n^{\text{BE}} < 0 \implies U_n > y(t_n)$), posicionando
-todas as trajetórias \emph{acima}
-da curva exata.
+Como a solução exata é estritamente convexa em todo o intervalo $[0,\, 1{,}6]$, as expressões do
+erro de truncamento local~\eqref{eq:lte} explicam imediatamente a disposição visual oposta das curvas numéricas.
 
-\paragraph{2. Explicação algébrica da falha do Euler recuado em $k = 0{,}2$.}
-As Tabelas~\ref{tab:trajetoria_euler_avancado_k02}
-e~\ref{tab:trajetoria_euler_recuado_k02} mostram a evolução passo a passo dos dois
-métodos para $k = 0{,}2$.
+\paragraph{2. Falha algébrica do Euler recuado em $k = 0{,}2$ (Análise do Discriminante).}
+A inspeção visual da Figura~\ref{fig:a-comparacao} revela um comportamento à primeira vista paradoxal: enquanto o método explícito completa toda a trajetória em $[0,\, 1{,}6]$, o método de Euler recuado — classicamente associado a propriedades superiores de estabilidade — interrompe sua execução prematuramente ao tentar avançar para $t = 0{,}6$ com $k = 0{,}2$, calculando apenas duas aproximações válidas ($t_1 = 0{,}2$ e $t_2 = 0{,}4$).
 
-\input{../resultados/item_a/tabelas/trajetoria_euler_avancado_k02.tex}
-\input{../resultados/item_a/tabelas/trajetoria_euler_recuado_k02.tex}
+Diante dessa interrupção, impõe-se investigar a natureza do colapso: seria uma deficiência do método de Newton, uma má escolha do preditor inicial adotado, ou uma impossibilidade estrutural da própria equação discreta implícita?
 
-Para que a equação do Euler recuado~\eqref{eq:be-quad} admita solução real no passo
-$i$, é necessário e suficiente que
+Analisando a estrutura algébrica do passo implícito para $f(t, U) = U^2 - g(t)$, o resíduo escalar da Equação~\eqref{eq:residuo-be} reduz-se à equação quadrática:
+\begin{equation}\label{eq:be-quad}
+  k\,U^2 - U + c_n = 0, \qquad c_n := U_n - k\,g(t_{n+1}),
+\end{equation}
+cujas raízes analíticas são:
+\begin{equation}\label{eq:be-raizes}
+  U_{n+1}^{\pm} = \frac{1 \pm \sqrt{\Delta_n}}{2k}, \qquad \Delta_n = 1 - 4k\,c_n.
+\end{equation}
+Expandindo $\sqrt{1 - 4k c_n} = 1 - 2k c_n - 2k^2 c_n^2 + \mathcal{O}(k^3)$, verifica-se que a menor raiz satisfaz $U_{n+1}^{-} = U_n + k(U_n^2 - g(t_{n+1})) + \mathcal{O}(k^2) \to U_n$ quando $k \to 0$ (ramo físico consistente), enquanto $U_{n+1}^{+} = \frac{1}{k} - U_n + \mathcal{O}(k) \to +\infty$ (ramo espúrio), resultando em $|U^{(0)} - U_{n+1}^{-}| = \mathcal{O}(k^2)$.
+
+Para que a equação~\eqref{eq:be-quad} admita solução real no passo $i$, é necessário e suficiente que:
 \[
-  \Delta_{i-1} = 1 - 4k\,c_{i-1} \ge 0 \iff c_{i-1} = U_{i-1} - k\,g(t_i) \le
-  \frac{1}{4k}.
+  \Delta_{i-1} = 1 - 4k\,c_{i-1} \ge 0 \iff c_{i-1} = U_{i-1} - k\,g(t_i) \le \frac{1}{4k}.
 \]
-Para $k = 0{,}2$, esse limiar crítico é $\frac{1}{4k} = 1{,}25$. Nos dois primeiros
-passos ($t_1 = 0{,}2$ e $t_2 = 0{,}4$),
-o erro de truncamento positivo combinado à amplificação não linear mantém $U_2
-\approx 1{,}5465$ muito acima do valor
-exato $y(0{,}4) \approx 0{,}6857$. Ao avançar para $t_3 = 0{,}6$ (onde $g(0{,}6) =
-1{,}46625$), obtém-se
-\[
-  c_2 = U_2 - 0{,}2\,g(0{,}6) \approx 1{,}546458 - 0{,}293250 = 1{,}253208 > 1{,}25
-  \implies \Delta_2 \approx -0{,}002566 < 0.
-\]
-Completando quadrados no resíduo~\eqref{eq:be-quad}, vê-se que
-\[
-  F(U) = -0{,}2\,(U - 2{,}5)^2 - 0{,}003208 \;\le\; -0{,}003208 < 0, \qquad \forall\,
-  U \in \mathbb{R}.
-\]
-Portanto, a parábola $F(U)$ situa-se inteiramente abaixo do eixo real e possui apenas
-raízes complexas conjugadas
-($U_3 = 2{,}5 \pm 0{,}1266\,i$). Fica provado que a falha em $k = 0{,}2$ \emph{não}
-decorre de má escolha do chute
-inicial ou do algoritmo de Newton, mas sim da \emph{inexistência de solução real} do
-esquema implícito quando o passo $k$
-viola a barreira de solubilidade $k\,\frac{\partial f}{\partial y} < 1$ (polo $z = 1$
-de $R_{\text{BE}}(z)$). Uma busca
-numérica em malhas uniformes $k = 1{,}6/n$ mostra que o maior passo que permite ao
-Euler recuado completar $[0, 1{,}6]$
-é $k = 1{,}6/13 \approx 0{,}1231$ ($n = 13$ passos).
+Para $k = 0{,}2$, esse limiar crítico é rigorosamente $\frac{1}{4k} = \frac{1}{0{,}8} = 1{,}25$. A Figura~\ref{fig:a-discriminante} confronta o discriminante contínuo teórico avaliado sobre a curva exata, $\Delta(t; k) = 1 - 4k(y(t) - k g(t+k))$, com os valores discretos $\Delta_n$ gerados pela simulação numérica real, e a Tabela~\ref{tab:discriminante_euler_k02} detalha os três passos iniciais para $k = 0{,}2$.
 
-\paragraph{4. Ordem de convergência e custo computacional.}
-Nas Tabelas~\ref{tab:erros_euler_avancado} e~\ref{tab:erros_euler_recuado}, à medida
-que $k \to 0$, a ordem empírica $p_{\text{obs}}$ de ambos os métodos converge para
-o valor teórico $p = 1$ ($0{,}97$ no explícito e $1{,}03$ no implícito em $k =
-0{,}00625$). O valor aparente
-$p_{\text{obs}} = 1{,}83$ na transição de $k = 0{,}1$ para $k = 0{,}05$ no Euler
-recuado não significa precisão de
-segunda ordem: ele ocorre porque $k = 0{,}1$ está próximo do limiar de perda de
-existência de raiz ($k \approx 0{,}123$),
-sofrendo forte amplificação pré-assintótica. Quanto ao custo, o Euler recuado exigiu
-em média de $3$ a $4$ iterações de
-Newton por passo (totalizando $7$ a $9$ avaliações de função por passo contra apenas
-$1$ do Euler avançado) e um tempo de
-CPU substancialmente superior, sendo simultaneamente mais custoso e menos preciso
-neste problema.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{a_discriminante_euler}
+  \caption{Evolução do discriminante $\Delta = 1 - 4kc$ para o Euler recuado no intervalo $[0,\, 1{,}6]$: comparação entre a trajetória contínua teórica sobre a solução exata $y(t)$ (linhas sólidas) e os valores discretos obtidos na simulação real (pontos conectados por traços). Para $k = 0{,}2$, a simulação cruza o limiar crítico $\Delta = 0$ em $t = 0{,}6$ (marcador \textbf{X}), enquanto para $k = 0{,}1$ e $k = 0{,}05$ o discriminante permanece estritamente positivo em toda a malha.}
+  \label{fig:a-discriminante}
+\end{figure}
 
-\subsubsection{Comportamento em Longo Prazo: Extensão para o Intervalo $[0,\,5]$}
+\input{../resultados/item_a/tabelas/discriminante_euler_k02.tex}
 
-Para investigar como a estabilidade não linear afeta a integração em intervalos mais
-longos — e ainda mais distantes da
-singularidade em $t = -1$ —, a Figura~\ref{fig:a-T5} e as
-Tabelas~\ref{tab:erros_euler_avancado,_tf_=_5}
-e~\ref{tab:erros_euler_recuado,_tf_=_5} apresentam os resultados para $t \in [0, 5]$.
+A inspeção conjunta da Figura~\ref{fig:a-discriminante} e da Tabela~\ref{tab:discriminante_euler_k02} elucida a mecânica da falha:
+\begin{enumerate}
+    \item \textbf{Inexistência algébrica de raízes reais em $k = 0{,}2$:} 
+    No terceiro passo ($t_2 = 0{,}4 \to t_3 = 0{,}6$), o termo independente atinge $c_2 = U_2 - 0{,}2\,g(0{,}6) \approx 1{,}253208 > 1{,}25$, tornando o discriminante estritamente negativo ($\Delta_2 = -0{,}002566 < 0$). Portanto, a falha não decorre do método de Newton nem do preditor inicial: a equação algébrica discreta simplesmente \emph{não possui raízes reais}.
+    \item \textbf{Sobrevivência dos passos $k = 0{,}1$ e $k = 0{,}05$:} 
+    Devido à convexidade ($y'' > 0$), o erro por excesso ($U_n > y(t_n)$) mantém $c_n^{\text{num}} > c_n^{\text{exato}}$ e rebaixa o discriminante simulado ($\Delta_n^{\text{num}} < \Delta_n^{\text{exato}}$) em todas as malhas. Contudo, para $k = 0{,}1$ e $k = 0{,}05$, o teto crítico $\frac{1}{4k}$ sobe para $2{,}50$ e $5{,}00$, mantendo $\Delta_n > 0$ durante todo o intervalo $[0,\, 1{,}6]$.
+\end{enumerate}
+
+Por meio da rotina \texttt{busca\_passo\_critico\_euler} (\texttt{src/pvi/uteis.py}), determina-se que o menor número de passos que assegura $\Delta_n \ge 0$ em todo o intervalo $[0,\, 1{,}6]$ é $n_{\text{crit}} = 13$, correspondente ao passo crítico uniforme:
+\begin{equation}\label{eq:k-critico-busca}
+  k_{\text{crit}} = \frac{1{,}6}{13} \approx 0{,}1231 \qquad (\text{com } \Delta_{\min} \approx 0{,}1110 > 0),
+\end{equation}
+colapsando invariavelmente para qualquer partição com $n \le 12$ ($k \ge 0{,}1333$).
+
+\paragraph{3. Ordem de convergência e análise dos erros.}
+Nas Tabelas~\ref{tab:erros_euler_avancado} e~\ref{tab:erros_euler_recuado}, à medida que $k \to 0$, a ordem empírica $p_{\text{obs}}$\footnote{A teoria assintótica estabelece que, para passos $k$ suficientemente pequenos, o erro global máximo $E(k) = \max_n |U_n - y(t_n)|$ comporta-se como $E(k) \approx C \cdot k^p$, onde $p$ é a ordem do método e $C$ é uma constante independente de $k$. Ao dividir sucessivamente o passo pela metade ($k_{\text{novo}} = k/2$), tem-se $\frac{E(2k)}{E(k)} \approx 2^p$, donde $p_{\text{obs}} = \log_2\bigl(E(2k)/E(k)\bigr)$.} de ambos os métodos converge para o valor teórico $p = 1$ ($0{,}99$ no explícito e $1{,}02$ no implícito em $k = 0{,}003125$). O valor aparente $p_{\text{obs}} = 1{,}83$ na transição de $k = 0{,}1$ para $k = 0{,}05$ no Euler recuado não indica ganho de ordem: ocorre porque $k = 0{,}1$ situa-se próximo ao limiar de colapso ($k_{\text{crit}} \approx 0{,}1231$), sofrendo forte amplificação pré-assintótica. Em todas as malhas convergentes, o Euler avançado apresenta erro absoluto inferior ao Euler recuado.
+
+\paragraph{4. Custo computacional.}
+As colunas de \emph{NFEV} e \emph{Tempo CPU} das Tabelas~\ref{tab:erros_euler_avancado} e~\ref{tab:erros_euler_recuado} quantificam a sobrecarga do esquema implícito: enquanto o Euler avançado requer exatamente uma avaliação por passo ($\text{NFEV} = N$), as iterações de Newton do Euler recuado demandam de $6$ a $9$ avaliações por passo ($3.104$ contra $512$ NFEV em $k = 0{,}003125$), elevando o tempo de CPU em cerca de $30$ vezes ($51{,}97\,\text{ms}$ contra $1{,}64\,\text{ms}$) sem entregar ganho de precisão.
+
+%-------------------------------------------------------------------------------------
+\subsubsection{Cenário 2: Intervalo Estendido $[0,\,5]$ com Malhas Clássicas}
+\label{sec:a-resultados-longo-prazo}
+
+Para investigar como a instabilidade intrínseca da EDO afeta a integração em horizontes mais longos — e mais distantes da singularidade em $t = -1$ —, estende-se o domínio para $t \in [0,\, 5]$ mantendo os mesmos três passos clássicos $k \in \{0{,}2;\, 0{,}1;\, 0{,}05\}$. Os resultados visuais são apresentados na Figura~\ref{fig:a-T5}.
 
 \begin{figure}[H]
   \centering
@@ -786,89 +792,173 @@ e~\ref{tab:erros_euler_recuado,_tf_=_5} apresentam os resultados para $t \in [0,
     \centering
     \includegraphics[width=\linewidth]{a_euler_recuadoT5}
   \end{minipage}
-  \caption{Soluções numéricas no intervalo estendido $[0, 5]$ para o Euler avançado
-  (esquerda) e Euler recuado (direita).}
+  \caption{Soluções numéricas no intervalo estendido $[0,\, 5]$ com os passos clássicos $k \in \{0{,}2;\, 0{,}1;\, 0{,}05\}$ para o Euler avançado (esquerda) e Euler recuado (direita).}
   \label{fig:a-T5}
 \end{figure}
+
+\paragraph{1. Posição geométrica inicial e bifurcação em $t > 2$.}
+Como a convexidade estrita $y''(t) = \frac{12}{(1+t)^3} > 0$ (Equação~\ref{eq:convexidade}) preserva-se em todo o domínio $t > -1$, o erro de truncamento local~\eqref{eq:lte} mantém o viés direcional verificado em $[0,\, 1{,}6]$: o Euler avançado subestima a curva exata ($U_n < y(t_n) \implies e_n < 0$), posicionando suas trajetórias por baixo, ao passo que o Euler recuado a superestima ($U_n > y(t_n) \implies e_n > 0$), posicionando suas aproximações por cima. Contudo, ao ultrapassar $t = 2$, a solução exata volta a ser positiva ($y(t) > 0$) e o autovalor local $\lambda(t) = 2y(t) > 0$ reinstaura o regime fortemente instável (Tabela~\ref{tab:autovalores-regimes}), amplificando esses desvios opostos e conduzindo os dois métodos a patologias distintas.
+
+\paragraph{2. Comportamento do Euler Avançado: Isóclinas e inversão de derivada.}
+Na Figura~\ref{fig:a-T5} (esquerda), observa-se que, embora o método explícito não sofra restrição algébrica de existência de raízes e conclua todos os passos até $t = 5$, suas trajetórias deixam de acompanhar o crescimento de $y(t)$ em torno de $t \approx 3{,}6\text{--}3{,}8$, atingem um ponto de máximo local e mergulham para valores negativos.
+
+Para compreender a gênese geométrica desse fenômeno, recorre-se às \textbf{isóclinas de derivada nula} (\emph{nullclines}) da EDO $y' = f(t, y) = y^2 - g(t)$, definidas como o lugar geométrico dos pontos $(t, y)$ onde a inclinação do campo de direções se anula ($f(t, y) = 0$), separando regiões de crescimento ($y' > 0$) e de decrescimento ($y' < 0$). Igualando $y^2 - g(t) = 0$, vê-se que nos subintervalos onde $g(t) \ge 0$ ($t \in [0,\, 1{,}4613]$ e $t \in [3{,}5087,\, 5]$) existem dois ramos simétricos de isóclinas nulas:
+\begin{equation}\label{eq:isoclinas-nulas}
+  y_{\text{iso}}^{+}(t) = +\sqrt{g(t)} \qquad \text{e} \qquad y_{\text{iso}}^{-}(t) = -\sqrt{g(t)}.
+\end{equation}
+Essas duas curvas dividem o plano $(t, y)$ em três regiões dinâmicas e apresentam naturezas de estabilidade opostas:
+\begin{enumerate}
+  \item \emph{Ramo superior $+\sqrt{g(t)}$ (repulsor):} Avaliando o autovalor local sobre o ramo superior, tem-se $\lambda\bigl(+\sqrt{g(t)}\bigr) = +2\sqrt{g(t)} > 0$. Qualquer ponto situado imediatamente acima dessa curva possui $y^2 > g(t) \implies y' > 0$ e é impulsionado para cima (afastando-se de $+\sqrt{g(t)}$); inversamente, qualquer ponto situado imediatamente abaixo entra na faixa central $|y| < \sqrt{g(t)}$, onde $y^2 < g(t) \implies y' < 0$, sendo empurrado para baixo (também se afastando de $+\sqrt{g(t)}$).
+  \item \emph{Ramo inferior $-\sqrt{g(t)}$ (atrator):} Sobre o ramo inferior, o autovalor local é negativo: $\lambda\bigl(-\sqrt{g(t)}\bigr) = -2\sqrt{g(t)} < 0$. Trajetórias situadas logo acima dele ($-\sqrt{g(t)} < y < +\sqrt{g(t)}$) têm derivada negativa ($y' < 0$) e descem em sua direção, enquanto trajetórias que caiam abaixo dele ($y < -\sqrt{g(t)}$) passam a ter $y^2 > g(t) \implies y' > 0$ e sobem de volta em sua direção.
+\end{enumerate}
+
+A Figura~\ref{fig:a-isoclinas-T5} sobrepõe as trajetórias do Euler avançado ao mapa das isóclinas e ao campo de direções da EDO. No corredor intermediário $t \in (1{,}46;\, 3{,}51)$, como $g(t) < 0$, tem-se $f(t, U) = U^2 - g(t) > 0$ em todo o plano, fazendo as aproximações explícitas subirem juntamente com a solução exata, porém defasadas para baixo ($U_n < y(t_n)$) devido à convexidade. Quando $t > 3{,}51$, nasce o bolsão de descida delimitado por $+\sqrt{g(t)}$. Como a solução exata cresce ($y'(t) > 0 \implies y(t)^2 > g(t)$), ela caminha sempre acima da fronteira repulsora $+\sqrt{g(t)}$ até atingir $y(5) = 2$. Contudo, por virem atrasadas por baixo, as trajetórias do Euler avançado são interceptadas pela curva ascendente $+\sqrt{g(t)}$ em $t = 3{,}60$ ($k = 0{,}2$), $t = 3{,}70$ ($k = 0{,}1$) e $t = 3{,}75$ ($k = 0{,}05$), pontos destacados pelos losangos dourados. Ao cruzarem essa fronteira e adentrarem a zona sombreada $|U_n| < \sqrt{g(t_n)}$, a derivada torna-se negativa ($f(t_n, U_n) < 0$) e as soluções numéricas despencam em direção à isóclina atratora $-\sqrt{g(t)}$. Sob a ótica da equação exata do erro~\eqref{eq:erro-exata-bernoulli}, $e' = \lambda(t)e + e^2$, enquanto o termo linear $\lambda(t)e < 0$ promove esse afastamento negativo inicial, o termo quadrático $+e^2 > 0$ possui sinal contrário e atua como um freio natural quando $e \to -2y(t)$ ($U \to -y(t) \approx -\sqrt{g(t)}$), impedindo que o método explícito exploda para $-\infty$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{a_isoclinas_eulerT5}
+  \caption{Análise de isóclinas e campo de direções para o Euler avançado em $[0,\, 5]$ com $k \in \{0{,}2;\, 0{,}1;\, 0{,}05\}$. \textbf{Esquerda:} visão global evidenciando os dois bolsões de derivada negativa ($y' < 0$, sombreados em laranja) delimitados pela isóclina repulsora $+\sqrt{g(t)}$ e pela isóclina atratora $-\sqrt{g(t)}$. \textbf{Direita:} detalhe da região $[3,\, 5]$, destacando os pontos exatos de inversão (losangos dourados) nos quais as trajetórias explícitas interceptam $+\sqrt{g(t)}$ e mergulham rumo ao ramo atrator inferior.}
+  \label{fig:a-isoclinas-T5}
+\end{figure}
+
+\paragraph{3. Comportamento do Euler Recuado: Discriminante e colapso generalizado.}
+No painel direito da Figura~\ref{fig:a-T5}, o fenômeno de interrupção precoce analisado na Equação~\eqref{eq:be-raizes} agrava-se drasticamente. Diferentemente do intervalo curto $[0,\, 1{,}6]$, no qual apenas o passo $k = 0{,}2$ falhava e os passos $k = 0{,}1$ e $k = 0{,}05$ completavam a integração, em $[0,\, 5]$ todas as três malhas clássicas colapsam prematuramente por perda de raiz real ($\Delta_n < 0$).
+
+A Figura~\ref{fig:a-discriminante-T5} apresenta a evolução do discriminante para esses três passos no domínio $[0,\, 5]$ em painel único, de forma análoga ao experimento anterior.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{a_discriminante_eulerT5}
+  \caption{Evolução do discriminante $\Delta = 1 - 4kc$ para o Euler recuado no intervalo estendido $[0,\, 5]$ sob os passos clássicos $k \in \{0{,}2;\, 0{,}1;\, 0{,}05\}$: confronto entre a trajetória contínua teórica sobre a solução exata (linhas sólidas) e os valores discretos da simulação numérica (pontos conectados). Em todos os três passos, a trajetória simulada cruza o limiar crítico $\Delta = 0$ (marcadores \textbf{X} vermelhos em $t = 0{,}6$, $t = 2{,}2$ e $t = 3{,}5$), inviabilizando a existência de raízes reais e interrompendo o cálculo.}
+  \label{fig:a-discriminante-T5}
+\end{figure}
+
+%-------------------------------------------------------------------------------------
+\subsubsection{Cenário 3: Refinamento de Malha no Intervalo Estendido $[0,\,5]$}
+\label{sec:a-resultados-refinamento}
+
+Diante da captura pela isóclina (no Euler avançado) e da perda de raízes reais (no Euler recuado) em malhas grossas, investigou-se o refinamento sucessivo do passo de integração em $[0,\, 5]$, dividindo $k$ pela metade até $k = 0{,}000390625$ ($12.800$ passos). A Figura~\ref{fig:a-T5-refinado} exibe as trajetórias obtidas para as malhas refinadas $k \in \{0{,}0125;\, 0{,}00625;\, 0{,}003125;\, 0{,}0015625\}$.
+
+\begin{figure}[H]
+  \centering
+  \begin{minipage}{0.49\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{a_euler_avancadoT5_ref}
+  \end{minipage}\hfill
+  \begin{minipage}{0.49\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{a_euler_recuadoT5_ref}
+  \end{minipage}
+  \caption{Soluções numéricas no intervalo $[0,\, 5]$ sob malhas refinadas $k \in \{0{,}0125;\, 0{,}00625;\, 0{,}003125;\, 0{,}0015625\}$ para o Euler avançado (esquerda) e Euler recuado (direita).}
+  \label{fig:a-T5-refinado}
+\end{figure}
+
+\paragraph{1. Euler Avançado sob refinamento: retardo do cruzamento da isóclina.}
+Como demonstram as Figuras~\ref{fig:a-T5-refinado} (esquerda) e~\ref{fig:a-isoclinas-T5-refinado}, reduzir o passo $k$ melhora visivelmente a trajetória explícita, mas apenas ``atrasa'' o problema sem eliminar a queda no trecho final: o ponto de inversão (losango dourado) desliza progressivamente para a direita sobre a isóclina $+\sqrt{g(t)}$, ocorrendo em $t = 4{,}05$ ($k = 0{,}0125$), $t = 4{,}23$ ($k = 0{,}00625$), $t = 4{,}41$ ($k = 0{,}003125$), $t = 4{,}58$ ($k = 0{,}0015625$) e ainda em $t = 4{,}89$ na malha mais fina ($k = 0{,}000390625$).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{a_isoclinas_eulerT5_refinado}
+  \caption{Efeito do refinamento da malha sobre o cruzamento da isóclina repulsora $+\sqrt{g(t)}$ no Euler avançado para $k \in \{0{,}0125;\, 0{,}00625;\, 0{,}003125;\, 0{,}0015625\}$, evidenciando o retardo progressivo do ponto de inversão (losangos dourados) ao longo da fronteira.}
+  \label{fig:a-isoclinas-T5-refinado}
+\end{figure}
+
+Isolando $g(t) = y(t)^2 - y'(t)$ na própria EDO e expandindo $\sqrt{g(t)} = y(t)\sqrt{1 - y'(t)/y(t)^2}$ em série de Taylor para $t > 2$, verifica-se que a folga vertical entre a solução exata e a isóclina repulsora é inversamente proporcional ao autovalor local $\lambda(t) = 2y(t)$:
+\begin{equation}\label{eq:largura-corredor}
+  y(t) - \sqrt{g(t)} \approx \frac{y'(t)}{2\,y(t)} = \frac{y'(t)}{\lambda(t)}.
+\end{equation}
+Em $t = 5$, onde $y(5) = 2$ ($\lambda(5) = 4$) e $y'(5) = 5/6$, essa folga estreita-se para apenas $\approx 0{,}22$. Simultaneamente, pela Equação~\eqref{eq:fator-amplificacao}, qualquer semente de erro local $\mathcal{O}(k)$ cometida nos passos iniciais é multiplicada pelo fator de amplificação acumulado $\Phi(0, 5) = 6^{12}\mathrm{e}^{-15} \approx 665{,}1$. Como um método de primeira ordem reduz a semente de erro apenas linearmente ($\propto k$), o erro amplificado $|e_n| \approx C\,k\,\Phi(0, t_n)$ acaba invariavelmente superando a estreita folga~\eqref{eq:largura-corredor} próximo ao fim do intervalo, tornando o refinamento uniforme em $p = 1$ um recurso de retorno lento e limitado.
+
+\paragraph{2. Euler Recuado sob refinamento: condição necessária ($\Delta \ge 0$) vs. efeito ``bola de neve'' (\emph{blow-up}).}
+Aplicando a rotina \texttt{busca\_passo\_critico\_euler} ao horizonte $T = 5$, constata-se que o número mínimo de passos para garantir $\Delta_n \ge 0$ em toda a malha salta de $n_{\text{crit}} = 13$ ($k_{\text{crit}} \approx 0{,}1231$) em $[0,\, 1{,}6]$ para  $n_{\text{crit}} = 1462$ passos ($k_{\text{crit}} = 5/1462 \approx 0{,}00342$) em $[0,\, 5]$. A Figura~\ref{fig:a-discriminante-T5-ref} ilustra essa transição: mesmo em malhas já bastante refinadas como $k = 0{,}0125$ ($400$ passos) e $k = 0{,}00625$ ($800$ passos), o discriminante simulado descola-se abruptamente da curva exata no trecho final e mergulha para $\Delta < 0$ em $t = 4{,}50$ e $t \approx 4{,}79$, respectivamente, sobrevivendo até $t = 5$ apenas quando $k \le 0{,}003125$ ($< k_{\text{crit}}$).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{a_discriminante_eulerT5_ref}
+  \caption{Evolução do discriminante $\Delta = 1 - 4kc$ para o Euler recuado no intervalo estendido $[0,\, 5]$ sob malhas refinadas $k \in \{0{,}0125;\, 0{,}00625;\, 0{,}003125;\, 0{,}0015625\}$. \textbf{Esquerda:} visão global no domínio completo $[0,\, 5]$. \textbf{Direita:} detalhe da região crítica $[3{,}8,\, 5{,}02]$, evidenciando o mergulho na zona proibida ($\Delta < 0$) para $k = 0{,}0125$ ($t = 4{,}50$) e $k = 0{,}00625$ ($t \approx 4{,}79$), enquanto as partições com $k \le 0{,}003125$ ($< k_{\text{crit}} \approx 0{,}00342$) preservam $\Delta > 0$ até $t = 5$.}
+  \label{fig:a-discriminante-T5-ref}
+\end{figure}
+
+A comparação entre a Figura~\ref{fig:a-discriminante-T5-ref} e a Figura~\ref{fig:a-T5-refinado} (direita) revela um fato central: na malha $k = 0{,}003125$ ($1.600$ passos), o discriminante permanece estritamente positivo em toda a integração ($\Delta_{\min} \approx 0{,}72 > 0$). Ou seja, a equação quadrática sempre admite raiz real e o método não sofre interrupção algébrica; mesmo assim, a trajetória numérica dispara em um violento \emph{blow-up}, atingindo $U(5) \approx 23{,}87$ contra o valor exato $y(5) = 2{,}00$ (um erro de quase $22$).
+
+Isso comprova que manter $\Delta \ge 0$ é apenas uma \emph{condição necessária} (permite calcular o passo seguinte), mas \emph{não suficiente} para que a solução seja precisa ou estável. A razão desse comportamento torna-se intuitiva ao analisarmos a equação exata do erro~\eqref{eq:erro-exata-bernoulli}:
+\begin{equation*}
+  e'(t) = 2y(t)\,e(t) + e(t)^2.
+\end{equation*}
+Como o Euler recuado superestima a solução convexa ($y'' > 0$), o erro numérico é sempre positivo ($e_n > 0$). Para $t > 2$, a solução exata também é positiva ($y(t) > 0$), de modo que os dois termos do lado direito atuam juntos com o mesmo sinal positivo, gerando um efeito do tipo ``bola de neve'':
+\begin{enumerate}
+  \item Inicialmente, o erro é pequeno e cresce impulsionado pelo termo linear $2y(t)e$, sob a enorme amplificação acumulada do fluxo contínuo ($\Phi(0, 5) \approx 665$, agravada pela superamplificação discreta $R_{\text{BE}}(z) > \mathrm{e}^z$);
+  \item Conforme o erro acumulado cresce e atinge ordem de grandeza unitária ($e \approx 1$), o termo quadrático $+e^2$ entra em ação com força total, multiplicando o erro por si mesmo e gerando a explosão rápida da solução.
+\end{enumerate}
+No passo $k = 0{,}003125$, o teto de solvabilidade $\frac{1}{4k} = 80$ é suficientemente alto para que as raízes continuem reais até o fim, mas isso não impede que a realimentação $+e^2$ catapulte a solução numérica para valores absurdos. Para desativar esse efeito bola de neve, é preciso que o erro permaneça microscópico durante toda a trajetória. Isso só é alcançado ao reduzir o passo para $k \le 0{,}0015625$ ($3.200$ passos em diante), mantendo $e \ll 1$ e tornando a contribuição quadrática $e^2 \approx 0$ desprezível, o que finalmente doma o \emph{blow-up}.
+
+\paragraph{3. Análise geral das tabelas e escalada do custo computacional.}
+O desempenho quantitativo completo das $10$ partições em $[0,\, 5]$ é consolidado nas Tabelas~\ref{tab:erros_euler_avancado,_tf_=_5} e~\ref{tab:erros_euler_recuado,_tf_=_5}, sintetizando dois efeitos principais:
 
 \input{../resultados/item_a/tabelas/erros_euler_avancado,_tf_=_5.tex}
 \input{../resultados/item_a/tabelas/erros_euler_recuado,_tf_=_5.tex}
 
-Os resultados em $[0, 5]$ expõem o papel da solução exata $y(t)$ como uma
-\textbf{separatriz instável} (curva repulsora)
-da equação de Riccati $y' = y^2 - g(t)$:
+\begin{enumerate}
+  \item \emph{Regime de convergência e ordens observadas:} No Euler avançado, à medida que o cruzamento da isóclina é postergado, o erro máximo recua gradualmente de $3{,}175$ ($k = 0{,}2$) para $0{,}313$ ($k = 0{,}000390625$), com a ordem observada $p_{\text{obs}}$ subindo monotonicamente de $0{,}01$ até $0{,}87$ (aproximando-se de $p = 1$, mas ainda penalizada pela inflexão final em $t = 4{,}89$). No Euler recuado, nas seis primeiras malhas ($k \ge 0{,}00625$), a redução de $k$ permite que a simulação avance mais fundo na região de explosão antes de travar por $\Delta_n < 0$, elevando o último valor registrado antes da parada (de $0{,}861$ até $41{,}51$) e gerando ordens aparentes negativas. Na transição de $k = 0{,}003125$ ($E = 21{,}87$) para $k = 0{,}0015625$ ($E = 2{,}43$), a desativação do regime quadrático $+e^2$ produz um salto superlinear aparente ($p_{\text{obs}} = 3{,}17$), após o qual o método finalmente ingressa na convergência assintótica de primeira ordem ($p_{\text{obs}} = 1{,}46 \to 1{,}18$, atingindo $E = 0{,}388$ em $k = 0{,}000390625$).
+  \item \emph{Escalada do custo computacional:} O preço pago para contornar a instabilidade via refinamento de malha em métodos de primeira ordem é severo. Para reduzir o erro à faixa de $\approx 0{,}3\text{--}0{,}4$, ambos exigem $12.800$ passos. Enquanto o Euler avançado realiza exatamente $12.800$ avaliações de função ($\text{NFEV} = N$) em $\approx 15{,}9\,\text{ms}$, o Euler recuado — penalizado pelas iterações do método de Newton a cada passo — escala para $63.984$ avaliações de função ($\approx 5{,}0$ NFEV/passo) e $\approx 417{,}7\,\text{ms}$ de tempo de CPU. Ou seja, na partição mais refinada, o método implícito demanda $5$ vezes mais avaliações funcionais e um tempo de execução mais de $26$ vezes superior ao explícito para entregar um erro final ainda ligeiramente maior ($0{,}388$ contra $0{,}313$).
+\end{enumerate}
+
+%-------------------------------------------------------------------------------------
+\subsection{Síntese Crítica: Comparação entre Euler Avançado e Euler Recuado}
+\label{sec:a-sintese}
+
+A investigação teórica e experimental conduzida ao longo deste item desmistifica a noção intuitiva de que métodos implícitos seriam incondicionalmente superiores ou mais robustos que métodos explícitos em qualquer PVI. A síntese crítica articula-se em quatro eixos interdependentes:
+
+\paragraph{1. O paradoxo da distância à singularidade vs. instabilidade intrínseca da EDO.}
+Como demonstrado na Seção~\ref{sec:problema}, a solução exata $y(t) = t - 4 + \frac{6}{1+t}$ possui um polo de explosão em $t = -1$, mas para $t \ge 0$ é perfeitamente suave ($C^\infty$) e aproxima-se assintoticamente da reta $y = t - 4$, com curvatura $y''(t) = \frac{12}{(1+t)^3}$ decaindo rapidamente a zero. Se o erro numérico dependesse apenas da suavidade local da curva (que dita o erro de truncamento local $|\tau_n| = \frac{k}{2}y''(\xi_n)$), integrar longe da singularidade em $t \in [2,\, 5]$ deveria ser muito mais fácil do que em $t \in [0,\, 1{,}6]$.
+
+Os experimentos provaram exatamente o oposto: a degradação severa em longo prazo não é causada pela singularidade em $t = -1$, mas pelo \textbf{mau condicionamento (instabilidade intrínseca) da própria EDO} quando $y(t) > 0$, regido pela equação exata de propagação do erro~\eqref{eq:erro-exata-bernoulli}, $e'(t) = \lambda(t)e(t) + e(t)^2$, onde $\lambda(t) = 2y(t)$. Enquanto em $[0,\, 1{,}6]$ o trecho instável $[0, 1)$ é curto e parcialmente compensado pela região dissipativa $t \in (1,\, 2)$ ($\lambda(t) < 0$), resultando em um fator de amplificação acumulado modesto ($\Phi(0, 1{,}6) \approx 3{,}4$), a reentrada permanente na região $\lambda(t) > 0$ para $t > 2$ faz a amplificação acumulada saltar para $\Phi(0, 5) \approx 665{,}1$. Assim, mesmo longe da singularidade e com erros locais $\tau_n$ minúsculos, a dinâmica repulsora da EDO amplifica exponencialmente qualquer desvio prévio.
+
+\paragraph{2. Por que a A-estabilidade não garante convergência para qualquer passo $k$: autovalores positivos, estabilidade relativa e solubilidade de Newton.}
+A propriedade de $A$-estabilidade do Euler recuado ($|R_{\text{BE}}(z)| = |1 - z|^{-1} < 1$ para $\operatorname{Re}(z) < 0$) garante amortecimento incondicional \emph{apenas quando o autovalor local é negativo} ($\lambda < 0$, típico de sistemas rígidos dissipativos). Quando a EDO opera em regime de autovalor positivo ($\lambda(t) = 2y(t) > 0 \implies z = k\lambda > 0$), a $A$-estabilidade perde sua serventia e emergem dois obstáculos estruturais para o método implícito:
 \begin{itemize}
-  \item \textbf{Explosão em tempo finito (\emph{blow-up}) no Euler Recuado:}
-        Como o erro local mantém $U_n > y(t_n)$,
-    quando a solução exata volta a ficar positiva ($t > 2$), a perturbação positiva
-    $e = U - y > 0$ entra no regime
-    dominado pelo termo quadrático $e' = 2y\,e + e^2 \approx e^2$, que possui
-    assíntota vertical em tempo finito. Em
-    todas as malhas testadas, $U_n$ dispara até violar a condição $\Delta_n \ge 0$
-    (sendo necessário reduzir o passo até
-    $k \le 5/1462 \approx 0{,}00342$ para que o Euler recuado alcance $t = 5$).
-  \item \textbf{Captura por atrator espúrio no Euler Avançado:} Embora o
-        método explícito não exploda, suas trajetórias
-    sofrem uma bifurcação qualitativa severa. No trecho $t \in (1{,}462;\, 3{,}508)$,
-    tem-se $g(t) < 0$, de modo que
-    $f(t, U) = U^2 - g(t) > 0$ para todo $U$, fazendo as soluções numéricas subirem
-    acompanhando (por baixo) a solução
-    exata. Contudo, para $t > 3{,}508$, $g(t)$ volta a ser positiva e surgem as
-    curvas isóclinas de derivada nula
-    $U = \pm\sqrt{g(t)}$. Enquanto a solução exata permanece acima da isóclina
-    repulsora $+\sqrt{g(t)}$ e continua
-    crescendo até $y(5) = 2$, as aproximações do Euler explícito — por estarem
-    defasadas para baixo — são interceptadas
-    pela curva $U = +\sqrt{g(t)}$ em torno de $t \approx 3{,}6\text{--}3{,}8$. A
-    partir desse cruzamento, $U_n^2 < g(t_n)
-    \implies f(t_n, U_n) < 0$: a derivada muda de sinal, as trajetórias atingem um
-    máximo local e mergulham para a
-    região $U < 0$, onde $\frac{\partial f}{\partial y} = 2U < 0$ é fortemente
-    atrativa, sendo capturadas pelo ramo
-    assintoticamente estável (porém incorreto) $U(t) \approx -\sqrt{g(t)}$.
+  \item \emph{Inferioridade na estabilidade relativa para $z \in (0, 1)$:} Conforme estabelecido na Seção~\ref{sec:a-estabilidade-fatores} (Equação~\ref{eq:desigualdade-be}), os fatores de amplificação discretos satisfazem:
+  \[
+    R_{\text{FE}}(z) = 1 + z \;<\; \mathrm{e}^z \;<\; R_{\text{BE}}(z) = \frac{1}{1 - z}, \qquad \forall\, z \in (0,\, 1).
+  \]
+  Combinada à convexidade estrita ($y'' > 0$), essa desigualdade cria uma assimetria decisiva: o Euler avançado introduz erros locais negativos ($e_n < 0$) e subamplifica o modo crescente ($1 + z < \mathrm{e}^z$), mantendo a solução numérica contida por baixo (onde o termo $+e^2$ de $e' = \lambda e + e^2$ freia o termo linear $\lambda e < 0$). Em contrapartida, o Euler recuado introduz erros locais positivos ($e_n > 0$) e \emph{superamplifica} o modo crescente ($(1 - z)^{-1} > \mathrm{e}^z$), lançando a trajetória diretamente na bacia de explosão onde $\lambda e > 0$ e $+e^2 > 0$ somam forças.
+  \item \emph{Restrição severa de passo pela solubilidade não linear (barreira $\Delta_n \ge 0$):} A presença do polo artificial em $z = 1$ no amplificador implícito $R_{\text{BE}}(z) = (1 - z)^{-1}$ manifesta-se, na equação não linear de cada passo, como a perda de invertibilidade da Jacobiana do método de Newton ($F'(U) = 1 - 2kU = 0$) e a anulação do discriminante quadrático $\Delta_n = 1 - 4kc_n$. Consequentemente, longe de poder operar com passos arbitrários $k > 0$, o Euler recuado sofre uma restrição de passo de solubilidade ($k < k_{\text{crit}} \approx 0{,}1231$ em $[0,\, 1{,}6]$ e $k < k_{\text{crit}} \approx 0{,}00342$ em $[0,\, 5]$) meramente para que a equação discreta admita raízes reais — condição esta que ainda se mostra insuficiente frente ao \emph{blow-up} quadrático quando $e_n$ atinge $\mathcal{O}(1)$ (como verificado em $k = 0{,}003125$).
 \end{itemize}
 
-\subsubsection{Síntese Crítica: Comparação entre Euler Explícito e Implícito}
+\paragraph{3. Comparação crítica e \emph{trade-off} computacional nos três cenários.}
+A Tabela~\ref{tab:a-sintese-cenarios} sintetiza comparativamente o comportamento geométrico, os mecanismos de falha, a precisão e o custo computacional dos dois métodos através dos três cenários investigados.
 
-A investigação realizada neste item permite formular três conclusões críticas que
-desmistificam a aplicação automática
-de métodos implícitos em PVIs não lineares:
-\begin{enumerate}
-  \item \textbf{Irrelevância da distância à singularidade frente à
-        instabilidade intrínseca:} Mesmo integrando em
-    $[0, 1{,}6]$ ou $[0, 5]$ — regiões onde a solução exata $y(t)$ é perfeitamente
-    suave e afastada do polo em
-    $t = -1$ —, ambos os métodos enfrentam severa degradação. A proximidade da
-    singularidade em $t = 0$ apenas eleva a
-    curvatura inicial ($y''(0) = 12$), mas o fator determinante para a divergência
-    subsequente é a instabilidade
-    dinâmica da própria EDO ($\frac{\partial f}{\partial y} = 2y > 0$).
-  \item \textbf{A A-estabilidade não protege contra modos crescentes nem
-        contra erros no lado repulsivo:} O Euler
-    implícito é incondicionalmente estável apenas quando $\frac{\partial f}{\partial
-    y} < 0$. Neste PVI, a combinação de
-    convexidade ($y'' > 0$, que força o Euler implícito a errar para cima) com
-    Jacobiana positiva ($\frac{\partial f}{\partial y} = 2y > 0$)
-    empurra a aproximação implícita diretamente para a bacia de explosão (*blow-up*)
-    da equação de Riccati e amplifica o
-    erro a uma taxa $(1 - z)^{-1} > e^z$. Já o Euler explícito, ao errar para baixo,
-    beneficia-se do amortecimento na
-    região $U + y < 0$ em $[0, 1{,}6]$, mas em intervalos longos ($[0, 5]$) acaba
-    capturado pelo atrator espúrio
-    $-\sqrt{g(t)}$.
-  \item \textbf{Restrição de passo por solubilidade no método implícito:}
-        Enquanto métodos explícitos sofrem restrição
-    de passo por estabilidade em problemas rígidos ($\lambda \ll 0$), o Euler
-    implícito sofre aqui uma restrição severa
-    de passo ($k < 0{,}123$ em $[0, 1{,}6]$ e $k < 0{,}00342$ em $[0, 5]$) para
-    garantir a própria \emph{existência de
-    raiz real} ($\Delta_n \ge 0$, ligada a $k\,\frac{\partial f}{\partial y} < 1$).
-    Assim, com ordem de precisão baixa
-    ($p = 1$), o pagamento do alto custo computacional das iterações de Newton no
-    Euler recuado não traz qualquer
-    benefício, motivando diretamente o emprego de métodos de ordem superior nos
-    itens~(b) e~(c).
-\end{enumerate}
+\begin{table}[H]
+\centering
+\small
+\caption{Síntese crítica comparativa entre Euler Avançado (Explícito) e Euler Recuado (Implícito) nos três cenários experimentais do Item~(a).}\label{tab:a-sintese-cenarios}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{p{3.6cm}p{5.6cm}p{5.6cm}}
+\toprule
+\textbf{Cenário / Critério} & \textbf{Euler Avançado (Explícito)} & \textbf{Euler Recuado (Implícito)} \\
+\midrule
+\textbf{Viés direcional ($y'' > 0$)} e \textbf{Estabilidade relativa ($\lambda > 0$)} &
+Erra por baixo ($\tau_n^{\text{FE}} > 0 \implies e_n < 0$) e subamplifica o modo crescente ($R_{\text{FE}}(z) = 1+z < \mathrm{e}^z$). Termo $+e^2$ opõe-se a $\lambda e < 0$ (freio não linear). &
+Erra por cima ($\tau_n^{\text{BE}} < 0 \implies e_n > 0$) e superamplifica o modo crescente ($R_{\text{BE}}(z) = (1-z)^{-1} > \mathrm{e}^z$). Termos $\lambda e > 0$ e $+e^2 > 0$ somam-se (\emph{blow-up}). \\
+\midrule
+\textbf{Cenário 1:} $[0,\, 1{,}6]$ ($k \in \{0{,}2;\, 0{,}1;\, 0{,}05\}$ e ref.) &
+Estável e convergente em todas as malhas ($E = 0{,}205 \to 0{,}0034$, $p_{\text{obs}} \to 0{,}99$). Menor erro absoluto em todas as partições e custo mínimo ($1$ NFEV/passo; $1{,}64\,\text{ms}$ em $k=0{,}003125$). &
+Colapsa em $k = 0{,}2$ ($t = 0{,}6$, $\Delta_2 < 0$; exige $k < 0{,}1231$). Converge para $k \le 0{,}1$ ($p_{\text{obs}} \to 1{,}02$), mas com erro maior que o explícito e custo $\approx 30\times$ superior ($6\text{--}9$ NFEV/passo; $51{,}97\,\text{ms}$). \\
+\midrule
+\textbf{Cenário 2:} $[0,\, 5]$ clássico ($k \in \{0{,}2;\, 0{,}1;\, 0{,}05\}$) &
+Completa a malha sem falha algébrica, mas sofre \textbf{falha qualitativa}: cruza a isóclina repulsora $+\sqrt{g(t)}$ em $t \in [3{,}60;\, 3{,}75]$ e cai para o atrator espúrio $-\sqrt{g(t)}$ ($E \approx 3{,}15\text{--}3{,}18$). &
+Sofre \textbf{colapso algébrico generalizado}: todas as três malhas violam $\Delta_n \ge 0$ e travam prematuramente em $t = 0{,}6$ ($k=0{,}2$), $t = 2{,}2$ ($k=0{,}1$) e $t = 3{,}5$ ($k=0{,}05$). \\
+\midrule
+\textbf{Cenário 3:} $[0,\, 5]$ refinado ($k$ até $0{,}000390625$, $N = 12.800$) &
+Refinamento apenas retarda o cruzamento da isóclina ($t = 4{,}05 \to 4{,}89$) devido ao corredor estreito ($\approx 0{,}22$) frente a $\Phi(0,5)\approx 665$. Atinge $E = 0{,}313$ ($p_{\text{obs}} = 0{,}87$) com $12.800$ NFEV e $15{,}9\,\text{ms}$. &
+Exige $k < 0{,}00342$ para $\Delta_n > 0$, mas ainda sofre \emph{blow-up} em $k = 0{,}003125$ ($U(5) \approx 23{,}87$). Só controla $+e^2$ para $k \le 0{,}0015625$. Em $N = 12.800$, entrega $E = 0{,}388$ com $63.984$ NFEV e $417{,}7\,\text{ms}$ ($26\times$ mais lento). \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\paragraph{4. Conclusão sobre o \emph{trade-off} e motivação para métodos de ordem superior.}
+O confronto nos três cenários demonstra que, para este PVI, o Euler recuado apresenta um \emph{trade-off} estritamente desfavorável frente ao Euler avançado: por pagar o alto preço computacional das iterações de Newton em cada passo e, simultaneamente, errar para o lado explosivo da equação de Riccati, ele entrega menor robustez (colapso por $\Delta < 0$), maior erro absoluto e tempo de execução de $26$ a $30$ vezes superior. Por outro lado, o Cenário~3 expõe o limite estrutural de \emph{qualquer} método de primeira ordem ($p = 1$) diante de uma amplificação acumulada $\Phi(0, 5) \approx 665{,}1$: reduzir a semente de erro apenas linearmente ($\mathcal{O}(k)$) obriga o uso de malhas proibitivamente finas ($N = 12.800$) para obter uma precisão ainda sofrível ($E \approx 0{,}3\text{--}0{,}4$). Conclui-se, portanto, que vencer a instabilidade intrínseca da EDO com eficiência computacional exige \textbf{elevar a ordem de convergência do integrador ($p > 1$)}, de modo a reduzir drasticamente a semente de erro de truncamento local ($\mathcal{O}(k^p) \ll 1$) antes que o fator $\Phi(0, t)$ possa amplificá-la — diretriz que fundamenta a transição para o método explícito de Runge-Kutta de quarta ordem ($p = 4$) no Item~(b) e para o método implícito de Adams-Moulton de segunda ordem ($p = 2$) no Item~(c).
 
 %=====================================================================================
 \newpage
@@ -889,6 +979,137 @@ desvantagens computacionais e teóricas.
 %-------------------------------------------------------------------------------------
 \subsection{Fundamentação Teórica}
 \label{sec:b-teoria}
+
+Como demonstrado no Item~(a), a baixa ordem de precisão ($p = 1$) do método de Euler avançado faz com que erros de
+truncamento locais da ordem de $O(k^2)$ sejam rapidamente amplificados pela dinâmica não linear do PVI de Motivação.
+Para elevar a ordem de precisão sem abrir mão da estrutura explícita de passo único (isto é, sem necessitar de valores em
+passos anteriores $U_{n-1}, U_{n-2}, \dots$ nem da resolução de equações não lineares a cada passo), os métodos de
+Runge-Kutta avaliam a função $f(t, y)$ em múltiplos \emph{estágios intermediários} dentro do intervalo $[t_n, t_{n+1}]$.
+
+Partindo novamente da formulação integral exata~\eqref{eq:integral}, o método clássico de Runge-Kutta de quarta ordem
+(Exemplo~5.13 de LeVeque~\cite{leveque2007}) constrói quatro estimativas de estado ($Y_1, Y_2, Y_3, Y_4$) e quatro
+inclinações ($F_1, F_2, F_3, F_4$) a cada passo:
+\begin{subequations}\label{eq:rk4}
+\begin{align}
+  Y_1 &= U_n,                          & F_1 &= f(t_n, Y_1), \label{eq:rk4-s1}\\
+  Y_2 &= U_n + \frac{k}{2}\,F_1,       & F_2 &= f\!\left(t_n + \frac{k}{2},\, Y_2\right), \label{eq:rk4-s2}\\
+  Y_3 &= U_n + \frac{k}{2}\,F_2,       & F_3 &= f\!\left(t_n + \frac{k}{2},\, Y_3\right), \label{eq:rk4-s3}\\
+  Y_4 &= U_n + k\,F_3,                 & F_4 &= f(t_n + k,\, Y_4), \label{eq:rk4-s4}\\
+  U_{n+1} &= U_n + \frac{k}{6}\bigl(F_1 + 2F_2 + 2F_3 + F_4\bigr). \label{eq:rk4-comb}
+\end{align}
+\end{subequations}
+Geometricamente, $F_1$ é a inclinação no início do passo (usada para prever o ponto médio $Y_2$ via Euler explícito de
+passo $k/2$); $F_2$ é uma primeira inclinação no ponto médio (usada para corrigir a estimativa no ponto médio para
+$Y_3$); $F_3$ é a inclinação corrigida no ponto médio (usada para prever o extremo final $Y_4$ via regra do ponto médio);
+e $F_4$ é a inclinação no final do passo. Na combinação final~\eqref{eq:rk4-comb}, os pesos $(1/6, 2/6, 2/6, 1/6)$
+reproduzem exatamente a \emph{regra de quadratura de Simpson} caso $f$ dependa apenas de~$t$.
+
+\subsection{Implementação do Método}
+\label{sec:b-implementacao}
+
+O método RK4 foi implementado na função \texttt{rk4} dentro do mesmo módulo \texttt{src/pvi/metodos.py}, seguindo
+exatamente a mesma interface das rotinas de Euler. Em cada iteração do laço principal, calculam-se sequencialmente os
+quatro estágios explícitos~\eqref{eq:rk4-s1}--\eqref{eq:rk4-s4}, contabilizando exatamente $4$ avaliações da função $f$
+por passo (\texttt{nfev += 4}), sem necessidade de derivada $\partial f/\partial y$ nem de solucionadores iterativos. O
+código em Python comentado é exibido no Código~\ref{lst:rk4}.
+
+\begin{listing}[H]
+\caption{Implementação do método explícito de Runge-Kutta de 4ª Ordem (RK4) em Python.}\label{lst:rk4}
+\begin{minted}[linenos, frame=lines, framesep=2mm, fontsize=\footnotesize]{python}
+def rk4(pvi, n, k):
+    # Marca o início de execução para medição do tempo de CPU
+    t0_cpu = time.perf_counter()
+    
+    # Pré-alocação dos vetores de tempo e solução numérica
+    t_vals = np.zeros(n + 1)
+    y_vals = np.zeros(n + 1)
+    t_vals[0] = pvi.t0
+    y_vals[0] = pvi.y0
+
+    tn = pvi.t0
+    Un = pvi.y0
+    nfev = 0  # Contador de avaliações da função f
+    
+    # Contador de pontos válidos (para truncamento caso ocorra divergência)
+    pts = 1 
+
+    for i in range(n):
+        # Estágio 1: inclinação no início do passo (tn)
+        Y1 = Un
+        F1 = pvi.f(tn, Y1)
+        
+        # Estágio 2: estimativa no ponto médio (tn + k/2) usando F1
+        Y2 = Un + 0.5 * k * F1
+        F2 = pvi.f(tn + 0.5 * k, Y2)
+        
+        # Estágio 3: nova estimativa no ponto médio (tn + k/2) usando F2
+        Y3 = Un + 0.5 * k * F2
+        F3 = pvi.f(tn + 0.5 * k, Y3)
+        
+        # Estágio 4: estimativa no final do passo (tn + k) usando F3
+        Y4 = Un + k * F3
+        F4 = pvi.f(tn + k, Y4)
+        
+        # Combinação ponderada (regra de Simpson) para obter U_{n+1}
+        Un1 = Un + (k / 6.0) * (F1 + 2*F2 + 2*F3 + F4)
+        tn1 = pvi.t0 + (i + 1) * k
+        
+        # O método RK4 clássico avalia a função f exatamente 4 vezes por passo
+        nfev += 4  
+
+        # Interrupção preventiva caso a solução exploda (NaN ou Inf)
+        if not np.isfinite(Un1):
+            print(f"RK4 explodiu em t = {tn1:.4f} (com passo k = {k})")
+            break
+
+        t_vals[i+1] = tn1
+        y_vals[i+1] = Un1
+        tn = tn1
+        Un = Un1
+        
+        pts += 1
+        
+    # Marca o fim da execução do método
+    tf_cpu = time.perf_counter()
+    
+    # Empacotamento das estatísticas computacionais
+    stats = {
+        'nfev': nfev,
+        'runtime': tf_cpu - t0_cpu,
+    }
+    
+    return t_vals[:pts], y_vals[:pts], stats
+\end{minted}
+\end{listing}
+
+%-------------------------------------------------------------------------------------
+\subsection{Resultados e Discussão}
+\label{sec:b-resultados}
+
+O experimento numérico deste item (\texttt{experimentos/exp\_b\_rf4.py}) consistiu em resolver o PVI de
+Motivação~\eqref{eq:pvi} nos intervalos $[0,\,1{,}6]$ e $[0,\,5]$ utilizando o método explícito RK4 e comparando-o
+diretamente ao método explícito de Euler avançado para as mesmas malhas $k \in \{0{,}2;\, 0{,}1;\, 0{,}05\}$ (e
+refinamentos até $k = 0{,}00625$).
+
+\subsubsection{Desempenho no Intervalo $[0,\,1{,}6]$: RK4 versus Euler Avançado}
+
+A Figura~\ref{fig:b-comparacao} compara visualmente as aproximações de RK4 (esquerda) e de Euler avançado (direita) em
+$[0, 1{,}6]$. A Tabela~\ref{tab:erros_runge-kutta_4} (em conjunto com a Tabela~\ref{tab:erros_euler_avancado}) confronta o custo computacional (NFEV e tempo de CPU), o erro máximo $E(k)$ e a
+ordem observada $p_{\text{obs}}$ dos dois métodos explícitos, enquanto a Tabela~\ref{tab:trajetoria_runge-kutta_4_k02} detalha a evolução
+passo a passo para $k = 0{,}2$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{b_comparacao_rk4_euler}
+  \caption{Comparação entre os dois métodos explícitos no intervalo $[0, 1{,}6]$: Runge-Kutta de 4ª Ordem (esquerda) e
+  Euler avançado (direita) para $k = 0{,}2$, $0{,}1$ e $0{,}05$.}
+  \label{fig:b-comparacao}
+\end{figure}
+
+\input{../resultados/item_b/tabelas/erros_runge-kutta_4.tex}
+\input{../resultados/item_b/tabelas/trajetoria_runge-kutta_4_k02.tex}
+
+Os resultados em $[0, 1{,}6]$ permitem extrair três conclusões diretas:
 
 
 \paragraph{Consistência} 
@@ -913,10 +1134,7 @@ código em Python comentado é exibido no Código~\ref{lst:rk4}.
 Python.}\label{lst:rk4}
 \begin{minted}[linenos, frame=lines, framesep=2mm, fontsize=\footnotesize]{python}
 def rk4(pvi, n, k):
-    # Marca o início de execução para medição do tempo de CPU
     t0_cpu = time.perf_counter()
-    
-    # Pré-alocação dos vetores de tempo e solução numérica
     t_vals = np.zeros(n + 1)
     y_vals = np.zeros(n + 1)
     t_vals[0] = pvi.t0
@@ -925,9 +1143,7 @@ def rk4(pvi, n, k):
     tn = pvi.t0
     Un = pvi.y0
     nfev = 0  # Contador de avaliações da função f
-    
-    # Contador de pontos válidos (para truncamento caso ocorra divergência)
-    pts = 1 
+    pts = 1 # Contador de pontos válidos 
 
     for i in range(n):
         # Estágio 1: inclinação no início do passo (tn)

@@ -25,3 +25,22 @@ def motivacao() -> PVI:
         return (1 - t) * (2 - t) / (1 + t)
     
     return PVI(f=f, dfdy=dfdy, y0=2.0, t0 = 0.0, solucao=solucao, nome="PVI Motivação")
+
+
+import numpy as np
+# ... (suas importações do PVI)
+
+def dahlquist(lambda_val=-15.0):
+    """Problema de teste para região de estabilidade absoluta."""
+    f = lambda t, y: lambda_val * y
+    dfdy = lambda t, y: lambda_val
+    exata = lambda t: np.exp(lambda_val * t)
+    
+    return PVI(
+        t0=0.0, 
+        y0=1.0, 
+        f=f, 
+        dfdy=dfdy, 
+        solucao=exata, 
+        nome=f"Dahlquist (\u03bb={lambda_val})"
+    )

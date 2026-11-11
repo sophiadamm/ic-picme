@@ -63,7 +63,6 @@ def tabela_passo_a_passo(prob, nome, k, t_vals, U_vals, export_tex=True, export_
                 # Usa mais casas decimais no CSV para não perder precisão nos dados
                 f.write(f"{i},{t_vals[i]:.4f},{U_vals[i]:.10f},{solucao_vals[i]:.10f},{erros[i]:.10e}\n")
 
-
 def tabela_erros(prob, nome, solucoes, K, pasta_tab=None, pasta_dados=None):
     """Calcula erros, imprime no console e exporta para LaTeX e CSV com estatísticas completas."""
 
@@ -121,3 +120,60 @@ def tabela_erros(prob, nome, solucoes, K, pasta_tab=None, pasta_dados=None):
         f.write("k,passos,nfev,cpu_ms,erro_max,ordem\n")
         for linha in linhas_tabela:
             f.write(f"{linha['k']},{linha['passos']},{linha['nfev']},{linha['cpu_ms']:.4f},{linha['erro']:.10e},{linha['ordem']}\n")
+
+def busca_passo_critico_euler(prob, tspan=(0.0, 1.6), n_inicial=1, n_max=5000, g_func=None):
+    """
+    Realiza uma busca numérica pelo menor número de passos n (ou maior passo k = (tf - t0)/n)
+    em malhas uniformes que permite ao método de Euler recuado completar o intervalo tspan
+    sem que o discriminante Delta_n = 1 - 4k*c_n se torne negativo (perda de raízes reais).
+    """
+    t0, tf = tspan
+    h_total = tf - t0
+
+    if g_func is None:
+        from pvi.problemas import g as g_func
+
+    historico_falhas = {}
+
+    for n in range(n_inicial, n_max + 1):
+        k = h_total / n
+        u = prob.y0
+        completou = True
+        delta_min_n = float("inf")
+
+        for step in range(n):
+            tn1 = t0 + (step + 1) * k
+            c = u - k * g_func(tn1)
+            delta = 1.0 - 4.0 * k * c
+
+            if delta < delta_min_n:
+                delta_min_n = delta
+
+            if delta < 0:
+                completou = False
+                historico_falhas[n] = {
+                    "k": k,
+                    "passo_falha": step + 1,
+                    "t_falha": tn1,
+                    "delta": delta,
+                }
+                break
+
+            # Avanço para a menor raiz real (ramo físico)
+            u = (1.0 - delta**0.5) / (2.0 * k)
+
+        if completou:
+            return {
+                "n_critico": n,
+                "k_critico": k,
+                "delta_min": delta_min_n,
+                "historico_falhas": historico_falhas,
+            }
+
+    return {
+        "n_critico": None,
+        "k_critico": None,
+        "delta_min": None,
+        "historico_falhas": historico_falhas,
+    }
+

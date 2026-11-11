@@ -22,15 +22,17 @@ Stack: Python + NumPy + Matplotlib + pytest.
 - [ ] `metodos.py`
   - [✓] `euler_explicito` em `metodos.py` 
   - [✓] `euler_implicito` em `metodos.py` 
-- [✓] `exp_a_fig122.py` e `plotagem.py` -> resultados (tabelas e graficos): h = 0.2, 0.1, 0.05 em [0, 1.6]
+- [✓] `exp_a_padrao.py` e `exp_a_expandido.py` (`plotagem.py`) -> resultados (tabelas e gráficos) nos intervalos [0, 1.6] e [0, 5]
 - [✓] `uteis.py`- ferramentas universais para os experimentos
 
 
 **Relatório**
 - [✓] Introdução/Objetivos do item a
-- Implementação 
-- [-] Resultados e Discussão 
-
+- [✓] Implementação 
+- [✓] Resultados e Discussão 
+  - [✓] Análise experimento I (intervalo [0, 1.6])
+  - [✓] Análise experimento II (intervalo [0, 5])
+- [✓] Síntese/Conclusão Crítica (! Comparação dos Métodos)
 ---
 
 ## Item B:  Métodos Explícitos ( Euler e Runge-Kutta de Quarta Ordem)
@@ -39,14 +41,15 @@ Stack: Python + NumPy + Matplotlib + pytest.
 - [✓] `rf4` em `metodos.py`  
 - [✓] `exp_b_rf4.py` e `plotagem.py` -> resultados (tabelas e graficos)
 
-**Relatório**
-- [ ] Introdução/Objetivos do item b
-- [ ] Implementação 
-- [ ] Resultados e Discussão 
-  - [ ] Entender (Comparação dos dois métodos e verificação da teoria)
-  - [ ] Escrever ! Descrição Crítica
 
-**Pronto quando:** 
+**Relatório**
+- [] Introdução/Objetivos do item b
+- [✓] Implementação 
+- [] Resultados e Discussão 
+  - [] Análise experimento I (intervalo [0, 1.6])
+  - [] Análise experimento II (intervalo [0, 5])
+- [] Síntese/Conclusão Crítica (! Comparação dos Métodos)
+
 
 ## Item C:  Métodos Implícitos ( Euler e Adams Moulton(2-step))
 **Implementar**
@@ -54,21 +57,38 @@ Stack: Python + NumPy + Matplotlib + pytest.
 - [] `exp_c_adams_moulton.py` e `plotagem.py` -> resultados (tabelas e graficos)
 
 **Relatório**
-- [ ] Introdução/Objetivos do item c
-- [ ] Implementação 
-- [ ] Resultados e Discussão 
-  - [ ] Entender (Comparação dos dois métodos e verificação da teoria)
-  - [ ] Escrever ! Descrição Crítica
+- [] Introdução/Objetivos do item b
+- [] Implementação 
+- [] Resultados e Discussão 
+  - [] Análise experimento I (intervalo [0, 1.6])
+  - [] Análise experimento II (intervalo [0, 5])
+- [] Síntese/Conclusão Crítica (! Comparação dos Métodos)
 
-**Pronto quando:** 
+## Item D:  Intervalos Mais Longos
+
+## Extra: Soluções para os problemas encontrados
 
 ## Finalizar/Revisão Geral do Relatório
 
 - [ ] Criar o `README.md` com um esqueleto de "como rodar"
+- [ ] Conclusão do Relatório
+- [ ] Revisão e Documentação dos códigos
+- [ ] Estrutura do Relatório 
+- [ ] Referências
 
 [Introdução]
   - [] Completar descrição dos itens na primeira parte da introdução 
-  - [] Fazer resumo/abstract
-  - [] Revisar a parte de ambiente computacional 
-  [?] Resumir escrita
-  [?] É realmente necessário o experimento para mostrar a instabilidade da EDO (Faz sentido essa antecipação ou perde o propósito da atividade?)
+  - [?] Revisar a parte de ambiente computacional 
+  - [?] Deixar tabela dos autovalores mais completa?
+
+[Item A]
+  - [] Resumir
+  
+[Item B]
+  - []
+
+[Item C]
+  - []
+
+[Item D]
+  - []
