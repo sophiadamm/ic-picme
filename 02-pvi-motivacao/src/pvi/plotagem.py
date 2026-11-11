@@ -21,7 +21,7 @@ def _salvar(fig, caminho):
     """Salva em PDF e PNG"""
     base = Path(caminho)
     base.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(base.with_suffix(".pdf"))
+    #fig.savefig(base.with_suffix(".pdf"))
     fig.savefig(base.with_suffix(".png"), dpi=200)
     plt.close(fig)
 
