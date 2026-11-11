@@ -39,15 +39,13 @@ Stack: Python + NumPy + Matplotlib + pytest.
 
 **Implementar**
 - [✓] `rf4` em `metodos.py`  
-- [✓] `exp_b_rf4.py` e `plotagem.py` -> resultados (tabelas e graficos)
+- [✓] `exp_b_padrão.py` e `exp_b_expandido.py` (plotagem)
 
 
 **Relatório**
 - [] Introdução/Objetivos do item b
 - [✓] Implementação 
 - [] Resultados e Discussão 
-  - [] Análise experimento I (intervalo [0, 1.6])
-  - [] Análise experimento II (intervalo [0, 5])
 - [] Síntese/Conclusão Crítica (! Comparação dos Métodos)
 
 

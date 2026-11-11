@@ -1,9 +1,7 @@
 import matplotlib
 matplotlib.use("Agg") 
 import numpy as np
-from pvi.problemas import motivacao
-from pvi.metodos import euler_explicito, euler_implicito
-from pvi.plotagem import configurar_estilo, plot_comparacao, plot_fig122
+from pvi.problemas import g
 import os
 
 
@@ -177,3 +175,77 @@ def busca_passo_critico_euler(prob, tspan=(0.0, 1.6), n_inicial=1, n_max=5000, g
         "historico_falhas": historico_falhas,
     }
 
+
+def diagnosticar_cruzamento_isoclina(prob, metodo, ks, tf=5.0):
+    """Imprime o diagnóstico do instante em que cada trajetória cruza a isóclina +sqrt(g(t))."""
+    print(f"=== Diagnóstico de Cruzamento da Isóclina +sqrt(g(t)) em [0, {tf}] ===")
+    for k in ks:
+        t, U, _ = resolver(metodo, prob, k, tf)
+        # Busca em t > 3.5 onde f(t_n, U_n) = U_n^2 - g(t_n) fica negativo
+        mask = t > 3.5
+        t_pos = t[mask]
+        U_pos = U[mask]
+        f_pos = U_pos**2 - g(t_pos)
+
+        idx_neg = np.where(f_pos < 0)[0]
+        idx_pico = np.argmax(U_pos)
+        t_pico = t_pos[idx_pico]
+        u_pico = U_pos[idx_pico]
+        iso_pico = np.sqrt(max(g(t_pico), 0.0))
+
+        if len(idx_neg) > 0:
+            t_cruz = t_pos[idx_neg[0]]
+            print(
+                f"k = {k:<10} | Pico em t = {t_pico:.4f} (U = {u_pico:.4f}, +sqrt(g) = {iso_pico:.4f}) "
+                f"| Mergulho (f < 0) a partir de t = {t_cruz:.4f} | U(5) = {U[-1]:+.4f}"
+            )
+        else:
+            print(f"k = {k:<10} | Permaneceu acima da isóclina até t = {tf} | U(5) = {U[-1]:+.4f}")
+
+
+def exportar_tabela_discriminante_tex(prob, k=0.2, caminho_tab=None):
+    """Gera a tabela LaTeX com os 3 passos de k=0.2 comparando o discriminante exato e simulado."""
+    os.makedirs(PASTA_TAB, exist_ok=True)
+    caminho = caminho_tab or os.path.join(PASTA_TAB, "discriminante_euler_k02.tex")
+
+    linhas = []
+    u = prob.y0
+    for step in range(3):
+        tn = prob.t0 + step * k
+        tn1 = tn + k
+        c_num = u - k * g(tn1)
+        delta_num = 1.0 - 4.0 * k * c_num
+        c_exato = prob.solucao(tn) - k * g(tn1)
+        delta_exato = 1.0 - 4.0 * k * c_exato
+
+        d_num_str = f"\\mathbf{{{delta_num:+.6f}}}" if delta_num < 0 else f"{delta_num:+.6f}"
+        linhas.append(
+            f"        ${step} \\to {step+1}$ & ${tn:.1f} \\to {tn1:.1f}$ & "
+            f"${prob.solucao(tn):.6f}$ & ${u:.6f}$ & "
+            f"${c_exato:.6f}$ & ${c_num:.6f}$ & "
+            f"${delta_exato:+.6f}$ & ${d_num_str}$ \\\\"
+        )
+        if delta_num >= 0:
+            u = (1.0 - delta_num**0.5) / (2.0 * k)
+
+    conteudo = (
+        "\\begin{table}[H]\n"
+        "    \\centering\n"
+        "    \\small\n"
+        "    \\begin{tabular}{cccccccc}\n"
+        "        \\hline\n"
+        "        Passo ($n \\to n+1$) & $t_n \\to t_{n+1}$ & $y(t_n)$ & $U_n$ & "
+        "$c_n^{\\text{exato}}$ & $c_n^{\\text{num}}$ & $\\Delta_n^{\\text{exato}}$ & $\\Delta_n^{\\text{num}}$ \\\\\n"
+        "        \\hline\n"
+        + "\n".join(linhas) + "\n"
+        "        \\hline\n"
+        "    \\end{tabular}\n"
+        f"    \\caption{{Evolução algébrica do discriminante $\\Delta_n = 1 - 4k c_n$ no método de Euler recuado com $k = {k}$. "
+        f"No passo $2 \\to 3$ ($t_{{n+1}} = 0{{,}}6$), a barreira crítica $c_n \\le \\frac{{1}}{{4k}} = {1/(4*k):.2f}$ é violada "
+        f"($c_2^{{\\text{{num}}}} \\approx 1{{,}}2532$), tornando $\\Delta_2^{{\\text{{num}}}} < 0$ e impossibilitando a existência de qualquer raiz real.}}\n"
+        "    \\label{tab:discriminante_euler_k02}\n"
+        "\\end{table}\n"
+    )
+    with open(caminho, "w", encoding="utf-8") as f:
+        f.write(conteudo)
+    print(f"Tabela de discriminante salva em: {caminho}")
