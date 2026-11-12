@@ -16,16 +16,21 @@ def g(t):
 
 def motivacao() -> PVI:
     def f(t, y):
-        return y**2 - g(t)  
+        try:
+            return y**2 - g(t)
+        except OverflowError:
+            return np.inf  
 
     def dfdy(t, y):
-        return 2 * y
+        try:
+            return 2 * y
+        except OverflowError:
+            return np.inf
 
     def solucao(t):
         return (1 - t) * (2 - t) / (1 + t)
     
-    return PVI(f=f, dfdy=dfdy, y0=2.0, t0 = 0.0, solucao=solucao, nome="PVI Motivação")
-
+    return PVI(f=f, dfdy=dfdy, y0=2.0, t0=0.0, solucao=solucao, nome="PVI Motivação")
 
 import numpy as np
 # ... (suas importações do PVI)

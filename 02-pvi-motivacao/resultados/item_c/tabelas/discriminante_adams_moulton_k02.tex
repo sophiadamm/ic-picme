@@ -1,0 +1,15 @@
+\begin{table}[H]
+    \centering
+    \small
+    \begin{tabular}{cccccccc}
+        \hline
+        Passo & $t_n \to t_{n+1}$ & $y(t_n)$ & $U_n$ & $\tilde{c}_n^{\text{exato}}$ & $\tilde{c}_n^{\text{num}}$ & $\Delta_n^{\text{exato}}$ & $\Delta_n^{\text{num}}$ \\
+        \hline
+        $0->1$ & $0.0 \to 0.2$ & $2.000000$ & $2.000000$ & \text{(RK4)} & \text{(RK4)} & \text{---} & \text{---} \\
+        $1->2$ & $0.2 \to 0.4$ & $1.200000$ & $1.198088$ & $0.650159$ & $0.647635$ & $+0.783280$ & $+0.784122$ \\
+        $2->3$ & $0.4 \to 0.6$ & $0.685714$ & $0.686962$ & $0.341475$ & $0.343027$ & $+0.886175$ & $+0.885658$ \\
+        \hline
+    \end{tabular}
+    \caption{Evolução do discriminante $\Delta_n = 1 - 4(0.083)\tilde{c}_n$ no método Adams-Moulton de 2 passos. O discriminante numérico permaneceu positivo ($\Delta > 0$), preservando raízes reais.}
+    \label{tab:discriminante_adams_moulton_k02}
+\end{table}

@@ -175,3 +175,83 @@ def rk4(pvi, n, k):
     }
     
     return t_vals[:pts], y_vals[:pts], stats
+
+
+def adams_moulton(pvi, n, k):
+    # Marca o início de execução para medição do tempo de CPU
+    t0_cpu = time.perf_counter()
+    
+    # Pré-alocação dos vetores de tempo e solução numérica
+    t_vals = np.zeros(n + 1)
+    y_vals = np.zeros(n + 1)
+    t_vals[0] = pvi.t0
+    y_vals[0] = pvi.y0
+
+    nfev = 0  # Contador de avaliações de funções (f e dfdy)
+    pts = 1
+
+    if n >= 1:
+        # Inicialização do 1º passo (U_1 em t_1) via RK4 de 4ª ordem
+        t_init, y_init, stats_init = rk4(pvi, 1, k)
+        nfev += stats_init['nfev']
+
+        if len(y_init) < 2 or not np.isfinite(y_init[1]):
+            tf_cpu = time.perf_counter()
+            return t_vals[:pts], y_vals[:pts], {'nfev': nfev, 'runtime': tf_cpu - t0_cpu}
+
+        t_vals[1] = t_init[1]
+        y_vals[1] = y_init[1]
+        pts = 2
+
+        # Armazena f_{i-1} = f(t_0, U_0) e f_i = f(t_1, U_1) para reutilização nos passos seguintes
+        fn_1 = pvi.f(t_vals[0], y_vals[0])
+        fn = pvi.f(t_vals[1], y_vals[1])
+        nfev += 2
+
+        Un = y_vals[1]
+
+        # Laço principal do método Adams-Moulton de 2 passos (de i = 1 até n - 1)
+        for i in range(1, n):
+            tn1 = pvi.t0 + (i + 1) * k
+
+            # Resíduo de Adams-Moulton (2-step): U - U_i - (k/12)*(-f_{i-1} + 8*f_i + 5*f(t_{i+1}, U)) = 0
+            F  = lambda U: U - Un - (k / 12.0) * (-fn_1 + 8.0 * fn + 5.0 * pvi.f(tn1, U))
+            # Derivada analítica dF/dU = 1 - (5k/12) * df/dy(t_{i+1}, U)
+            dF = lambda U: 1.0 - (5.0 * k / 12.0) * pvi.dfdy(tn1, U)
+
+            # Preditor explícito de Adams-Bashforth de 2 passos (AB2) como aproximação inicial
+            U0 = Un + 0.5 * k * (3.0 * fn - fn_1)
+
+            # Resolução da equação não linear implícita via método de Newton
+            Un1, info = newton(F, x0=U0, fprime=dF, tol=1e-12, maxiter=50,
+                               full_output=True, disp=False)
+
+            # Cada iteração de Newton avalia F e dF
+            nfev += info.iterations * 2
+
+            # Interrupção caso Newton falhe em convergir ou gere valor não finito
+            if not info.converged or not np.isfinite(Un1):
+                print(f"Adams-Moulton (2-step) falhou em t = {tn1:.4f} (com passo k = {k})")
+                break
+
+            t_vals[i+1] = tn1
+            y_vals[i+1] = Un1
+            Un = Un1
+
+            # Atualiza histórico de derivadas para o próximo passo
+            fn_1 = fn
+            fn = pvi.f(tn1, Un1)
+            nfev += 1
+
+            pts += 1
+
+    # Marca o fim da execução do método
+    tf_cpu = time.perf_counter()
+
+    # Empacotamento das estatísticas computacionais
+    stats = {
+        'nfev': nfev,
+        'runtime': tf_cpu - t0_cpu,
+    }
+
+    return t_vals[:pts], y_vals[:pts], stats

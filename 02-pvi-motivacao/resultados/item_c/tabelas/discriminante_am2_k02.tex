@@ -1,0 +1,15 @@
+\begin{table}[H]
+    \centering
+    \small
+    \begin{tabular}{cccccccc}
+        \hline
+        Passo ($n \to n+1$) & $t_n \to t_{n+1}$ & $y(t_n)$ & $U_n$ & $\tilde{c}_n^{\text{exato}}$ & $\tilde{c}_n^{\text{num}}$ & $\Delta_n^{\text{exato}}$ & $\Delta_n^{\text{num}}$ \\
+        \hline
+        $0 \to 1$ & $0.0 \to 0.2$ & $2.000000$ & $2.000000$ & \text{(RK4)} & \text{(RK4)} & \text{---} & \text{---} \\
+        $1 \to 2$ & $0.2 \to 0.4$ & $1.200000$ & $1.198088$ & $0.650159$ & $0.647635$ & $+0.783280$ & $+0.784122$ \\
+        $2 \to 3$ & $0.4 \to 0.6$ & $0.685714$ & $0.686962$ & $0.341475$ & $0.343027$ & $+0.886175$ & $+0.885658$ \\
+        \hline
+    \end{tabular}
+    \caption{Evolução algébrica do discriminante $\Delta_n = 1 - \frac{5k}{3}\tilde{c}_n$ no método de Adams-Moulton de 2 passos com $k = 0.2$. O discriminante numérico $\Delta_n^{\text{num}}$ permaneceu estritamente positivo ($\Delta_n > 0$) em todos os passos calculados, preservando raízes reais e a solubilidade do método.}
+    \label{tab:discriminante_am2_k02}
+\end{table}

@@ -55,7 +55,8 @@ def executar():
         g_func=g,
         x_lim_zoom=(6.5, 8),     
         ylim=(-3.0, 4.8),          
-        ylim_zoom=(2.5, 4.6),     
+        ylim_zoom=(2.5, 4.6),
+        loc_legenda="upper left",
     )
     diagnosticar_cruzamento_isoclina(prob, rk4, K_TABELA, tf=TF)
 

@@ -3,13 +3,13 @@
     \small
     \begin{tabular}{cccccccc}
         \hline
-        Passo ($n \to n+1$) & $t_n \to t_{n+1}$ & $y(t_n)$ & $U_n$ & $c_n^{\text{exato}}$ & $c_n^{\text{num}}$ & $\Delta_n^{\text{exato}}$ & $\Delta_n^{\text{num}}$ \\
+        Passo & $t_n \to t_{n+1}$ & $y(t_n)$ & $U_n$ & $c_n^{\text{exato}}$ & $c_n^{\text{num}}$ & $\Delta_n^{\text{exato}}$ & $\Delta_n^{\text{num}}$ \\
         \hline
-        $0 \to 1$ & $0.0 \to 0.2$ & $2.000000$ & $2.000000$ & $1.078667$ & $1.078667$ & $+0.137067$ & $+0.137067$ \\
-        $1 \to 2$ & $0.2 \to 0.4$ & $1.200000$ & $1.574437$ & $0.693714$ & $1.068151$ & $+0.445029$ & $+0.145479$ \\
-        $2 \to 3$ & $0.4 \to 0.6$ & $0.685714$ & $1.546458$ & $0.392464$ & $1.253208$ & $+0.686029$ & $\mathbf{-0.002566}$ \\
+        $0->1$ & $0.0 \to 0.2$ & $2.000000$ & $2.000000$ & $1.078667$ & $1.078667$ & $+0.137067$ & $+0.137067$ \\
+        $1->2$ & $0.2 \to 0.4$ & $1.200000$ & $1.574437$ & $0.693714$ & $1.068151$ & $+0.445029$ & $+0.145479$ \\
+        $2->3$ & $0.4 \to 0.6$ & $0.685714$ & $1.546458$ & $0.392464$ & $1.253208$ & $+0.686029$ & $\mathbf{-0.002566}$ \\
         \hline
     \end{tabular}
-    \caption{Evolução algébrica do discriminante $\Delta_n = 1 - 4k c_n$ no método de Euler recuado com $k = 0.2$. No passo $2 \to 3$ ($t_{n+1} = 0.6$), a barreira crítica $c_n \le \frac{1}{4k} = 1.25$ é violada ($c_2^{\text{num}} \approx 1.2532$), tornando $\Delta_2^{\text{num}} < 0$ e impossibilitando a existência de qualquer raiz real.}
+    \caption{Evolução do discriminante $\Delta_n = 1 - 4(0.200)c_n$ no método Euler recuado. No passo $2->3$ ($t_{n+1} = 0.6$), a barreira $c_n \le 1.25$ é violada, tornando $\Delta < 0$.}
     \label{tab:discriminante_euler_k02}
 \end{table}

@@ -75,6 +75,7 @@ def executar():
         titulo="Euler Avançado",
         g_func=g,
         x_lim_zoom=(3.0, 5.0),
+        loc_legenda="upper center",
     )
     plot_isoclinas(
         prob,
@@ -85,11 +86,12 @@ def executar():
         titulo="Euler Avançado (Refinado)",
         g_func=g,
         x_lim_zoom=(3.2, 5.0),
+        loc_legenda="upper center",
     )
     diagnosticar_cruzamento_isoclina(prob, euler_explicito, K + K_REFINADO, tf=TF)
 
     # 5. Gráficos de Discriminante do Euler recuado em [0, 5]
-    plot_discriminante_euler(prob, K, TF, f"{PASTA_FIG}/a_discriminante_eulerT5", g_func=g)
+    plot_discriminante_euler(prob, K, TF, f"{PASTA_FIG}/a_discriminante_eulerT5", g_func=g, loc_legenda="upper right")
     plot_discriminante_euler(prob, K_REFINADO, TF, f"{PASTA_FIG}/a_discriminante_eulerT5_ref", g_func=g, x_lim_zoom=(3.8, 5.02))
 
     # 6. Tabelas de erro computacional em [0, 5]

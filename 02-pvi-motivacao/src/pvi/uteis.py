@@ -2,9 +2,8 @@ import matplotlib
 matplotlib.use("Agg") 
 import numpy as np
 from pvi.problemas import g
+from pvi.metodos import rk4
 import os
-
-
 
 def erro_max(prob, t, U):
     return np.max(np.abs(U - prob.solucao(t)))
@@ -119,62 +118,12 @@ def tabela_erros(prob, nome, solucoes, K, pasta_tab=None, pasta_dados=None):
         for linha in linhas_tabela:
             f.write(f"{linha['k']},{linha['passos']},{linha['nfev']},{linha['cpu_ms']:.4f},{linha['erro']:.10e},{linha['ordem']}\n")
 
-def busca_passo_critico_euler(prob, tspan=(0.0, 1.6), n_inicial=1, n_max=5000, g_func=None):
-    """
-    Realiza uma busca numérica pelo menor número de passos n (ou maior passo k = (tf - t0)/n)
-    em malhas uniformes que permite ao método de Euler recuado completar o intervalo tspan
-    sem que o discriminante Delta_n = 1 - 4k*c_n se torne negativo (perda de raízes reais).
-    """
-    t0, tf = tspan
-    h_total = tf - t0
+#--------------------------------------------------------------------------------------------------------------------------------
 
-    if g_func is None:
-        from pvi.problemas import g as g_func
-
-    historico_falhas = {}
-
-    for n in range(n_inicial, n_max + 1):
-        k = h_total / n
-        u = prob.y0
-        completou = True
-        delta_min_n = float("inf")
-
-        for step in range(n):
-            tn1 = t0 + (step + 1) * k
-            c = u - k * g_func(tn1)
-            delta = 1.0 - 4.0 * k * c
-
-            if delta < delta_min_n:
-                delta_min_n = delta
-
-            if delta < 0:
-                completou = False
-                historico_falhas[n] = {
-                    "k": k,
-                    "passo_falha": step + 1,
-                    "t_falha": tn1,
-                    "delta": delta,
-                }
-                break
-
-            # Avanço para a menor raiz real (ramo físico)
-            u = (1.0 - delta**0.5) / (2.0 * k)
-
-        if completou:
-            return {
-                "n_critico": n,
-                "k_critico": k,
-                "delta_min": delta_min_n,
-                "historico_falhas": historico_falhas,
-            }
-
-    return {
-        "n_critico": None,
-        "k_critico": None,
-        "delta_min": None,
-        "historico_falhas": historico_falhas,
-    }
-
+import numpy as np
+import os
+from pvi.metodos import rk4
+from pvi.problemas import g
 
 def diagnosticar_cruzamento_isoclina(prob, metodo, ks, tf=5.0):
     """Imprime o diagnóstico do instante em que cada trajetória cruza a isóclina +sqrt(g(t))."""
@@ -203,127 +152,229 @@ def diagnosticar_cruzamento_isoclina(prob, metodo, ks, tf=5.0):
             print(f"k = {k:<10} | Permaneceu acima da isóclina até t = {tf} | U(5) = {U[-1]:+.4f}")
 
 
-def exportar_tabela_discriminante(
-    prob,
-    k=0.2,
-    n_passos=3,
-    g_func=None,
-    export_tex=True,
-    export_csv=True,
-    pasta_tab=None,
-    pasta_dados=None,
-    caminho_tab=None,
-):
+def calcular_evolucao_discriminante(prob, k, n_passos, metodo="euler", g_func=None):
     """
-    Gera a tabela analítica (LaTeX e opcionalmente CSV) acompanhando passo a passo
-    a evolução do discriminante Delta_n = 1 - 4k c_n no método de Euler recuado,
-    comparando os valores teóricos sobre a curva exata com a trajetória simulada.
+    Motor matemático central. Retorna a evolução passo a passo do discriminante
+    sem se preocupar com formatação, arquivos ou gráficos.
     """
     if g_func is None:
         g_func = g
 
-    nome_sufixo = f"k{str(k).replace('.', '')}"
-    nome_arquivo = f"discriminante_euler_{nome_sufixo}"
+    is_am = metodo if isinstance(metodo, bool) else (str(metodo).lower() in ("adams_moulton", "adams_moulton_2", "am2", "am"))
+    n_passos = int(round(n_passos))
+    passos_iniciais = 2 if is_am else 1
+    a = (5.0 * k / 12.0) if is_am else k
 
-    dir_tex = pasta_tab or "resultados/item_a/tabelas"
-    dir_csv = pasta_dados or "resultados/item_a/dados"
+    # Funções auxiliares para cálculo do 'c' dependendo do método
+    def calc_c_euler(t_h, u_h, tn1):
+        return u_h[-1] - k * g_func(tn1)
+        
+    def calc_c_am2(t_h, u_h, tn1):
+        fn = prob.f(t_h[-1], u_h[-1])
+        fn_m1 = prob.f(t_h[-2], u_h[-2])
+        return u_h[-1] + (k / 12.0) * (8.0 * fn - fn_m1 - 5.0 * g_func(tn1))
+        
+    calc_c = calc_c_am2 if is_am else calc_c_euler
+    
+    # Inicialização
+    t_hist = [prob.t0 + i * k for i in range(passos_iniciais)]
+    dados = []
+    
+    if passos_iniciais == 1:
+        u_hist = [prob.y0]
+    else:
+        _, u_init, _ = rk4(prob, passos_iniciais - 1, k)
+        u_hist = list(u_init)
+        for i in range(passos_iniciais - 1):
+            dados.append({
+                "passo": f"{i}->{i+1}", "tn": t_hist[i], "tn1": t_hist[i+1],
+                "y_exato": prob.solucao(t_hist[i]), "u_num": u_hist[i],
+                "c_exato": np.nan, "c_num": np.nan, "delta_exato": np.nan, "delta_num": np.nan
+            })
 
-    linhas = []
-    linhas_dados = []
-    u = prob.y0
-    passo_falha = None
-    c_falha = None
+    # Laço principal via Bhaskara
+    for step in range(passos_iniciais - 1, n_passos):
+        tn1 = prob.t0 + (step + 1) * k
+        
+        c_num = calc_c(t_hist, u_hist, tn1)
+        delta_num = 1.0 - 4.0 * a * c_num
+        
+        u_exato_hist = [prob.solucao(t) for t in t_hist]
+        c_exato = calc_c(t_hist, u_exato_hist, tn1)
+        delta_exato = 1.0 - 4.0 * a * c_exato
 
-    for step in range(n_passos):
-        tn = prob.t0 + step * k
-        tn1 = tn + k
-        c_num = u - k * g_func(tn1)
-        delta_num = 1.0 - 4.0 * k * c_num
-        c_exato = prob.solucao(tn) - k * g_func(tn1)
-        delta_exato = 1.0 - 4.0 * k * c_exato
-
-        d_num_str = f"\\mathbf{{{delta_num:+.6f}}}" if delta_num < 0 else f"{delta_num:+.6f}"
-        linhas.append(
-            f"        ${step} \\to {step+1}$ & ${tn:.1f} \\to {tn1:.1f}$ & "
-            f"${prob.solucao(tn):.6f}$ & ${u:.6f}$ & "
-            f"${c_exato:.6f}$ & ${c_num:.6f}$ & "
-            f"${delta_exato:+.6f}$ & ${d_num_str}$ \\\\"
-        )
-        linhas_dados.append({
-            "passo": f"{step}->{step+1}",
-            "tn": tn,
-            "tn1": tn1,
-            "y_exato": prob.solucao(tn),
-            "u_num": u,
-            "c_exato": c_exato,
-            "c_num": c_num,
-            "delta_exato": delta_exato,
-            "delta_num": delta_num,
+        dados.append({
+            "passo": f"{step}->{step+1}", "tn": t_hist[-1], "tn1": tn1,
+            "y_exato": prob.solucao(t_hist[-1]), "u_num": u_hist[-1],
+            "c_exato": c_exato, "c_num": c_num, "delta_exato": delta_exato, "delta_num": delta_num
         })
 
         if delta_num < 0:
-            passo_falha = (step, step + 1, tn1)
-            c_falha = c_num
             break
 
-        u = (1.0 - delta_num**0.5) / (2.0 * k)
+        un1 = (1.0 - delta_num**0.5) / (2.0 * a)
+        t_hist.append(tn1)
+        u_hist.append(un1)
 
-    c_crit = 1.0 / (4.0 * k)
-    if passo_falha:
-        s_de, s_para, t_f = passo_falha
-        texto_falha = (
-            f"No passo ${s_de} \\to {s_para}$ ($t_{{n+1}} = {t_f:.1f}$), a barreira crítica "
-            f"$c_n \\le \\frac{{1}}{{4k}} = {c_crit:.2f}$ é violada ($c_{s_de}^{{\\text{{num}}}} \\approx {c_falha:.4f}$), "
-            f"tornando $\\Delta_{s_de}^{{\\text{{num}}}} < 0$ e impossibilitando a existência de qualquer raiz real."
-        )
-    else:
-        texto_falha = (
-            f"O discriminante numérico $\\Delta_n^{{\\text{{num}}}}$ permaneceu não-negativo em todos os passos calculados."
-        )
+    return dados, a, is_am
 
-    conteudo_tex = (
-        "\\begin{table}[H]\n"
-        "    \\centering\n"
-        "    \\small\n"
-        "    \\begin{tabular}{cccccccc}\n"
-        "        \\hline\n"
-        "        Passo ($n \\to n+1$) & $t_n \\to t_{n+1}$ & $y(t_n)$ & $U_n$ & "
-        "$c_n^{\\text{exato}}$ & $c_n^{\\text{num}}$ & $\\Delta_n^{\\text{exato}}$ & $\\Delta_n^{\\text{num}}$ \\\\\n"
-        "        \\hline\n"
-        + "\n".join(linhas) + "\n"
-        "        \\hline\n"
-        "    \\end{tabular}\n"
-        f"    \\caption{{Evolução algébrica do discriminante $\\Delta_n = 1 - 4k c_n$ no método de Euler recuado com $k = {k}$. "
-        f"{texto_falha}}}\n"
-        f"    \\label{{tab:{nome_arquivo}}}\n"
-        "\\end{table}\n"
-    )
 
-    if export_tex:
-        if caminho_tab:
-            caminho_tex = caminho_tab
-            os.makedirs(os.path.dirname(caminho_tex) or ".", exist_ok=True)
+def _passo_critico(prob, tspan=(0.0, 1.6), n_inicial=1, n_max=5000, metodo="euler", g_func=None):
+    """
+    Busca o menor número de passos (n) onde o método implícito sobrevive ao intervalo
+    tspan sem que o discriminante fique negativo, consumindo o motor matemático central.
+    """
+    t0, tf = tspan
+    h_total = tf - t0
+
+    if g_func is None:
+        g_func = g
+
+    historico_falhas = {}
+
+    for n in range(n_inicial, n_max + 1):
+        k = h_total / n
+        
+        # 1. Delega todo o trabalho pesado para o motor matemático
+        dados, _, _ = calcular_evolucao_discriminante(prob, k, n, metodo, g_func)
+        
+        # 2. Avaliamos o último passo calculado
+        ultimo_passo = dados[-1]
+        
+        # Proteção: Ignora partições tão grossas que sequer saíram da inicialização (RK4)
+        if np.isnan(ultimo_passo['delta_num']):
+            continue
+            
+        # 3. Verifica se houve falha (delta_num < 0)
+        if ultimo_passo['delta_num'] < 0:
+            historico_falhas[n] = {
+                "t_falha": ultimo_passo['tn1'],
+                "delta": ultimo_passo['delta_num']
+            }
         else:
-            os.makedirs(dir_tex, exist_ok=True)
-            caminho_tex = os.path.join(dir_tex, f"{nome_arquivo}.tex")
+            # Coleta o delta_min ignorando as linhas de inicialização (NaN)
+            delta_min = min(d['delta_num'] for d in dados if not np.isnan(d['delta_num']))
+            
+            return {
+                "n_critico": n,
+                "k_critico": k,
+                "delta_min": delta_min,
+                "historico_falhas": historico_falhas,
+            }
 
+    # Se esgotou o n_max e não convergiu
+    return {
+        "n_critico": None,
+        "k_critico": None,
+        "delta_min": None,
+        "historico_falhas": historico_falhas,
+    }
+
+
+def busca_critica(prob, metodo='euler', tspan=(0.0, 1.6)):
+    print("=" * 70)
+    print(f"BUSCA NUMÉRICA DE PASSO CRÍTICO: {metodo.upper()} IMPLÍCITO (Delta >= 0)")
+    print("=" * 70)
+
+    # Desempacota o intervalo para formatar direito
+    t0, tf = tspan
+    h_total = tf - t0
+
+    print(f"\nIntervalo : [{t0}, {tf}]")
+    print("-" * 50)
+    
+    # Chama a função usando a variável tspan dinâmica e um n_max seguro
+    res = _passo_critico(prob, tspan=tspan, n_inicial=1, n_max=5000, metodo=metodo)
+    
+    n = res["n_critico"]
+    k = res["k_critico"]
+    d = res["delta_min"]
+
+    # Proteção caso o método não convirja dentro do n_max
+    if n is not None:
+        print(f"Menor número de passos viável: n = {n}")
+        print(f"Maior passo uniforme:          k = {k:.6f}  (~ {h_total:g}/{n})")
+        print(f"Discriminante mínimo:          Delta_min = {d:.4f} > 0 (sucesso!)\n")
+    else:
+        print(f"FALHA: Não foi possível encontrar um passo viável no limite testado.\n")
+
+
+def exportar_tabela_discriminante(
+    prob, k=0.2, n_passos=3, metodo="euler", g_func=None,
+    export_tex=True, export_csv=True, pasta_tab=None, pasta_dados=None
+):
+    """
+    Função de View: Formata os dados do discriminante e salva os arquivos LaTeX/CSV.
+    """
+    dados, a, is_am = calcular_evolucao_discriminante(prob, k, n_passos, metodo, g_func)
+    
+    simb_c = "\\tilde{c}_n" if is_am else "c_n"
+    nome_tex = "Adams-Moulton de 2 passos" if is_am else "Euler recuado"
+    c_crit = 1.0 / (4.0 * a)
+    nome_arquivo = f"discriminante_{metodo.lower()}_k{str(k).replace('.','')}"
+    
+    linhas = []
+    for d in dados:
+        if np.isnan(d['delta_num']):
+            linhas.append(
+                f"        ${d['passo']}$ & ${d['tn']:.1f} \\to {d['tn1']:.1f}$ & "
+                f"${d['y_exato']:.6f}$ & ${d['u_num']:.6f}$ & \\text{{(RK4)}} & "
+                f"\\text{{(RK4)}} & \\text{{---}} & \\text{{---}} \\\\"
+            )
+        else:
+            d_str = f"\\mathbf{{{d['delta_num']:+.6f}}}" if d['delta_num'] < 0 else f"{d['delta_num']:+.6f}"
+            linhas.append(
+                f"        ${d['passo']}$ & ${d['tn']:.1f} \\to {d['tn1']:.1f}$ & "
+                f"${d['y_exato']:.6f}$ & ${d['u_num']:.6f}$ & ${d['c_exato']:.6f}$ & "
+                f"${d['c_num']:.6f}$ & ${d['delta_exato']:+.6f}$ & ${d_str}$ \\\\"
+            )
+
+    # Verifica o último passo processado para montar o texto de falha
+    ultimo = dados[-1]
+    if not np.isnan(ultimo['delta_num']) and ultimo['delta_num'] < 0:
+        texto_falha = f"No passo ${ultimo['passo']}$ ($t_{{n+1}} = {ultimo['tn1']:.1f}$), a barreira ${simb_c} \\le {c_crit:.2f}$ é violada, tornando $\\Delta < 0$."
+    else:
+        texto_falha = "O discriminante numérico permaneceu positivo ($\\Delta > 0$), preservando raízes reais."
+
+    # Exportação LaTeX
+    if export_tex:
+        dir_tex = pasta_tab or ("resultados/item_c/tabelas" if is_am else "resultados/item_a/tabelas")
+        os.makedirs(dir_tex, exist_ok=True)
+        caminho_tex = os.path.join(dir_tex, f"{nome_arquivo}.tex")
+        
+        eq_delta = f"\\Delta_n = 1 - 4({a:.3f}){simb_c}"
+        tex_content = (
+            "\\begin{table}[H]\n    \\centering\n    \\small\n    \\begin{tabular}{cccccccc}\n        \\hline\n"
+            f"        Passo & $t_n \\to t_{{n+1}}$ & $y(t_n)$ & $U_n$ & ${simb_c}^{{\\text{{exato}}}}$ & "
+            f"${simb_c}^{{\\text{{num}}}}$ & $\\Delta_n^{{\\text{{exato}}}}$ & $\\Delta_n^{{\\text{{num}}}}$ \\\\\n        \\hline\n"
+            + "\n".join(linhas) + "\n        \\hline\n    \\end{tabular}\n"
+            f"    \\caption{{Evolução do discriminante ${eq_delta}$ no método {nome_tex}. {texto_falha}}}\n"
+            f"    \\label{{tab:{nome_arquivo}}}\n\\end{{table}}\n"
+        )
         with open(caminho_tex, "w", encoding="utf-8") as f:
-            f.write(conteudo_tex)
-        print(f"Tabela de discriminante salva em: {caminho_tex}")
+            f.write(tex_content)
 
+    # Exportação CSV
     if export_csv:
+        dir_csv = pasta_dados or ("resultados/item_c/dados" if is_am else "resultados/item_a/dados")
         os.makedirs(dir_csv, exist_ok=True)
         caminho_csv = os.path.join(dir_csv, f"{nome_arquivo}.csv")
+        
         with open(caminho_csv, "w", encoding="utf-8") as f:
             f.write("passo,tn,tn1,y_exato,u_num,c_exato,c_num,delta_exato,delta_num\n")
-            for d in linhas_dados:
+            for d in dados:
+                # Tratamento de segurança para não escrever NaN como string formatada em float
+                c_ex = f"{d['c_exato']:.10f}" if not np.isnan(d['c_exato']) else "NaN"
+                c_num = f"{d['c_num']:.10f}" if not np.isnan(d['c_num']) else "NaN"
+                d_ex = f"{d['delta_exato']:.10f}" if not np.isnan(d['delta_exato']) else "NaN"
+                d_num = f"{d['delta_num']:.10f}" if not np.isnan(d['delta_num']) else "NaN"
+                
                 f.write(
                     f"{d['passo']},{d['tn']:.4f},{d['tn1']:.4f},{d['y_exato']:.10f},"
-                    f"{d['u_num']:.10f},{d['c_exato']:.10f},{d['c_num']:.10f},"
-                    f"{d['delta_exato']:.10f},{d['delta_num']:.10f}\n"
+                    f"{d['u_num']:.10f},{c_ex},{c_num},{d_ex},{d_num}\n"
                 )
-
-    return linhas_dados
+                
+    return dados
 
 
 # Alias para retrocompatibilidade
