@@ -18,7 +18,7 @@
 \usepackage{tikz}
 \usepackage{subcaption}
 \usetikzlibrary{shapes,arrows.meta,positioning}
-\graphicspath{{../resultados/introducao/figuras/}{../resultados/item_a/figuras/}{../resultados/item_b/figuras/}}
+\graphicspath{{../resultados/introducao/figuras/}{../resultados/item_a/figuras/}{../resultados/item_b/figuras/}{../resultados/item_c/figuras/}}
 
 % Configuração do pacote Minted para códigos mais elegantes
 \usepackage{minted}
@@ -489,17 +489,7 @@ A resposta matemática estrutura-se em dois regimes distintos segundo o sinal de
         \begin{equation}\label{eq:comp-fe}
           1 + z < \mathrm{e}^z, \qquad \forall\, z > 0.
         \end{equation}
-        \item \emph{Euler Implícito ($R_{\text{BE}}(z) = \frac{1}{1 - z}$)}: Para passos no intervalo
-        $0 < z < 1$, a expansão em série geométrica fornece:
-        \begin{equation}\label{eq:comp-be}
-          \frac{1}{1 - z} = 1 + z + z^2 + z^3 + \dots
-        \end{equation}
-        Confrontando termo a termo com a série de Taylor de $\mathrm{e}^z$:
-        \begin{equation}\label{eq:taylor-exp}
-          \mathrm{e}^z = 1 + z + \frac{z^2}{2!} + \frac{z^3}{3!} + \dots + \frac{z^m}{m!} + \dots
-        \end{equation}
-        nota-se que, para cada potência $m \ge 2$, o coeficiente da série geométrica excede o
-        termo $\frac{1}{m!}$ da exponencial ($1 > \frac{1}{m!}$), estabelecendo que:
+        \item \emph{Euler Implícito ($R_{\text{BE}}(z) = \frac{1}{1 - z}$)}: Para $z \in (0, 1)$, a expansão em série geométrica $\frac{1}{1 - z} = \sum_{m=0}^\infty z^m$ possui coeficientes estritamente maiores que os da série de Taylor $\mathrm{e}^z = \sum_{m=0}^\infty \frac{z^m}{m!}$ para todo $m \ge 2$ ($1 > 1/m!$), estabelecendo a relação fundamental:
         \begin{equation}\label{eq:desigualdade-be}
           \frac{1}{1 - z} > \mathrm{e}^z > 1 + z, \qquad \forall\, z \in (0,\, 1).
         \end{equation}
@@ -509,29 +499,11 @@ A resposta matemática estrutura-se em dois regimes distintos segundo o sinal de
 \subsection{Implementação dos Métodos}
 \label{sec:a-implementacao}
 
-Todos os métodos numéricos foram implementados em um mesmo módulo em Python
-(\texttt{src/pvi/metodos.py}).
-Ambas as rotinas recebem a instância que representa o PVI (contendo $f$, $\partial
-f/\partial y$, $y_0$ e $t_0$),
-o número de passos $n$ e o comprimento do passo $k$. Como retorno, devolvem os
-vetores da malha $(t_i)_{i=0}^m$ e da
-solução numérica $(U_i)_{i=0}^m$ (onde $m \le n$ reflete eventuais interrupções por
-divergência), além de um dicionário
-com estatísticas computacionais: número total de avaliações de função (\texttt{nfev})
-e tempo de CPU (\texttt{runtime}),
-mensurado via \texttt{time.perf\_counter}.
-
-Para mitigar a propagação de erros de arredondamento inerentes à aritmética de ponto
-flutuante, os nós da malha não são
-acumulados recursivamente ($t \leftarrow t + k$), mas sim computados diretamente por
-$t_{i} = t_0 + i \cdot k$.
+Conforme detalhado na Seção~\ref{sec:introducao}, todas as rotinas em \texttt{src/pvi/metodos.py} recebem a instância do PVI, o número de passos $n$ e o passo $k$, retornando os vetores $(t_i)_{i=0}^m$ e $(U_i)_{i=0}^m$ (onde $m \le n$ reflete eventuais interrupções por falha numérica) e o dicionário \texttt{stats} (\texttt{nfev} e \texttt{runtime}). Para evitar o acúmulo de erros de arredondamento na soma recursiva $t \leftarrow t + k$, os nós da malha são calculados diretamente por $t_{i} = t_0 + i \cdot k$.
 
 \subsubsection{Euler Explícito (Avançado)}
 
-No método de Euler explícito, cada passo requer uma única avaliação da função
-vetorial $f(t_n, U_n)$. Uma verificação condicional com
-\texttt{np.isfinite} interrompe o laço
-caso ocorra estouro numérico (\emph{overflow}). A implementação em Python é apresentada em Código~\ref{lst:euler-explicito}.
+No método de Euler explícito (Código~\ref{lst:euler-explicito}), cada passo requer uma única avaliação de $f(t_n, U_n)$, com verificação preventiva via \texttt{np.isfinite} para interromper o laço em caso de \emph{overflow}.
 \begin{listing}[H]
 \caption{Implementação do método de Euler Avançado em
 Python.}\label{lst:euler-explicito}
@@ -799,8 +771,8 @@ A Figura~\ref{fig:a-isoclinas-T5} sobrepõe as trajetórias do Euler avançado a
   \label{fig:a-isoclinas-T5}
 \end{figure}
 
-\paragraph{3. Comportamento do Euler Recuado: Discriminante e colapso generalizado.}
-No painel direito da Figura~\ref{fig:a-T5}, o fenômeno de interrupção precoce analisado na Equação~\eqref{eq:be-raizes} agrava-se drasticamente. Diferentemente do intervalo curto $[0,\, 1{,}6]$, no qual apenas o passo $k = 0{,}2$ falhava e os passos $k = 0{,}1$ e $k = 0{,}05$ completavam a integração, em $[0,\, 5]$ todas as três malhas clássicas colapsam prematuramente por perda de raiz real ($\Delta_n < 0$).
+\paragraph{3. Comportamento do Euler Recuado: afastamento da solução e colapso por perda de raiz real.}
+No painel direito da Figura~\ref{fig:a-T5}, a falha do método implícito agrava-se em relação a $[0,\, 1{,}6]$: enquanto no intervalo curto apenas o passo $k = 0{,}2$ falhava, em $[0,\, 5]$ todas as três malhas clássicas são interrompidas prematuramente por perda de raiz real ($\Delta_n < 0$ na Equação~\eqref{eq:be-raizes}). É importante, contudo, ler esse colapso como o \emph{desfecho} do processo, e não como a sua causa. A própria Figura~\ref{fig:a-T5} mostra que, bem antes do ponto de parada, as aproximações já se encontram acima da solução exata e se afastando dela ($U_n > y(t_n)$), impulsionadas pela dinâmica $e' = \lambda e + e^2$ com $\lambda > 0$ para $t > 2$ (Equação~\eqref{eq:erro-exata-bernoulli}). Como $c_n = U_n - k\,g(t_{n+1})$ cresce junto com $U_n$, é esse afastamento que acaba empurrando $c_n$ além do teto $\frac{1}{4k}$.
 
 A Figura~\ref{fig:a-discriminante-T5} apresenta a evolução do discriminante para esses três passos no domínio $[0,\, 5]$ em painel único, de forma análoga ao experimento anterior.
 
@@ -859,7 +831,7 @@ Aplicando a rotina \texttt{busca\_passo\_critico\_euler} ao horizonte $T = 5$, c
 
 A comparação entre a Figura~\ref{fig:a-discriminante-T5-ref} e a Figura~\ref{fig:a-T5-refinado} (direita) revela um fato central: na malha $k = 0{,}003125$ ($1.600$ passos), o discriminante permanece estritamente positivo em toda a integração ($\Delta_{\min} \approx 0{,}72 > 0$). Ou seja, a equação quadrática sempre admite raiz real e o método não sofre interrupção algébrica; mesmo assim, a trajetória numérica dispara em um violento \emph{blow-up}, atingindo $U(5) \approx 23{,}87$ contra o valor exato $y(5) = 2{,}00$ (um erro de quase $22$).
 
-Isso comprova que manter $\Delta \ge 0$ é apenas uma \emph{condição necessária} (permite calcular o passo seguinte), mas \emph{não suficiente} para que a solução seja precisa ou estável. A razão desse comportamento torna-se intuitiva ao analisarmos a equação exata do erro~\eqref{eq:erro-exata-bernoulli}:
+Isso comprova que manter $\Delta \ge 0$ é apenas uma \emph{condição necessária} (permite calcular o passo seguinte), mas \emph{não suficiente} para que a solução seja precisa ou estável. Além disso, a Figura~\ref{fig:a-discriminante-T5-ref} mostra que, nas malhas $k = 0{,}0125$ e $k = 0{,}00625$, o discriminante simulado já se desprendia da curva exata antes de cruzar o zero: a perda de raiz real não inicia a falha, apenas a sela. A razão desse comportamento torna-se intuitiva ao analisarmos a equação exata do erro~\eqref{eq:erro-exata-bernoulli}.
 \begin{equation*}
   e'(t) = 2y(t)\,e(t) + e(t)^2.
 \end{equation*}
@@ -903,7 +875,7 @@ A propriedade de $A$-estabilidade do Euler recuado ($|R_{\text{BE}}(z)| = |1 - z
     R_{\text{FE}}(z) = 1 + z \;<\; \mathrm{e}^z \;<\; R_{\text{BE}}(z) = \frac{1}{1 - z}, \qquad \forall\, z \in (0,\, 1).
   \]
   Combinada à convexidade estrita ($y'' > 0$), essa desigualdade cria uma assimetria decisiva: o Euler avançado introduz erros locais negativos ($e_n < 0$) e subamplifica o modo crescente ($1 + z < \mathrm{e}^z$), mantendo a solução numérica contida por baixo (onde o termo $+e^2$ de $e' = \lambda e + e^2$ freia o termo linear $\lambda e < 0$). Em contrapartida, o Euler recuado introduz erros locais positivos ($e_n > 0$) e \emph{superamplifica} o modo crescente ($(1 - z)^{-1} > \mathrm{e}^z$), lançando a trajetória diretamente na bacia de explosão onde $\lambda e > 0$ e $+e^2 > 0$ somam forças.
-  \item \emph{Restrição severa de passo pela solubilidade não linear (barreira $\Delta_n \ge 0$):} A presença do polo artificial em $z = 1$ no amplificador implícito $R_{\text{BE}}(z) = (1 - z)^{-1}$ manifesta-se, na equação não linear de cada passo, como a perda de invertibilidade da Jacobiana do método de Newton ($F'(U) = 1 - 2kU = 0$) e a anulação do discriminante quadrático $\Delta_n = 1 - 4kc_n$. Consequentemente, longe de poder operar com passos arbitrários $k > 0$, o Euler recuado sofre uma restrição de passo de solubilidade ($k < k_{\text{crit}} \approx 0{,}1231$ em $[0,\, 1{,}6]$ e $k < k_{\text{crit}} \approx 0{,}00342$ em $[0,\, 5]$) meramente para que a equação discreta admita raízes reais — condição esta que ainda se mostra insuficiente frente ao \emph{blow-up} quadrático quando $e_n$ atinge $\mathcal{O}(1)$ (como verificado em $k = 0{,}003125$).
+  \item \emph{Barreira de solubilidade não linear ($\Delta_n \ge 0$) como sintoma do afastamento:} O polo artificial em $z = 1$ do amplificador implícito $R_{\text{BE}}(z) = (1 - z)^{-1}$ manifesta-se, na equação não linear de cada passo, como a perda de invertibilidade da Jacobiana do método de Newton ($F'(U) = 1 - 2kU = 0$) e a anulação do discriminante quadrático $\Delta_n = 1 - 4kc_n$. Trata-se de uma dificuldade exclusiva dos métodos implícitos (o explícito nunca precisa resolver uma equação para avançar). Os valores $k_{\text{crit}} \approx 0{,}1231$ em $[0,\, 1{,}6]$ e $k_{\text{crit}} \approx 0{,}00342$ em $[0,\, 5]$ são medidos ao longo da trajetória numérica, e a condição $\Delta_n \ge 0$ ainda se mostra insuficiente frente ao \emph{blow-up} quadrático quando $e_n$ atinge $\mathcal{O}(1)$ (como verificado em $k = 0{,}003125$).
 \end{itemize}
 
 \paragraph{3. Comparação crítica e \emph{trade-off} computacional nos três cenários.}
@@ -1257,31 +1229,426 @@ Conclui-se, portanto, que elevar a ordem de um método explícito de $p = 1$ par
 
 \subsection{Objetivo}
 
-Implementar o método implícito de múltiplos passos lineares de Adams-Moulton de 2
-passos (\emph{2-step Adams-Moulton}),
-conforme apresentado na página~132 de R.~J.~LeVeque~\cite{leveque2007}, resolver
-novamente o PVI de
-Motivação~\eqref{eq:pvi} e apresentar uma descrição crítica comparativa entre os dois
-métodos implícitos analisados — o
-método de Adams-Moulton de 2 passos e o método de Euler recuado —, discutindo suas
-vantagens e desvantagens teóricas e
+Implementar o método implícito de múltiplos passos lineares de Adams-Moulton de 2 passos (\emph{2-step Adams-Moulton}),
+conforme apresentado na página~132 de R.~J.~LeVeque~\cite{leveque2007}, resolver novamente o PVI de
+Motivação~\eqref{eq:pvi} e apresentar uma descrição crítica comparativa entre os dois métodos implícitos analisados — o
+método de Adams-Moulton de 2 passos e o método de Euler recuado —, discutindo suas vantagens e desvantagens teóricas e
 computacionais.
 
 %-------------------------------------------------------------------------------------
 \subsection{Fundamentação Teórica}
 \label{sec:c-teoria}
 
-\paragraph{Consistência}
-\paragraph{Estabilidade} 
+Enquanto os métodos de Runge-Kutta elevam a ordem de precisão realizando múltiplas avaliações de $f(t, y)$ dentro de um
+único passo $[t_i, t_{i+1}]$, os \textbf{Métodos Lineares de Múltiplos Passos} (\emph{Linear Multistep Methods} — LMM)
+alcançam ordem superior reutilizando os valores já calculados da derivada nos passos anteriores $t_{i}, t_{i-1}, \dots$.
+Partindo da identidade integral exata no intervalo $[t_i, t_{i+1}]$,
+\begin{equation}\label{eq:am-integral}
+  y(t_{i+1}) = y(t_i) + \int_{t_i}^{t_{i+1}} f\bigl(t, y(t)\bigr)\,dt,
+\end{equation}
+a família implícita de \textbf{Adams-Moulton de $r$ passos} substitui o integrando $f(t, y(t))$ pelo polinômio
+interpolador de Lagrange $P_r(t)$ de grau $r$ que interpola os $r+1$ pontos $(t_{i-r+1}, f_{i-r+1}), \dots, (t_i, f_i)$
+e inclui o ponto futuro $(t_{i+1}, f_{i+1})$, onde $f_m \equiv f(t_m, U_m)$. Note que o método de Euler recuado estudado
+no Item~(a) corresponde exatamente ao método de Adams-Moulton de $1$ passo (que aproxima o integrando pela constante
+futura $f_{i+1}$).
+
+Para obter o método de \textbf{Adams-Moulton de 2 passos} ($r = 2$), interpolam-se os três pontos
+$(t_{i-1}, f_{i-1})$, $(t_i, f_i)$ e $(t_{i+1}, f_{i+1})$ em uma malha uniforme $t_m = t_0 + m k$, o que conduz à fórmula do método implícito de Adams-Moulton de 2 passos (LeVeque~\cite{leveque2007}, p.~132):
+\begin{equation}\label{eq:am2}
+  U_{i+1} = U_i + \frac{k}{12}\Bigl(-f(t_{i-1}, U_{i-1}) + 8\,f(t_i, U_i) + 5\,f(t_{i+1}, U_{i+1})\Bigr).
+\end{equation}
+
+\paragraph{Consistência} Expandindo $y(t_{i+1})$, $y'(t_{i-1})$, $y'(t_i)$ e $y'(t_{i+1})$ em série de Taylor em torno de
+$t_i$ (ou integrando o termo de resto da interpolação de Lagrange de grau~$2$), verifica-se que os termos até $O(k^3)$
+na expansão de um passo se cancelam exatamente, resultando no erro de truncamento local~\cite{leveque2007,suli2003}:
+\begin{equation}\label{eq:lte-am2}
+  \tau_i^{\text{AM2}} 
+  = -\frac{1}{24}\,k^3\,y^{(4)}(\xi_i) + O(k^4), \qquad \xi_i \in (t_{i-1}, t_{i+1}).
+\end{equation}
+Consequentemente, o método de Adams-Moulton de 2 passos é consistente de \textbf{terceira ordem} ($p = 3$), com constante
+de erro principal $C_3 = -1/24$, superando em duas ordens de precisão o método de Euler recuado ($p = 1$,
+$\tau_i^{\text{BE}} = -\frac{1}{2}k\,y''(\eta_i)$). Para a solução exata $y(t) = t - 4 + \frac{6}{1+t}$ do PVI de
+Motivação, a quarta derivada é estritamente positiva em todo o domínio $t > -1$:
+\begin{equation}\label{eq:y4-positiva}
+  y^{(4)}(t) = \frac{144}{(1+t)^5} > 0, \qquad \forall\, t > -1.
+\end{equation}
+Combinando~\eqref{eq:lte-am2} e~\eqref{eq:y4-positiva}, conclui-se que $\tau_i^{\text{AM2}} < 0$: assim como no Euler
+recuado, o erro de truncamento local do Adams-Moulton de 2 passos tem sinal negativo, fazendo com que a aproximação
+numérica se posicione \emph{acima} da solução exata ($U_i > y(t_i)$), porém com uma perturbação de um passo de ordem
+$O(k^4)$ ordens de grandeza menor que a de $O(k^2)$ do Euler recuado.
+
+\paragraph{Estabilidade} A análise de estabilidade do método de Adams-Moulton de 2 passos abrange três dimensões
+complementares:
+\begin{itemize}
+  \item \textbf{Zero-estabilidade e Teorema da Equivalência de Dahlquist ($k \to 0$):} Escrevendo~\eqref{eq:am2} na forma
+    geral de um método linear de 2 passos $\sum_{j=0}^2 \alpha_j U_{i-1+j} = k\sum_{j=0}^2 \beta_j f_{i-1+j}$, os dois
+    polinômios característicos associados são
+    \begin{equation}\label{eq:rho-sigma-am2}
+      \rho(\zeta) = \zeta^2 - \zeta = \zeta(\zeta - 1), \qquad
+      \sigma(\zeta) = \frac{5}{12}\zeta^2 + \frac{8}{12}\zeta - \frac{1}{12}.
+    \end{equation}
+    As raízes de $\rho(\zeta) = 0$ são a raiz principal $\zeta_1 = 1$ (simples, sobre o círculo unitário) e a raiz
+    parasita (espúria) $\zeta_2 = 0$ (estritamente no interior do disco unitário, $|\zeta_2| = 0 < 1$). Portanto, o
+    método satisfaz estritamente a \emph{condição da raiz de Dahlquist}, sendo \textbf{zero-estável}. Pelo Teorema da
+    Equivalência de Dahlquist~\cite{suli2003,leveque2007}, consistência ($p = 3$) mais zero-estabilidade garantem
+    convergência com erro global $O(k^3)$, desde que o primeiro passo auxiliar $U_1 \approx y(t_1)$ seja inicializado
+    com erro de um passo de pelo menos $O(k^3)$.
+  \item \textbf{Estabilidade absoluta e a Segunda Barreira de Dahlquist ($k > 0$):} Aplicando~\eqref{eq:am2} ao
+    problema-teste de Dahlquist $y' = \lambda y$ ($z = k\lambda \in \mathbb{C}$), as soluções da equação de diferenças
+    linear $U_{i+1} - U_i = \frac{z}{12}(-U_{i-1} + 8U_i + 5U_{i+1})$ são governadas pelas duas raízes $\zeta_1(z),
+    \zeta_2(z)$ do polinômio de estabilidade
+    \begin{equation}\label{eq:pi-am2}
+      \pi(\zeta; z) = \rho(\zeta) - z\,\sigma(\zeta)
+      = \left(1 - \frac{5}{12}z\right)\zeta^2 - \left(1 + \frac{8}{12}z\right)\zeta + \frac{1}{12}z = 0.
+    \end{equation}
+    Pela célebre \textbf{Segunda Barreira de Dahlquist}~\cite{hairer1993,leveque2007}, nenhum método linear de múltiplos
+    passos com ordem $p > 2$ pode ser A-estável (a ordem máxima de um método de múltiplos passos A-estável é $p = 2$,
+    atingida pelo método de Adams-Moulton de 1 passo / regra do trapézio). Logo, ao elevar a ordem de $p = 1$ (Euler
+    recuado, A-estável) para $p = 3$, a região de estabilidade absoluta
+    $\mathcal{S}_{\text{AM2}} = \{z \in \mathbb{C} : |\zeta_1(z)| \le 1 \text{ e } |\zeta_2(z)| \le 1\}$ deixa de ser
+    ilimitada em $\mathbb{C}^-$ e passa a ser um domínio fechado contido no semiplano esquerdo. Para determinar seu
+    intervalo de estabilidade no semieixo real negativo ($z \le 0$), observa-se que em $\zeta = 1$ tem-se
+    $\pi(1; z) = -z = 0 \implies z = 0$, e na fronteira oposta do círculo unitário ($\zeta = -1$) tem-se
+    \[
+      \pi(-1; z) = \left(1 - \frac{5}{12}z\right) + \left(1 + \frac{8}{12}z\right) + \frac{1}{12}z = 2 + \frac{1}{3}z = 0
+      \quad\Longrightarrow\quad z = -6.
+    \]
+    Assim, o intervalo de estabilidade real do Adams-Moulton de 2 passos é $[-6,\, 0]$, mais que o dobro do intervalo do
+    RK4 ($[-2{,}785,\, 0]$) e o triplo do Euler avançado ($[-2,\, 0]$), embora menor que o semieixo $(-\infty, 0]$ do
+    Euler recuado.
+  \item \textbf{Solubilidade da equação algébrica implícita e ganho frente ao Euler Recuado:} No PVI de Motivação, onde
+    $f(t, U) = U^2 - g(t)$, a equação implícita~\eqref{eq:am2} na incógnita $U \equiv U_{i+1}$ escreve-se como:
+    \begin{equation}\label{eq:am2-quad}
+      F_{\text{AM2}}(U) = U - \frac{5k}{12}\,U^2 - \tilde{c}_i = 0
+      \iff \frac{5k}{12}\,U^2 - U + \tilde{c}_i = 0,
+      \qquad \tilde{c}_i = U_i + \frac{k}{12}\bigl(8f_i - f_{i-1} - 5g(t_{i+1})\bigr).
+    \end{equation}
+    As duas raízes da quadrática~\eqref{eq:am2-quad} são dadas por
+    \begin{equation}\label{eq:am2-raizes}
+      U_{i+1}^{\pm} = \frac{1 \pm \sqrt{\Delta_i^{\text{AM2}}}}{\frac{5}{6}k},
+      \qquad \text{com discriminante} \qquad
+      \Delta_i^{\text{AM2}} = 1 - \frac{5k}{3}\,\tilde{c}_i.
+    \end{equation}
+    A comparação entre~\eqref{eq:am2-raizes} e a condição correspondente do Euler recuado ($\Delta_i^{\text{BE}} = 1 - 4k\,c_i \ge 0$)
+    revela uma propriedade crucial para problemas não lineares com Jacobiana positiva: como o peso do termo implícito
+    $f(t_{i+1}, U_{i+1})$ no Adams-Moulton de 2 passos é $\beta_2 = \frac{5}{12}$ (em vez de $\beta_1 = 1$ no Euler
+    recuado), a condição de existência de raiz real amplia-se de
+    \begin{equation}\label{eq:solubilidade-am2-vs-be}
+      c_i \le \frac{1}{4k} = \frac{0{,}25}{k} \quad\text{(Euler Recuado)}
+      \qquad\text{para}\qquad
+      \tilde{c}_i \le \frac{3}{5k} = \frac{0{,}60}{k} \quad\text{(Adams-Moulton 2)},
+    \end{equation}
+    e a singularidade da derivada $F'_{\text{AM2}}(U) = 1 - \frac{5k}{12}\frac{\partial f}{\partial y} = 0$ desloca-se de
+    $k\,\frac{\partial f}{\partial y} = 1{,}0$ para $k\,\frac{\partial f}{\partial y} = \frac{12}{5} = 2{,}4$ (exatamente
+    o polo $z = 12/5 = 2{,}4$ do coeficiente líder $1 - \frac{5}{12}z$ em~\eqref{eq:pi-am2}). Portanto, o método de Adams-Moulton de 2 passos possui um limiar de solubilidade algébrica $2{,}4$ vezes mais permissivo que o do Euler recuado. Como visto no Item~(a), porém, esse limiar é apenas uma condição \emph{necessária} para que o passo seguinte seja calculável: ele posterga o colapso, mas não o elimina, pois o que o desencadeia é o afastamento da trajetória numérica.
+\end{itemize}
 
 %-------------------------------------------------------------------------------------
 \subsection{Implementação do Método}
 \label{sec:c-implementacao}
 
+A implementação do método de Adams-Moulton de 2 passos na função \texttt{adams\_moulton} (em
+\texttt{src/pvi/metodos.py}) requer cuidado com três aspectos algorítmicos próprios de métodos implícitos de múltiplos
+passos:
+\begin{enumerate}
+  \item \textbf{Procedimento de inicialização (\emph{bootstrapping}) de $U_1$ via RK4:} Sendo um método de dois passos, a
+    fórmula~\eqref{eq:am2} só pode ser aplicada a partir de $i = 1$ (para calcular $U_2$ a partir de $U_0$ e $U_1$). Para
+    obter $U_1 \approx y(t_0 + k)$ sem degradar a precisão global de terceira ordem ($O(k^3)$), a implementação executa
+    exatamente um passo do método explícito \texttt{rk4(pvi, 1, k)} desenvolvido no Item~(b), cujo erro de um passo é
+    $O(k^5) \ll O(k^3)$.
+  \item \textbf{Armazenamento e reciclagem de $f_{i-1}$ e $f_i$:} Em cada passo $i$, as derivadas já conhecidas
+    $f_{i-1} = f(t_{i-1}, U_{i-1})$ e $f_i = f(t_i, U_i)$ são mantidas nas variáveis escalares \texttt{fn\_1} e
+    \texttt{fn}. Ao final do passo (após a convergência para $U_{i+1}$), realiza-se apenas uma avaliação adicional
+    \texttt{fn = pvi.f(tn1, Un1)} para atualizar o histórico.
+  \item \textbf{Preditor explícito de Adams-Bashforth de 2 passos (AB2) + Corretor de Newton:} Para resolver a equação
+    implícita $F_{\text{AM2}}(U) = 0$ via \texttt{scipy.optimize.newton}, em vez de usar um chute de primeira ordem,
+    utiliza-se como preditor o método explícito de \textbf{Adams-Bashforth de 2 passos (AB2)}:
+    \begin{equation}\label{eq:preditor-ab2}
+      U^{(0)} = U_i + \frac{k}{2}\bigl(3\,f_i - f_{i-1}\bigr).
+    \end{equation}
+    Como $f_i$ e $f_{i-1}$ já estão disponíveis em memória, esse preditor de segunda ordem ($O(k^3)$ local) tem
+    \textbf{custo computacional zero} (nenhuma avaliação extra de $f$) e entrega um chute inicial muito mais próximo da
+    raiz física $U_{i+1}^{-}$, reduzindo o número de iterações de Newton.
+\end{enumerate}
+O código completo e comentado da função \texttt{adams\_moulton} é apresentado no Código~\ref{lst:adams-moulton}.
+
+\begin{listing}[H]
+\caption{Implementação do método implícito de Adams-Moulton de 2 passos em Python.}\label{lst:adams-moulton}
+\begin{minted}[linenos, frame=lines, framesep=2mm, fontsize=\scriptsize]{python}
+def adams_moulton(pvi, n, k):
+    # Marca o início de execução para medição do tempo de CPU
+    t0_cpu = time.perf_counter()
+    
+    # Pré-alocação dos vetores de tempo e solução numérica
+    t_vals = np.zeros(n + 1)
+    y_vals = np.zeros(n + 1)
+    t_vals[0] = pvi.t0
+    y_vals[0] = pvi.y0
+
+    nfev = 0  # Contador de avaliações de funções (f e dfdy)
+    pts = 1
+
+    if n >= 1:
+        # Inicialização (bootstrapping) do 1º passo (U_1 em t_1) via RK4 de 4ª ordem
+        t_init, y_init, stats_init = rk4(pvi, 1, k)
+        nfev += stats_init['nfev']
+
+        if len(y_init) < 2 or not np.isfinite(y_init[1]):
+            tf_cpu = time.perf_counter()
+            return t_vals[:pts], y_vals[:pts], {'nfev': nfev, 'runtime': tf_cpu - t0_cpu}
+
+        t_vals[1] = t_init[1]
+        y_vals[1] = y_init[1]
+        pts = 2
+
+        # Armazena f_{i-1} = f(t_0, U_0) e f_i = f(t_1, U_1) para reutilização nos passos seguintes
+        fn_1 = pvi.f(t_vals[0], y_vals[0])
+        fn = pvi.f(t_vals[1], y_vals[1])
+        nfev += 2
+
+        Un = y_vals[1]
+
+        # Laço principal do método Adams-Moulton de 2 passos (de i = 1 até n - 1)
+        for i in range(1, n):
+            tn1 = pvi.t0 + (i + 1) * k
+
+            # Resíduo de Adams-Moulton (2-step): U - U_i - (k/12)*(-f_{i-1} + 8*f_i + 5*f(t_{i+1}, U)) = 0
+            F  = lambda U: U - Un - (k / 12.0) * (-fn_1 + 8.0 * fn + 5.0 * pvi.f(tn1, U))
+            # Derivada analítica dF/dU = 1 - (5k/12) * df/dy(t_{i+1}, U)
+            dF = lambda U: 1.0 - (5.0 * k / 12.0) * pvi.dfdy(tn1, U)
+
+            # Preditor explícito de Adams-Bashforth de 2 passos (AB2) como aproximação inicial
+            U0 = Un + 0.5 * k * (3.0 * fn - fn_1)
+
+            # Resolução da equação não linear implícita via método de Newton
+            Un1, info = newton(F, x0=U0, fprime=dF, tol=1e-12, maxiter=50,
+                               full_output=True, disp=False)
+
+            # Cada iteração de Newton avalia F e dF
+            nfev += info.iterations * 2
+
+            # Interrupção caso Newton falhe em convergir ou gere valor não finito
+            if not info.converged or not np.isfinite(Un1):
+                print(f"Adams-Moulton (2-step) falhou em t = {tn1:.4f} (com passo k = {k})")
+                break
+
+            t_vals[i+1] = tn1
+            y_vals[i+1] = Un1
+            Un = Un1
+
+            # Atualiza histórico de derivadas para o próximo passo
+            fn_1 = fn
+            fn = pvi.f(tn1, Un1)
+            nfev += 1
+
+            pts += 1
+
+    # Marca o fim da execução do método
+    tf_cpu = time.perf_counter()
+
+    # Empacotamento das estatísticas computacionais
+    stats = {
+        'nfev': nfev,
+        'runtime': tf_cpu - t0_cpu,
+    }
+
+    return t_vals[:pts], y_vals[:pts], stats
+\end{minted}
+\end{listing}
+
 %-------------------------------------------------------------------------------------
 \subsection{Resultados e Discussão}
 \label{sec:c-resultados}
 
+Os experimentos numéricos deste item, orquestrados pelos roteiros \texttt{exp\_c\_padrao.py} e \texttt{exp\_c\_expandido.py} (no diretório \texttt{experimentos/}), consistiram na integração numérica do PVI de Motivação~\eqref{eq:pvi} utilizando o método implícito de Adams-Moulton de 2 passos (AM2). Reproduziram-se os mesmos cenários de teste investigados nas seções anteriores: o intervalo curto padrão $[0,\, 1{,}6]$ e o intervalo estendido $[0,\, 5]$ sob malhas clássicas e refinadas, além da extensão do domínio temporal para um horizonte de longo prazo ($t \in [0,\, 10]$). Em cada ensaio, registraram-se o erro máximo global $E(k)$, a ordem assintótica observada $p_{\text{obs}}$, o número de avaliações de função (NFEV) e o tempo de execução de CPU.
+
+\subsubsection{Desempenho no Intervalo [0, 1.6] e [0, 5]}
+\label{sec:c-cenario1-2}
+
+A Figura~\ref{fig:comparacao_am} ilustra as soluções numéricas obtidas pelo método de Adams-Moulton de 2 passos no intervalo padrão $[0,\, 1{,}6]$ e no intervalo estendido $[0,\, 5]$. O desempenho quantitativo detalhado é sumarizado nas Tabelas~\ref{tab:erros_2-step_adams-moulton} (para $[0,\, 1{,}6]$) e~\ref{tab:erros_2-step_adams-moulton,_tf_=_5} (para $[0,\, 5]$).
+
+\begin{figure}[H]
+    \centering
+    % Subfigura 1: Intervalo curto [0, 1.6]
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{c_am}
+        \caption{$t \in [0,\, 1{,}6]$ ($k$ padrão).}
+        \label{fig:am_curto}
+    \end{subfigure}
+    \hfill
+    % Subfigura 2: Intervalo estendido [0, 5] com k padrão
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{c_am_T5}
+        \caption{$t \in [0,\, 5]$ ($k$ padrão).}
+        \label{fig:am_medio}
+    \end{subfigure}
+    \hfill
+    % Subfigura 3: Intervalo estendido [0, 5] com k refinado
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{c_am_T5_ref}
+        \caption{$t \in [0,\, 5]$ ($k$ refinado).}
+        \label{fig:am_refinado}
+    \end{subfigure}
+
+    \caption{Comportamento numérico do método Adams-Moulton de 2 passos (AM2): (\subref{fig:am_curto}) no intervalo padrão $[0,\, 1{,}6]$ com passos clássicos $k \in \{0{,}2;\, 0{,}1;\, 0{,}05\}$; (\subref{fig:am_medio}) no intervalo estendido $[0,\, 5]$ com passos clássicos; (\subref{fig:am_refinado}) convergência com a malha refinada $k \in \{0{,}0125;\, 0{,}00625;\, 0{,}003125;\, 0{,}0015625\}$.}
+    \label{fig:comparacao_am}
+\end{figure}
+
+\input{../resultados/item_c/tabelas/erros_2-step_adams-moulton.tex}
+\input{../resultados/item_c/tabelas/erros_2-step_adams-moulton,_tf_=_5.tex}
+A análise conjunta da Figura~\ref{fig:comparacao_am} e das Tabelas~\ref{tab:erros_2-step_adams-moulton} e~\ref{tab:erros_2-step_adams-moulton,_tf_=_5} evidencia aspectos teóricos e práticos centrais do método AM2:
+
+\begin{enumerate}
+    \item \textbf{Precisão e convergência de terceira ordem no intervalo curto $[0,\, 1{,}6]$:}
+    Conforme a Tabela~\ref{tab:erros_2-step_adams-moulton}, a ordem observada aproxima-se de $p_{\text{obs}} \approx 3{,}00$ por valores menores ($1{,}81 \to 2{,}48 \to 2{,}76 \to \cdots$), refletindo o regime pré-assintótico das malhas grossas. Já em $k = 0{,}2$ (8 passos, 61 NFEV) o erro máximo é de $5{,}521 \times 10^{-3}$, chegando a $1{,}847 \times 10^{-10}$ em $k = 0{,}000390625$. Visualmente (Figura~\ref{fig:am_curto}), todas as aproximações sobrepõem-se à curva analítica exata.
+
+    \item \textbf{Intervalo estendido $[0,\, 5]$ com malhas clássicas: completar a integração não é o mesmo que ser preciso:}
+    Diferentemente do Euler recuado, cujas três malhas clássicas colapsavam em $[0,\, 5]$, o AM2 conclui a integração em todas elas (Figura~\ref{fig:am_medio}). O resultado, porém, exige cautela. Para $k = 0{,}2$, a solução numérica afasta-se por cima da curva exata para $t > 4$ e termina em $U_{25} \approx 4{,}18$ (onde $y(5) = 2{,}0$), com $E(0{,}2) \approx 2{,}181$. Trata-se do mesmo viés positivo ($\tau_n < 0 \implies e_n > 0$) já observado no Euler recuado, agora com uma semente de erro muito menor. Ao reduzir o passo, o desvio é contido: $E = 3{,}300 \times 10^{-1}$ ($k = 0{,}1$) e $E = 5{,}346 \times 10^{-2}$ ($k = 0{,}05$), com $p_{\text{obs}} = 2{,}72$ e $2{,}63$. Em suma, nas malhas clássicas o AM2 é quantitativamente confiável apenas a partir de $k \le 0{,}1$.
+
+    \item \textbf{Convergência assintótica sob malhas refinadas em $[0,\, 5]$:}
+    Conforme a Tabela~\ref{tab:erros_2-step_adams-moulton,_tf_=_5} e a Figura~\ref{fig:am_refinado}, a partir de $k = 0{,}0125$ o erro cai monotonicamente de $1{,}037 \times 10^{-3}$ ($N = 400$) a $3{,}387 \times 10^{-8}$ ($N = 12.800$), com $p_{\text{obs}} \to 3{,}00$. Nessas malhas o erro permanece pequeno frente a $\lambda(t)$, o termo $+e^2$ é desprezível e o método opera em seu regime linear de convergência. 
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{c_discriminante_am_T5.png}
+    \caption{Evolução do discriminante $\Delta_n = 1 - \frac{5k}{3}\tilde{c}_n$ para o método Adams-Moulton de 2 passos no intervalo estendido $[0,\, 5]$ sob os passos clássicos $k \in \{0{,}2;\, 0{,}1;\, 0{,}05\}$: confronto entre a curva teórica contínua sobre a solução exata (linhas sólidas) e os valores numéricos simulados (pontos conectados por traços). Em nítido contraste com o Euler recuado — no qual todas as malhas cruzavam o limiar crítico dentro de $[0,\, 5]$ —, no AM2 todos os três passos preservam $\Delta_n > 0$ em toda a extensão de $[0,\, 5]$, vindo a interceptar a fronteira $\Delta = 0$ (marcadores \textbf{X}) apenas após $t = 5$.}
+    \label{fig:c_discriminanteT5}
+\end{figure}
+
+A Figura~\ref{fig:c_discriminanteT5} permite distinguir causa e sintoma. Conforme a Seção~\ref{sec:c-teoria} (Equações~\eqref{eq:am2-raizes} e~\eqref{eq:solubilidade-am2-vs-be}), o passo quadrático do AM2 admite raiz real se, e somente se, $\tilde{c}_n \le \frac{3}{5k} = \frac{0{,}60}{k}$, um teto $2{,}4$ vezes mais permissivo que o do Euler recuado ($c_n \le \frac{0{,}25}{k}$). Contudo, esse teto é uma condição de \emph{existência} do próximo passo, e não um mecanismo de estabilidade:
+
+\begin{itemize}
+    \item O discriminante calculado sobre a solução exata (linhas sólidas) permanece estritamente positivo em todo o intervalo mostrado. A equação algébrica seria resolúvel se a trajetória estivesse sobre $y(t)$.
+    \item O discriminante simulado (tracejado) acompanha a curva exata enquanto o erro é pequeno e dela se desprende à medida que $U_n$ se afasta de $y(t_n)$. Como $\tilde{c}_n \approx U_n + \frac{2k}{3}U_n^2$ para $|U_n|$ grande, o crescimento quadrático de $U_n$ faz $\Delta_n$ despencar. Para $k = 0{,}2$, $\Delta_{25} \approx 0{,}09$ em $t = 5$ e o cruzamento ocorre em $t \approx 5{,}05$; para $k = 0{,}1$ e $k = 0{,}05$, em $t \approx 5{,}5$ e $t \approx 5{,}9$ (com $\Delta \approx 0{,}65$ e $0{,}82$ em $t = 5$).
+    \item O ganho em relação ao Euler recuado (que, com $k = 0{,}2$, falhava já em $t = 0{,}6$) decorre principalmente da semente de erro $\mathcal{O}(k^4)$ por passo, muito menor que $\mathcal{O}(k^2)$, que retarda o afastamento; o teto $2{,}4\times$ mais permissivo atua em segundo plano.
+\end{itemize}
+
+O teste de busca de passo crítico (\texttt{busca\_critica}, em \texttt{src/pvi/uteis.py}) é coerente com essa leitura. Para $[0,\, 5]$, o menor número de passos capaz de manter $\Delta_n \ge 0$ ao longo da trajetória numérica é $n_{\text{crit}} = 24$, correspondente ao passo uniforme:
+\begin{equation}\label{eq:k-crit-am2-T5}
+  k_{\text{crit}} = \frac{5}{24} \approx 0{,}2083 \qquad (\text{com } \Delta_{\min} \approx 0{,}0354 > 0).
+\end{equation}
+Como no Euler recuado, esse valor é medido sobre a trajetória numérica: ele indica até onde o afastamento ainda é contido, e não um limite intrínseco do método.
+
+\subsubsection{Desempenho no Intervalo [0, 10]}
+\label{sec:c-cenario-t10}
+
+Para investigar os limites de estabilidade do método implícito de Adams-Moulton de 2 passos sob condições extremas de tempo longo e autovalor positivo crescente ($\lambda(t) = 2y(t) \approx \frac{5}{3}t > 0$), estendeu-se o domínio de integração para $t \in [0,\, 10]$. O desempenho quantitativo de todas as malhas investigadas é sumarizado na Tabela~\ref{tab:erros_2-step_adams-moulton,_tf_=_10}, as trajetórias numéricas são ilustradas na Figura~\ref{fig:c_T10}, e o colapso algébrico que encerra cada simulação, consequência final da explosão da trajetória, é evidenciado na Figura~\ref{fig:c_discriminante}.
+
+\input{../resultados/item_c/tabelas/erros_2-step_adams-moulton,_tf_=_10.tex}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{c_am_T10.png}
+    \caption{Trajetórias numéricas do método Adams-Moulton de 2 passos no intervalo estendido $[0,\, 10]$ sob os passos $k \in \{0{,}2;\, 0{,}1;\, 0{,}05\}$ (representados na legenda pelas quantidades nominais de passos completados até o colapso: $25$, $54$ e $117$ passos). Diferentemente dos esquemas explícitos (que mergulham na isóclina atratora inferior), o viés positivo do erro de truncamento implícito ($\tau_n < 0 \implies U_n > y$) induz a auto-amplificação não linear $+e^2 > 0$, provocando a explosão vertical das trajetórias numéricas rumo a $+\infty$.}
+    \label{fig:c_T10}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{c_discriminante_am_T10}
+    \caption{Evolução do discriminante $\Delta_n = 1 - \frac{5k}{3}\tilde{c}_n$ do método Adams-Moulton de 2 passos no intervalo longo $[0,\, 10]$ sob os passos refinados $k \in \{0{,}00625;\, 0{,}003125;\, 0{,}0015625\}$. Enquanto o discriminante teórico contínuo sobre a solução exata (linhas sólidas) permanece elevado e estável próximo a $1{,}0$ em todo o domínio, as trajetórias numéricas simuladas (linhas tracejadas com marcadores) despencam vertiginosamente como um penhasco rumo a valores negativos ($\Delta < 0$, marcadores \textbf{X}), violando a condição de solubilidade e abortando o cálculo antes de $t = 10$.}
+    \label{fig:c_discriminante}
+\end{figure}
+
+A confrontação entre os dados da Tabela~\ref{tab:erros_2-step_adams-moulton,_tf_=_10} e as Figuras~\ref{fig:c_T10} e~\ref{fig:c_discriminante} revela a seguinte dinâmica:
+
+\begin{enumerate}
+    \item \textbf{Inviabilidade de conclusão da integração em $[0,\, 10]$ com malha uniforme:}
+    A constatação mais contundente da Tabela~\ref{tab:erros_2-step_adams-moulton,_tf_=_10} é que \textbf{nenhuma das malhas analisadas — de $k = 0{,}2$ até $k = 0{,}000390625$ ($25.600$ passos nominais) — conclui a integração até $t = 10$}. Em todas as simulações o resolvedor interrompe a execução antes do tempo final:
+    \begin{itemize}
+        \item $k = 0{,}2$: apenas $25$ passos, abortando em $t = 5{,}0$;
+        \item $k = 0{,}1$: colapsa no passo $54$ ($t = 5{,}4$);
+        \item $k = 0{,}05$: passo $117$ ($t = 5{,}85$);
+        \item $k = 0{,}0125$: $528$ passos ($t = 6{,}60$);
+        \item $k = 0{,}00625$: $1.106$ passos ($t \approx 6{,}91$);
+        \item $k = 0{,}003125$: $2.303$ passos ($t \approx 7{,}20$);
+        \item $k = 0{,}0015625$: $4.776$ passos ($t \approx 7{,}46$);
+        \item $k = 0{,}000390625$: $20.350$ passos ($t \approx 7{,}95$).
+    \end{itemize}
+    Essa interrupção sistemática explica as ordens observadas negativas da Tabela~\ref{tab:erros_2-step_adams-moulton,_tf_=_10}: o erro máximo registrado não reflete a precisão assintótica em um instante fixo, mas a magnitude inflada de $U_n$ logo antes do aborto.
+
+    \item \textbf{Mecanismo dinâmico: viés positivo e auto-amplificação quadrática:}
+    A falha tem origem na polaridade do erro de truncamento local. Como $y^{(4)}(t) = 144/(1+t)^5 > 0$ (Equação~\eqref{eq:y4-positiva}), tem-se $\tau_n^{\text{AM2}} < 0$ e a aproximação caminha sistematicamente \textbf{acima} da solução exata ($e_n = U_n - y(t_n) > 0$). Na equação do erro~\eqref{eq:c-erro-bernoulli},
+    \begin{equation}\label{eq:c-erro-bernoulli}
+      e'(t) = \lambda(t)\,e(t) + e(t)^2,
+    \end{equation}
+    com $\lambda(t) > 0$ para $t > 2$ e $e > 0$, \textbf{ambos os termos atuam no mesmo sentido}: $\lambda e > 0$ impulsiona o afastamento e $+e^2 > 0$ o acelera. Ao contrário dos métodos explícitos, nos quais o erro negativo encontrava no termo $+e^2$ um freio ao se aproximar da isóclina atratora $-\sqrt{g(t)}$, aqui não há mecanismo de saturação: a solução é ejetada para $+\infty$ (Figura~\ref{fig:c_T10}). Isso é coerente com o fato de que soluções exatas da equação de Riccati com condição inicial acima de $y$ explodem em tempo finito; a trajetória numérica passa a seguir uma solução vizinha com essa propriedade.
+
+    \item \textbf{O colapso do discriminante como consequência da explosão (Figura~\ref{fig:c_discriminante}):}
+    A perda de raiz real é o último elo da cadeia, e não o seu início:
+    \begin{enumerate}
+        \item[(i)] o erro positivo $e_n$ é amplificado por $\lambda e + e^2$ até $e_n = \mathcal{O}(\lambda)$;
+        \item[(ii)] $U_n$ deixa a vizinhança de $y(t_n)$ e $f(t_n, U_n) = U_n^2 - g(t_n)$ cresce quadraticamente;
+        \item[(iii)] o termo independente $\tilde{c}_n = U_n + \frac{k}{12}\bigl(8f(t_n, U_n) - f(t_{n-1}, U_{n-1}) - 5g(t_{n+1})\bigr)$, dominado por $+8U_n^2$, ultrapassa $\frac{3}{5k}$;
+        \item[(iv)] $\Delta_n < 0$, a quadrática passa a ter apenas raízes complexas conjugadas e o método de Newton não converge, interrompendo o cálculo.
+    \end{enumerate}
+    A Figura~\ref{fig:c_discriminante} ilustra esse encadeamento: o discriminante sobre a solução exata (curvas sólidas) permanece entre $\approx 0{,}93$ e $0{,}98$ em todo $[0,\, 10]$, ou seja, o problema algébrico é bem condicionado sobre $y(t)$; os discriminantes simulados acompanham essas curvas até o erro atingir a escala não linear e então caem verticalmente, cruzando $\Delta = 0$ (marcadores \textbf{X}).
+
+    \item \textbf{Quantificação do colapso e inviabilidade do passo crítico em $[0,\, 10]$:}
+    A rotina \texttt{busca\_critica}, que em $[0,\, 5]$ encontrou $n_{\text{crit}} = 24$, esgota o teto de busca ($n_{\max} = 5.000$) em $[0,\, 10]$ e, como atesta a Tabela~\ref{tab:erros_2-step_adams-moulton,_tf_=_10}, falha mesmo para $n = 25.600$. A razão é a amplificação acumulada $\Phi(0, 10) = 11^{12}\,\mathrm{e}^{20} \approx 1{,}5 \times 10^{21}$. Modelando o erro por $|e(t)| \approx C\,k^3\,\Phi(0, t)$ e calibrando $C \approx 0{,}85$ com $E(5) = 3{,}387 \times 10^{-8}$ em $k = 0{,}000390625$ (Tabela~\ref{tab:erros_2-step_adams-moulton,_tf_=_5}), verifica-se que, nas oito malhas, o colapso ocorre quando $0{,}85\,k^3\,\Phi(0, t^*) \approx 3$--$9$, isto é, quando $e$ se torna comparável a $\lambda(t^*) \approx 4$--$9$, o ponto em que o termo $e^2$ rivaliza com o linear. Essa mesma relação explica o ganho logarítmico do refinamento: cada bisseção de $k$ reduz $k^3$ por um fator $8$ e adia o colapso em apenas $\ln 8/\lambda(t) \approx 0{,}3$ unidade de tempo, em acordo com a Tabela~\ref{tab:erros_2-step_adams-moulton,_tf_=_10}. Para atingir $t = 10$ seria necessário $0{,}85\,k^3\,\Phi(0, 10) \lesssim \lambda(10) \approx 13$, isto é, $k \lesssim 2 \times 10^{-7}$, da ordem de $5 \times 10^{7}$ passos uniformes, o que torna o custo proibitivo e expõe a integração ao acúmulo de erros de arredondamento.
+\end{enumerate}
+
+Em síntese, o AM2 e o Euler recuado compartilham o mesmo mecanismo de falha: o viés positivo do erro, amplificado por $\lambda e + e^2$ em regime instável, afasta a trajetória numérica da solução; a perda de solubilidade algébrica (anulação do discriminante) é o sintoma terminal desse afastamento. A ordem superior ($p = 3$) e o limiar $2{,}4\times$ mais permissivo do AM2 concedem-lhe uma robustez muito maior, permitindo cruzar $[0,\, 5]$ onde o Euler recuado falhava, mas, em horizontes dilatados com autovalores fortemente positivos, nenhum método implícito de passo fixo está imune a essa ruptura.
+
+\subsection{Síntese Crítica: Comparação entre Adams-Moulton de 2 Passos e Euler Recuado}
+\label{sec:c-sintese}
+
+Para confrontar os dois métodos implícitos, a Tabela~\ref{tab:c-sintese-cenarios} sintetiza o comportamento, o mecanismo de falha, a precisão e o custo computacional do Euler recuado ($p = 1$) e do Adams-Moulton de 2 passos ($p = 3$) nos cenários investigados, com dados das Tabelas~\ref{tab:erros_euler_recuado}, \ref{tab:erros_euler_recuado,_tf_=_5}, \ref{tab:erros_2-step_adams-moulton}, \ref{tab:erros_2-step_adams-moulton,_tf_=_5} e~\ref{tab:erros_2-step_adams-moulton,_tf_=_10}.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Síntese crítica comparativa entre Euler Recuado e Adams-Moulton de 2 passos (AM2) nos cenários experimentais dos Itens~(a) e~(c).}\label{tab:c-sintese-cenarios}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{p{3.4cm}p{5.8cm}p{5.8cm}}
+\toprule
+\textbf{Cenário / Critério} & \textbf{Euler Recuado ($p = 1$)} & \textbf{Adams-Moulton 2 passos ($p = 3$)} \\
+\midrule
+\textbf{Viés direcional e estabilidade relativa ($\lambda > 0$)} &
+$\tau_n^{\text{BE}} < 0 \implies e_n > 0$; superamplifica o modo crescente ($R_{\text{BE}}(z) = (1-z)^{-1} > \mathrm{e}^z$, erro $\mathcal{O}(z^2)$ por passo). Termos $\lambda e > 0$ e $+e^2 > 0$ somam-se. &
+$\tau_n^{\text{AM2}} < 0$, pois $y^{(4)} > 0 \implies e_n > 0$: mesmo sentido do Euler recuado, mas com semente $\mathcal{O}(k^4)$ por passo. Termos $\lambda e$ e $+e^2$ também somam-se (sem freio não linear). \\
+\midrule
+\textbf{Cenário 1:} $[0,\, 1{,}6]$ &
+Colapsa em $k = 0{,}2$ ($t = 0{,}6$). Converge para $k \le 0{,}1$, com $p_{\text{obs}} \to 1{,}00$. Melhor erro: $1{,}726 \times 10^{-3}$ ($20.480$ NFEV, $126{,}98\,\text{ms}$). &
+Converge em todas as malhas, com $p_{\text{obs}} \to 3{,}00$. $E = 5{,}521 \times 10^{-3}$ já em $k = 0{,}2$ ($61$ NFEV) e $E = 1{,}577 \times 10^{-3}$ em $k = 0{,}1$ ($113$ NFEV, $0{,}76\,\text{ms}$), melhor que o melhor erro do Euler recuado. \\
+\midrule
+\textbf{Cenário 2:} $[0,\, 5]$ clássico &
+Colapso generalizado: as três malhas travam em $t = 0{,}6$, $2{,}2$ e $3{,}5$. &
+Conclui as três malhas, mas $E = 2{,}181$ em $k = 0{,}2$ (já em afastamento para $t > 4$). Confiável a partir de $k \le 0{,}1$ ($E = 0{,}330$ com $343$ NFEV). $\Delta$ simulado só cruza zero após $t = 5$. \\
+\midrule
+\textbf{Cenário 3:} $[0,\, 5]$ refinado &
+\emph{Blow-up} em $k = 0{,}003125$ ($U(5) \approx 23{,}87$) mesmo com $\Delta_n > 0$. Só domina o termo $+e^2$ para $k \le 0{,}0015625$. Em $N = 12.800$: $E = 0{,}388$, $63.984$ NFEV, $397{,}32\,\text{ms}$. &
+Sem \emph{blow-up} para $k \le 0{,}0125$; $p_{\text{obs}} \to 3{,}00$. Em $N = 12.800$: $E = 3{,}387 \times 10^{-8}$, $61.189$ NFEV, $581{,}42\,\text{ms}$. \\
+\midrule
+\textbf{Cenário 4:} $[0,\, 10]$ &
+Não executado (já falha em $[0,\, 5]$ para $k \ge 0{,}003125$). &
+Nenhuma malha conclui: colapso em $t^* \in [5{,}0;\, 7{,}95]$, com cada bisseção de $k$ adiando-o em $\approx 0{,}3$. \\
+\midrule
+\textbf{Custo por passo e inicialização} &
+$\approx 5$ NFEV/passo (Newton). Autoinicializável. &
+$\approx 5$ NFEV/passo e tempo por passo $\approx 1{,}5$--$1{,}6\times$ maior. Exige $U_1$ de outro método (aqui, RK4) e armazenamento de $f_{i-1}$ e $f_i$. \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+A articulação entre a Tabela~\ref{tab:c-sintese-cenarios}, a fundamentação da Seção~\ref{sec:c-teoria} e os resultados da Seção~\ref{sec:c-resultados} permite sintetizar a análise em quatro eixos.
+
+\paragraph{1. Ordem versus custo: o \emph{trade-off} frente ao Euler recuado.}
+O custo por passo dos dois métodos implícitos é semelhante ($\approx 5$ NFEV/passo, com o AM2 cerca de $1{,}5\times$ mais lento por passo), de modo que a comparação relevante é o custo \emph{para uma tolerância fixa}. Em $[0,\, 1{,}6]$, o AM2 com $k = 0{,}1$ ($113$ NFEV, $0{,}76\,\text{ms}$) já supera o melhor erro do Euler recuado ($1{,}726 \times 10^{-3}$ com $20.480$ NFEV e $126{,}98\,\text{ms}$), com cerca de $180\times$ menos avaliações e $165\times$ menos tempo. Em $[0,\, 5]$, o AM2 com $k = 0{,}1$ ($343$ NFEV, $5{,}47\,\text{ms}$) entrega $E = 0{,}330$, menor que o melhor erro do Euler recuado ($0{,}388$ com $63.984$ NFEV e $397{,}32\,\text{ms}$): cerca de $185\times$ menos avaliações e $70\times$ menos tempo. Ou seja, a ordem superior compensa com folga o custo extra por passo.
+
+\paragraph{2. Os mesmos mecanismos de falha: o ganho de ordem não muda a natureza do problema.}
+Ambos os métodos erram por cima ($\tau_n < 0 \implies e_n > 0$) e, em regime $\lambda > 0$, sofrem a soma de $\lambda e$ e $+e^2$ na equação do erro~\eqref{eq:erro-exata-bernoulli}. O resultado é uma explosão para $+\infty$, em oposição ao mergulho na isóclina atratora $-\sqrt{g(t)}$ dos métodos explícitos (Itens~(a) e~(b)). Em ambos, a perda de raiz real é o sintoma terminal do afastamento (Seção~\ref{sec:c-resultados} e Item~(a)), e o limiar de solubilidade $2{,}4\times$ mais permissivo do AM2 apenas retarda esse desfecho. O efeito da ordem é o mesmo discutido no Item~(b): com $|e(t)| \approx C\,k^p\,\Phi(0, t)$, trocar $p = 1$ por $p = 3$ reduz muito a semente, mas $\Phi(0, t)$ cresce de modo implacável ($\Phi(0, 5) \approx 666$, $\Phi(0, 10) \approx 1{,}5 \times 10^{21}$), e cada bisseção do passo compra apenas $\ln 8/\lambda(t) \approx 0{,}3$ unidade de tempo.
+
+\paragraph{3. Quando a implicitude não compra nada: estabilidade irrelevante neste PVI.}
+A vantagem clássica dos métodos implícitos é a ampla região de estabilidade absoluta, útil quando $\lambda < 0$ com $|\lambda|$ grande (rigidez). Neste PVI, porém, $\lambda_{\min} \approx -0{,}202$ (Tabela~\ref{tab:autovalores-regimes}), de modo que $z = k\lambda \ge -0{,}04$ para $k = 0{,}2$, muito dentro do intervalo $[-6,\, 0]$ do AM2 (e mesmo dos $[-2{,}785,\, 0]$ do RK4). Nas regiões instáveis ($\lambda > 0$), a estabilidade absoluta é irrelevante. O que sobra do método implícito é o seu custo: o Newton a cada passo e a barreira de solubilidade. Isso fica evidente na comparação com o RK4 (Item~(b)): em $[0,\, 5]$ com $N = 12.800$, o RK4 atinge $E = 2{,}026 \times 10^{-11}$ com $51.200$ NFEV e $38{,}90\,\text{ms}$, contra $3{,}387 \times 10^{-8}$ com $61.189$ NFEV e $581{,}42\,\text{ms}$ do AM2, isto é, um erro $\approx 1{,}7 \times 10^{3}$ vezes maior e um tempo $\approx 15\times$ maior. Em $[0,\, 1{,}6]$ a relação é semelhante.
+
+\paragraph{4. A dificuldade adicional dos métodos de passos múltiplos: não são autoinicializáveis.}
+Diferentemente dos métodos de um passo, o AM2 só pode ser aplicado a partir de $i = 1$ e exige $U_1$ calculado por outro método. Aqui usou-se um passo de RK4, com erro local $\mathcal{O}(k^5)$, compatível com a ordem global $3$. A escolha deve ser feita com cuidado (um iniciador de ordem insuficiente degradaria a convergência), e o método requer ainda armazenar $f_{i-1}$ e $f_i$. Além disso, os coeficientes de~\eqref{eq:am2} supõem malha uniforme, de modo que mudar $k$ no meio da integração exige reinicialização ou reinterpolação do histórico. Isso é especialmente relevante aqui: o corredor $y(t) - \sqrt{g(t)}$ encolhe com $t$ (Equação~\eqref{eq:largura-corredor}), e o remédio natural, um passo adaptativo, é justamente o que um método de passos múltiplos com passo fixo torna incômodo.
 %=====================================================================================
 \newpage
 \section{Item (d): Análise Crítica Geral — Métodos Explícitos versus Implícitos na Resolução de PVIs}
