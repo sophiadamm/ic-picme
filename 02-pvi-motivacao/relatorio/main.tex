@@ -1169,8 +1169,8 @@ Em paralelo ao teste estendido do RK4 (Seção~\ref{sec:b-cenario-t10}), integro
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{c_discriminante_am_T10}
-    \caption{Colapso do discriminante $\Delta_n = 1 - \frac{5k}{3}\tilde{c}_n$ do AM2 em $[0,\, 10]$ sob passos refinados, abortando o cálculo antes de $t = 10$.}
-    \label{fig:c_discriminante}
+    \caption{}
+    \label{}
 \end{figure}
 
 Tal como o RK4 reproduziu em $[0,\, 10]$ a captura pela isóclina do Euler avançado, \textbf{o AM2 em $[0,\, 10]$ reproduz exatamente o mesmo mecanismo de explosão quadrática ($\lambda e + e^2 > 0$) e colapso terminal do discriminante ($\Delta_n < 0$) diagnosticado para o Euler recuado no Item~(a)}, apenas postergado pela sua terceira ordem:
@@ -1253,13 +1253,176 @@ vantagens, desvantagens e critérios de seleção entre \textbf{Métodos Explíc
 resolução numérica de Problemas de Valor Inicial (PVIs) de um modo geral.
 Adicionalmente, investigar teórica e
 experimentalmente o que ocorre ao tentar resolver o PVI de Motivação~\eqref{eq:pvi}
-nos intervalos $[0,\,5]$, $[-2,\,2]$
-e $[-5,\,40]$ (bem como $[0,\,40]$).
+nos intervalos $[0,\,40]$, $[-2,\,2]$ e $[-5,\,40]$, afim de explorar o comportamento para tempos mais longos e ao integrar a singularidade
 
 %-------------------------------------------------------------------------------------
-\subsection{Fundamentação Teórica}
-\label{sec:d-teoria}
+\subsection{Horizontes longos e limite do refinamento}
+\label{sec:d-horizontes}
 
+Para um primeiro experimento numérico, utiliza-se as malhas $k \in \{0.2, 0.000390625\}$ -- a malha menos e mais refinada que utilizamos até então -- nos métodos implícitos e explícitos desenvolvidos para integração no intervalo [0,40].
+
+
+\begin{figure}[H]
+    \centering
+    % Subfigura 1: Euler Explícito
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{d_euler_avancado.png}
+        \caption{}
+        \label{}
+    \end{subfigure}
+    \hfill
+    % Subfigura 2: RK4
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{d_rk4.png}
+        \caption{}
+        \label{}
+    \end{subfigure}
+    \hfill
+    % Subfigura 3: Euler Implícito
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{d_euler_recuado.png}
+        \caption{}
+        \label{}
+    \end{subfigure}
+        \hfill
+    % Subfigura 4: Adams Moulton
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{d_adams_moulton.png}
+        \caption{}
+        \label{}
+    \end{subfigure}
+
+    \caption{Comportamento numérico do RK4: (\subref{fig:rk4_curto}) em $[0,\, 1{,}6]$; (\subref{fig:rk4_medio}) em $[0,\, 5]$ clássico; (\subref{fig:rk4_refinado}) em $[0,\, 5]$ refinado.}
+    \label{fig:comparacao_rk4}
+\end{figure}
+
+A partir da inspeção das figuras, temos 3 observações primordiais.
+
+\begin{enumerate}
+  \item \textit{Identificação das Rupturas Clássicas}: Para os métodos implícitos, ocorre um fenômeno espúrio de blow-up nas duas malhas, e para os métodos explícitos, a solução numérica é atraída pela isóclina $-\sqrt{g(t)}$ na malha mais refinada sem explodir para $-\infty$
+  \item \textit{Identificação de uma nova Ruptura}: Para $k=0.2$, ambos os métodos explícitos apresentam um fenômeno de oscilação da solução numérica que ainda não tinha sido observado em experimentos anteriores.
+  \item \textit{Consequência do refinamento}: Assim como foi observado nos itens (a)--(c), refinar o passo $k$ retarda a ruptura da solução numérica, mas não a elimina. 
+\end{enumerate}
+
+Essas observações motivam duas perguntas: (i) o que caracteriza a nova ruptura
+e por que ela só ocorre em malhas grossas? (ii) até onde o refinamento nos leva?
+
+\subsubsection{Oscilação Numérica e Ruptura por Rigidez nos Métodos Explícitos}
+\label{sec:d-oscilacoes-explicitos}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{d_explicitos_k02_T40.png}
+    \caption{}
+    \label{fig:d_oscilacao}
+\end{figure}
+
+A inspeção da Figura~\ref{fig:d_oscilacao} revela um fenômeno qualitativamente
+inédito em relação aos cenários anteriores: para $k = 0{,}2$, as trajetórias
+do Euler Avançado e do RK4 não permanecem acomodadas no ramo atrator, mas passam a apresentar oscilações artificiais de alta frequência que culminam na ejeção e explosão numérica das soluções em $t \approx 14\text{--}16$.
+
+A gênese dessa nova ruptura reside na violação das condições clássicas de
+\textbf{estabilidade absoluta} decorrente da rigidez induzida (\emph{stiffness})
+ao longo do ramo negativo. Conforme estabelecido na Seção~\ref{sec:a-teoria},
+a estabilidade local de uma trajetória perturbada é regida pela Jacobiana
+$\lambda(t, y) = 2y$. Ao ser capturada pela isóclina atratora
+$y_{\text{iso}}^{-}(t) \approx -\sqrt{g(t)} \sim -(t - 4)$, a EDO adquire um
+autovalor real negativo de magnitude estritamente crescente com o tempo:
+\begin{equation}\label{eq:lambda-stiff}
+  \lambda(t) \approx -2\sqrt{g(t)} \approx -2(t - 4) < 0 \quad (t > 4).
+\end{equation}
+Para métodos explícitos, o amortecimento estável de perturbações exige que o passo
+adimensional $z(t) = k\lambda(t)$ pertença ao intervalo de estabilidade real:
+\begin{align}
+  \text{Euler Avançado:}\quad & z \in [-2,\, 0] \implies k \le \frac{2}{|\lambda(t)|} \approx \frac{1}{\sqrt{g(t)}}, \label{eq:estat-fe} \\
+  \text{RK4:}\quad            & z \in [-2{,}785,\, 0] \implies k \le \frac{2{,}785}{|\lambda(t)|} \approx \frac{1{,}39}{\sqrt{g(t)}}. \label{eq:estat-rk4}
+\end{align}
+
+Sob a malha grosseira $k = 0{,}2$, essas cotas são violadas precocemente:
+para o Euler Avançado, a restrição $|k\lambda| \le 2$ rompe-se já em $t \approx 8{,}8$
+($|\lambda| \approx 10$); para o RK4, a fronteira $|k\lambda| \le 2{,}785$ é
+ultrapassada em $t \approx 10{,}6$ ($|\lambda| \approx 13{,}9$).
+
+A partir desse limiar crítico, o fator de amplificação discreto do Euler Avançado,
+$R_{\text{FE}}(z) = 1 + z$, torna-se menor que $-1$ ($R_{\text{FE}} < -1$). Esse valor
+negativo impõe uma alternância sistemática de sinal no erro ($e_{n+1} \approx R\,e_n$),
+gerando oscilações que crescem exponencialmente em amplitude a cada iteração.
+Quando a amplitude da oscilação supera a profundidade do poço atrator, a solução
+numérica é violentamente ejetada para o semiplano superior ($y > 0$), onde a
+instabilidade inerente da equação ($\lambda > 0$) e a retroalimentação quadrática
+$+e^2$ conduzem a trajetória a um \emph{overflow} imediato.
+
+\subsubsection{O Limite de Refinamento e a Barreira da Máquina}
+\label{sec:d-limite-refinamento}
+Ao longo dos experimentos anteriores, observou-se um comportamento sistemático: a redução do passo de integração $k$ retarda o ponto de ruptura da solução numérica. Diante disso, emerge uma questão central na análise numérica: esse ganho de sobrevida é indefinido? É possível alcançar qualquer horizonte temporal apenas refinando a malha?
+
+Para investigar empiricamente até onde podemos refinar, adotou-se o limite de $N \le 10^7$ passos para evitar o estouro de memória (RAM) computacional, o que restringe o passo mínimo viável no intervalo $[0, 40]$ a $k = 4 \times 10^{-6}$. Executaram-se então os quatro integradores com passos hiper-refinados de $k = 10^{-5}$ e $k = 4 \times 10^{-6}$, cujos resultados estão consolidados na Tabela \ref{tab:d_limites_refinamento}.
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{d_explicitos_k1e5}
+        \caption{}
+        \label{}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{d_explicitos_k4e6}
+        \caption{}
+        \label{}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{d_implicitos_k1e5.png}
+        \caption{}
+        \label{}
+    \end{subfigure}
+        \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{d_implicitos_k4e6.png}
+        \caption{}
+        \label{}
+    \end{subfigure}
+
+    \caption{}
+    \label{}
+\end{figure}
+
+\input{../resultados/item_d/tabelas/tabela_limites_refinamento.tex}
+A inspeção dos dados revela um cenário limitante. Nenhum método se aproximou de $T=40$: o Euler recuado interrompe-se por falha do Newton em $t \approx 6{,}3$--$6{,}4$, e o RK4 e o Adams-Moulton de 2 passos (AM2) em $t \approx 8{,}7$--$8{,}8$. Mesmo o Euler avançado, que computacionalmente atinge o passo final, o faz apenas porque foi capturado pela isóclina atratora espúria $-\sqrt{g(t)}$: o erro de $72{,}27$ corresponde a $|y(40) - (-\sqrt{g(40)})| \approx 2 \cdot 36{,}1$, convergindo para o ramo negativo enquanto a solução analítica segue no ramo positivo.
+
+Ademais, ao passar de $k = 10^{-5}$ para $k = 4 \times 10^{-6}$, o ganho esperado não se sustenta: enquanto o Euler recuado ganha uma fração modesta de sobrevida ($6{,}28 \to 6{,}43$), o RK4 e o AM2 \emph{antecipam} levemente a sua ruptura ($8{,}78 \to 8{,}71$). Esse comportamento contraria a intuição de que malhas estritamente mais finas geram sempre melhores resultados. A explicação desse limite assenta-se na interação entre a precisão da máquina e a dinâmica do próprio PVI:
+
+\paragraph{Balança do Erro e o Passo Ótimo ($k_{opt}$)}
+O erro global computacional combina duas fontes concorrentes~\cite{higham2002}: o \textbf{erro de truncamento} ($\propto k^p$, com $p$ sendo a ordem do método) e o \textbf{erro de arredondamento} inerente à aritmética de precisão dupla ($u \approx 1{,}1 \times 10^{-16}$). Como cada passo introduz uma perturbação de ponto flutuante, o acúmulo de ruído ao longo de $N = T/k$ iterações escala aproximadamente como $u/k$.
+
+Ambas as fontes de erro são amplificadas ao longo do tempo pelo fator intrínseco da EDO, $\Phi(0, T) = (1+T)^{12}\mathrm{e}^{T(T-8)}$, deduzido na Seção~\ref{sec:intro-estabilidade-edo}. O balanço entre essas duas forças resulta em uma estimativa do erro global da forma:
+\begin{equation}\label{eq:modelo-erro}
+  E(T) \;\lesssim\; \Phi(0,T)\,\Bigl[\, C\,k^p + \frac{u}{k} \Bigr],
+\end{equation}
+com $C = \mathcal{O}(1)$. Ao minimizar a soma entre colchetes em~\eqref{eq:modelo-erro}, obtém-se um piso prático, o \emph{passo ótimo}:
+\begin{equation}\label{eq:kopt}
+  k_{opt} \approx \left(\frac{u}{p\,C}\right)^{\frac{1}{p+1}}.
+\end{equation}
+Para o Euler ($p=1$), tem-se $k_{opt} \approx 10^{-8}$, o que explica por que o Euler recuado ainda se beneficia ao refinar até $4 \times 10^{-6}$. Em contrapartida, para métodos de ordem mais alta como AM2 ($p=3$) e RK4 ($p=4$), $k_{opt}$ situa-se em torno de $10^{-4}$ a $5 \times 10^{-4}$. Portanto, as malhas de $10^{-5}$ e $4 \times 10^{-6}$ já operam abaixo do passo ótimo, adentrando uma zona dominada pelo acúmulo de ruído de arredondamento.
+
+\paragraph{A Exigência Intransponível para $T=40$ e o Limite Absoluto ($T_{max}$)}
+Além da barreira do ponto flutuante, a própria EDO impõe uma restrição severa. Em $T=40$, a amplificação intrínseca atinge a magnitude colossal de $\Phi(0, 40) \approx 10^{575}$. Para contrabalançar tal expansão unicamente via erro de truncamento ($k^p \Phi \lesssim 1$), seria necessário um passo de $k \approx 10^{-144}$ para o RK4 (e $10^{-575}$ para o Euler) — uma exigência fisicamente inviável que demandaria $\sim 10^{144}$ passos e estaria ordens de grandeza abaixo da resolução numérica da máquina ($u \approx 10^{-16}$).
+
+Dessa concorrência decorre um horizonte temporal máximo $T_{max}$ além do qual nenhum integrador de passo fixo em precisão dupla consegue sustentar a solução exata antes que o erro atinja $\mathcal{O}(1)$:
+\begin{equation}\label{eq:tmax}
+  T_{max}^2 - 8\,T_{max} + 12\ln(1+T_{max}) \approx \ln\frac{1}{E_{\min}},
+\end{equation}
+onde $E_{\min} \sim u^{p/(p+1)}$. Essa relação prevê horizontes limitados a $T_{max} \approx 7{,}0$ para o Euler e $T_{max} \approx 8{,}2$--$8{,}3$ para AM2 e RK4. Isso esclarece perfeitamente por que o RK4 e o Adams-Moulton colapsam de forma irredutível nas imediações de $t \approx 8{,}7$, independentemente de quão refinada seja a discretização temporal. O colapso em horizontes longos reflete, portanto, uma limitação estrutural da sensibilidade contínua do PVI em conjunção com a precisão de máquina, e não uma deficiência algorítmica dos métodos empregados.
+
+\section{Conclusão}
 
 %-------------------------------------------------------------------------------------
 \begin{thebibliography}{99}
@@ -1273,6 +1436,11 @@ J.~C.~Butcher.
 E.~Hairer, S.~P.~Nørsett e G.~Wanner.
 \newblock \emph{Solving Ordinary Differential Equations I: Nonstiff Problems}.
 \newblock 2\textordfeminine~ed., Springer-Verlag, Berlim, 1993.
+
+\bibitem{higham2002}
+N.~J.~Higham.
+\newblock \emph{Accuracy and Stability of Numerical Algorithms}.
+\newblock 2\textordfeminine~ed., SIAM, Filadélfia, 2002.
 
 \bibitem{hirota2006}
 C.~Hirota e K.~Ozawa.

@@ -1,0 +1,23 @@
+% Tabela gerada automaticamente por exp_d_Tlongo.py
+\begin{table}[H]
+    \centering
+    \caption{Comparação de desempenho e limites de máquina para passos hiper-refinados ($T = 40$).}
+    \label{tab:d_limites_refinamento}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{lccccccc}
+        \toprule
+        \textbf{Método} & \textbf{Passo $k$} & \textbf{Passos $N$} & \textbf{$t_{\text{parada}}$} & \textbf{Status} & \textbf{NFEV} & \textbf{CPU (s)} & \textbf{Erro Máximo} \\
+        \midrule
+        Euler avançado & 1e-05 & 4,000,000 & 40.000 & concluido & 4,000,000 & 6.58 & 7.227e+01 \\
+        Euler recuado & 1e-05 & 627,638 & 6.276 & newton & 3,139,949 & 28.93 & 2.700e+04 \\
+        Runge-Kutta 4 & 1e-05 & 878,090 & 8.781 & explosao & 3,512,364 & 3.59 & 3.594e+131 \\
+        Adams-Moulton 2 & 1e-05 & 877,678 & 8.777 & newton & 2,678,157 & 21.10 & 5.554e+04 \\
+        \midrule
+        Euler avançado & 4e-06 & 10,000,000 & 40.000 & concluido & 10,000,000 & 17.81 & 7.227e+01 \\
+        Euler recuado & 4e-06 & 1,607,128 & 6.429 & newton & 8,037,625 & 74.27 & 1.750e+04 \\
+        Runge-Kutta 4 & 4e-06 & 2,177,875 & 8.711 & explosao & 8,711,504 & 6.84 & 6.598e+33 \\
+        Adams-Moulton 2 & 4e-06 & 2,177,843 & 8.711 & newton & 6,590,134 & 51.97 & 1.165e+04 \\
+        \bottomrule
+    \end{tabular}%
+    }
+\end{table}

@@ -9,7 +9,12 @@ def erro_max(prob, t, U):
     return np.max(np.abs(U - prob.solucao(t)))
 
 def resolver(metodo, prob, k, TF):
-    """Roda o método e devolve (t, U, stats)."""
+    """Roda o método e devolve (t, U, stats).
+
+    O sentido da integração é dado por TF: se TF < t0 o passo é tomado negativo
+    (integração para trás), qualquer que seja o sinal de k informado.
+    """
+    k = abs(k) if TF >= prob.t0 else -abs(k)
     n = round((TF - prob.t0) / k)
     t, U, stats = metodo(prob, n, k)
     return t, U, stats
@@ -379,3 +384,82 @@ def exportar_tabela_discriminante(
 
 # Alias para retrocompatibilidade
 exportar_tabela_discriminante_tex = exportar_tabela_discriminante
+
+
+
+# --------------------------------------------------------------------------------------------------------------------------------
+# Item d: integração em intervalos que contêm a singularidade t = -1
+# --------------------------------------------------------------------------------------------------------------------------------
+
+MOTIVOS_PARADA = {
+    'concluido': 'concluído',
+    'explosao': 'explosão',
+    'newton': 'Newton não convergiu',
+    'singularidade': 'parou antes do polo',
+}
+
+
+def tabela_singularidade(casos, nome_arquivo, legenda, pasta_tab=None, pasta_dados=None):
+    """Tabela-resumo de integrações que podem parar antes do instante final.
+
+    `casos` é uma lista de dicionários com as chaves:
+        'metodo', 'ramo', 'prob', 'k', 'tf' (instante final pedido) e 'sol' = (t, U, stats).
+
+    Para cada caso registra onde a integração parou e por quê, além do erro no último
+    ponto aceito e do erro máximo no trecho efetivamente percorrido. Exporta .tex e .csv.
+    """
+    dir_tex = pasta_tab or "resultados/item_d/tabelas"
+    dir_csv = pasta_dados or "resultados/item_d/dados"
+    os.makedirs(dir_tex, exist_ok=True)
+    os.makedirs(dir_csv, exist_ok=True)
+
+    linhas = []
+    print(f"\n--- {legenda} ---")
+    print(f"{'método':<24} | {'ramo':<16} | {'k':>7} | {'t pedido':>8} | {'t parada':>8} | "
+          f"{'passos':>6} | {'U final':>11} | {'y exato':>11} | {'erro final':>10} | motivo")
+    print("-" * 140)
+    for c in casos:
+        t, U, stats = c['sol']
+        prob = c['prob']
+        y_ex = prob.solucao(t)
+        erros = np.abs(U - y_ex)
+        motivo = MOTIVOS_PARADA.get(stats.get('motivo', ''), stats.get('motivo', '-'))
+        if stats.get('cruzamentos'):
+            motivo += " (atravessou t = -1)"
+        linha = {
+            'metodo': c['metodo'], 'ramo': c['ramo'], 'k': c['k'], 'tf': c['tf'],
+            't_parada': t[-1], 'passos': len(t) - 1, 'U_final': U[-1], 'y_final': y_ex[-1],
+            'erro_final': erros[-1], 'erro_max': np.max(erros), 'nfev': stats['nfev'],
+            'motivo': motivo,
+        }
+        linhas.append(linha)
+        print(f"{linha['metodo']:<24} | {linha['ramo']:<16} | {linha['k']:>7} | {linha['tf']:>8g} | "
+              f"{linha['t_parada']:>8.3f} | {linha['passos']:>6} | {linha['U_final']:>11.4e} | "
+              f"{linha['y_final']:>11.4e} | {linha['erro_final']:>10.3e} | {motivo}")
+
+    with open(os.path.join(dir_tex, f"{nome_arquivo}.tex"), "w", encoding="utf-8") as f:
+        f.write("\\begin{table}[H]\n")
+        f.write("    \\centering\n")
+        f.write("    \\small\n")
+        f.write("    \\begin{tabular}{llcccccl}\n")
+        f.write("        \\hline\n")
+        f.write("        Método & Ramo & $k$ & $t$ pedido & $t$ de parada & $U$ final & "
+                "$y(t)$ exato & Motivo \\\\\n")
+        f.write("        \\hline\n")
+        for l in linhas:
+            f.write(f"        {l['metodo']} & {l['ramo']} & {l['k']:g} & {l['tf']:g} & "
+                    f"{l['t_parada']:.3f} & {l['U_final']:.3e} & {l['y_final']:.3e} & {l['motivo']} \\\\\n")
+        f.write("        \\hline\n")
+        f.write("    \\end{tabular}\n")
+        f.write(f"    \\caption{{{legenda}}}\n")
+        f.write(f"    \\label{{tab:{nome_arquivo}}}\n")
+        f.write("\\end{table}\n")
+
+    with open(os.path.join(dir_csv, f"{nome_arquivo}.csv"), "w", encoding="utf-8") as f:
+        f.write("metodo,ramo,k,t_pedido,t_parada,passos,nfev,U_final,y_exato,erro_final,erro_max,motivo\n")
+        for l in linhas:
+            f.write(f"{l['metodo']},{l['ramo']},{l['k']},{l['tf']},{l['t_parada']:.6f},{l['passos']},"
+                    f"{l['nfev']},{l['U_final']:.10e},{l['y_final']:.10e},{l['erro_final']:.10e},"
+                    f"{l['erro_max']:.10e},{l['motivo']}\n")
+
+    return linhas

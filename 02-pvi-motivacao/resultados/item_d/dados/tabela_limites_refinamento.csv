@@ -1,0 +1,9 @@
+metodo,k,passos,t_parada,status,nfev,cpu_s,cpu_ms,erro_max
+Euler avançado,1e-05,4000000,40.000,concluido,4000000,6.58,6579.0,7.227e+01
+Euler recuado,1e-05,627638,6.276,newton,3139949,28.93,28933.7,2.700e+04
+Runge-Kutta 4,1e-05,878090,8.781,explosao,3512364,3.59,3594.4,3.594e+131
+Adams-Moulton 2,1e-05,877678,8.777,newton,2678157,21.10,21104.6,5.554e+04
+Euler avançado,4e-06,10000000,40.000,concluido,10000000,17.81,17810.1,7.227e+01
+Euler recuado,4e-06,1607128,6.429,newton,8037625,74.27,74271.8,1.750e+04
+Runge-Kutta 4,4e-06,2177875,8.711,explosao,8711504,6.84,6844.5,6.598e+33
+Adams-Moulton 2,4e-06,2177843,8.711,newton,6590134,51.97,51967.7,1.165e+04

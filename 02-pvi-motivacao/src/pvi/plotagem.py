@@ -49,36 +49,153 @@ def _configurar_paineis(x_lim_zoom, size_simples=(7.5, 4.8), size_duplo=(12.0, 4
 # =============================================================================
 # 3. PLOTAGENS BÁSICAS DE SOLUÇÃO
 # =============================================================================
-def _desenhar(ax, prob, solucoes, ks, tspan, titulo, loc_legenda="best"):
-    t_fino = np.linspace(tspan[0], tspan[1], 400)
+def _passo_marcadores(largura, k, marker_density=30):
+    """Nº de pontos da malha entre marcadores para ~`marker_density` marcadores na largura do eixo."""
+    dens = marker_density if (marker_density is not None and marker_density > 0) else 30
+    return max(1, round(largura / (abs(k) * dens)))
+
+
+def _desenhar(ax, prob, solucoes, ks, tspan, titulo, loc_legenda="best",
+              xlim=None, ylim=None, marker_density=30, markersize=None, markevery=None,
+              labels=None):
+    # Amostra a solução exata estritamente na janela visível para manter alta resolução no zoom
+    t_min_plot = xlim[0] if xlim is not None else tspan[0]
+    t_max_plot = xlim[1] if xlim is not None else tspan[1]
+    t_fino = np.linspace(t_min_plot, t_max_plot, 400)
     ax.plot(t_fino, prob.solucao(t_fino), label="solução exata", **ESTILO["exata"])
 
     n_ks = len(ks)
     tamanhos = np.linspace(5.5, 1.5, n_ks) if n_ks > 1 else [4.5]
     marcadores = itertools.cycle(MARCADORES_BASE)
+    cores = ESTILO["cores_ciclo"]
 
-    for (t, U, _), k, tam, marc in zip(solucoes, ks, tamanhos, marcadores):
+    # Largura de referência (em t) sobre a qual a densidade é medida: o eixo visível.
+    largura = (xlim[1] - xlim[0]) if xlim is not None else (tspan[1] - tspan[0])
+
+    if markevery is not None:
+        passos = [max(1, int(markevery))] * n_ks
+    else:
+        passos = [_passo_marcadores(largura, k, marker_density) for k in ks]
+
+    for i, (sol, k, tam, marc, passo) in enumerate(
+            zip(solucoes, ks, tamanhos, marcadores, passos)):
+        t, U = sol[0], sol[1]
+        stats = sol[2] if len(sol) > 2 else {}
         n = len(t) - 1
-        markevery = max(1, n // 30) if n > 120 else 1
-        ms = 4.0 if n > 120 else tam
-        ls = "--" if n > 120 else ""
-        ax.plot(t, U, linestyle=ls, marker=marc, ms=ms, lw=1.2,
-                markevery=markevery, zorder=3, label=f"$k = {k}$ ({n} passos)")
+        inicio = (i * passo) // n_ks
+        ms = markersize if markersize is not None else 4.2
+        cor = cores[i % len(cores)]
+        rotulo = labels[i] if (labels is not None and i < len(labels)) else f"$k = {k}$ ({n} passos)"
+        
+        # Garante a interpolação por linha conectando os pontos discretos
+        ax.plot(t, U, linestyle="--", color=cor, marker=marc, ms=ms, lw=1.2,
+                markevery=(inicio, passo), zorder=3, label=rotulo)
+
+        if isinstance(stats, dict) and stats.get("motivo", "concluido") != "concluido" and len(t) > 0:
+            ax.plot(t[-1], U[-1], marker="X", color="red", mec="black", ms=8.0, zorder=6)
 
     ax.axhline(0, color="gray", lw=0.8, zorder=1)
     ax.set(xlabel="$t$", ylabel="$y$", title=titulo)
+    if xlim is not None:
+        ax.set_xlim(*xlim)
+    if ylim is not None:
+        ax.set_ylim(*ylim)
     ax.legend(loc=loc_legenda)
 
-def plot_fig122(prob, solucoes, ks, tspan, titulo, caminho, loc_legenda="best"):
+
+def plot_fig122(prob, solucoes, ks, tspan, titulo, caminho, loc_legenda="best",
+               xlim=None, ylim=None, zoom=None, marker_density=30, markersize=None, markevery=None):
+    if zoom is not None and xlim is None:
+        xlim = zoom
     fig, ax, _, _ = _configurar_paineis(None, size_simples=(6.5, 4.5))
-    _desenhar(ax, prob, solucoes, ks, tspan, titulo, loc_legenda=loc_legenda)
+    _desenhar(ax, prob, solucoes, ks, tspan, titulo, loc_legenda=loc_legenda,
+              xlim=xlim, ylim=ylim, marker_density=marker_density,
+              markersize=markersize, markevery=markevery)
     _salvar(fig, caminho)
 
-def plot_comparacao(prob, sol1, sol2, ks, tspan, titulo1, titulo2, caminho, loc_legenda="best"):
+
+def plot_comparacao(prob, sol1, sol2, ks, tspan, titulo1, titulo2, caminho, loc_legenda="best",
+                    xlim=None, ylim=None, zoom=None, marker_density=30, markersize=None, markevery=None):
+    if zoom is not None and xlim is None:
+        xlim = zoom
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.5), sharey=True)
-    _desenhar(ax1, prob, sol1, ks, tspan, titulo1, loc_legenda=loc_legenda)
-    _desenhar(ax2, prob, sol2, ks, tspan, titulo2, loc_legenda=loc_legenda)
-    ax2.set_ylabel("")  
+    _desenhar(ax1, prob, sol1, ks, tspan, titulo1, loc_legenda=loc_legenda,
+              xlim=xlim, ylim=ylim, marker_density=marker_density,
+              markersize=markersize, markevery=markevery)
+    _desenhar(ax2, prob, sol2, ks, tspan, titulo2, loc_legenda=loc_legenda,
+              xlim=xlim, ylim=ylim, marker_density=marker_density,
+              markersize=markersize, markevery=markevery)
+    ax2.set_ylabel("")
+    _salvar(fig, caminho)
+
+
+def _nome_metodo(m):
+    """Retorna uma string descritiva amigável para um método numérico."""
+    nomes = {
+        "euler_explicito": "Euler avançado (explícito)",
+        "euler_implicito": "Euler recuado (implícito)",
+        "rk4": "Runge-Kutta de 4ª Ordem (RK4)",
+        "adams_moulton": "Adams-Moulton de 2 passos",
+    }
+    nome = getattr(m, "__name__", str(m))
+    return nomes.get(nome, nome)
+
+
+def plot_k_fixo( prob, metodos, k, caminho,
+    tf=None, solucoes=None, x_lim_zoom=None, y_lim_zoom=None, xlim=None, ylim=None, titulo=None,
+    loc_legenda="best",marker_density=30, size_duplo=(12.0, 4.8), size_simples=(6.5, 4.5),
+):
+    if not isinstance(metodos, (list, tuple)):
+        metodos = [metodos]
+
+    # Prepara ou resolve as soluções
+    if solucoes is None:
+        if tf is None:
+            raise ValueError("O parâmetro `tf` deve ser fornecido quando `solucoes` não for informada.")
+        from pvi.uteis import resolver
+        solucoes_list = [resolver(m, prob, k, tf) for m in metodos]
+    else:
+        # Garante que solucoes_list seja uma lista de tuplas (t, U, stats)
+        if len(solucoes) == 3 and isinstance(solucoes[0], np.ndarray):
+            solucoes_list = [solucoes]
+        else:
+            solucoes_list = list(solucoes)
+
+    # Determina o tspan
+    t_final = tf if tf is not None else float(solucoes_list[0][0][-1])
+    tspan = (prob.t0, t_final)
+
+    # Configuração dos rótulos
+    nomes_metodos = [_nome_metodo(m) for m in metodos]
+    if len(metodos) == 1:
+        titulo_padrao = f"{nomes_metodos[0]} ($k = {k:g}$)"
+        labels = [f"$k = {k:g}$ ({len(solucoes_list[0][0]) - 1} passos)"]
+    else:
+        titulo_padrao = f"Comparação de Métodos ($k = {k:g}$)"
+        labels = [f"{nome} ({len(s[0]) - 1} passos)" for nome, s in zip(nomes_metodos, solucoes_list)]
+
+    tit_fig = titulo if titulo is not None else titulo_padrao
+
+    # Gerenciamento de 1 ou 2 painéis reaproveitando _configurar_paineis
+    fig, ax1, ax2, is_duplo = _configurar_paineis(x_lim_zoom, size_simples=size_simples, size_duplo=size_duplo)
+
+    ks_list = [k] * len(solucoes_list)
+
+    # Painel 1: Visão Global
+    tit_global = f"{tit_fig} — Visão Global" if is_duplo else tit_fig
+    _desenhar(ax1, prob, solucoes_list, ks_list, tspan, tit_global,
+              loc_legenda=loc_legenda, xlim=xlim, ylim=ylim,
+              marker_density=marker_density, labels=labels)
+
+    # Painel 2: Zoom ajustável (se solicitado)
+    if is_duplo:
+        tit_zoom = f"Detalhe / Zoom ($t \\in [{x_lim_zoom[0]:g},\\, {x_lim_zoom[1]:g}]$)"
+        _desenhar(ax2, prob, solucoes_list, ks_list, tspan, tit_zoom,
+                  loc_legenda=loc_legenda, xlim=x_lim_zoom, ylim=y_lim_zoom,
+                  marker_density=marker_density, labels=labels)
+        ax2.set_ylabel("")
+
+    fig.tight_layout()
     _salvar(fig, caminho)
 
 # =============================================================================
@@ -299,4 +416,151 @@ def plot_isoclinas(prob, solucoes, ks, tf, caminho, titulo="Análise de Isóclin
         ax2.set(ylabel="", title="Detalhe do Cruzamento da Isóclina")
 
     fig.tight_layout()
+    _salvar(fig, caminho)
+
+
+# =============================================================================
+# 7. ITEM D: INTERVALOS QUE CONTÊM A SINGULARIDADE t = -1
+# =============================================================================
+def _solucao_exata_por_ramos(prob, a, b, polo=-1.0, n=3000, folga=1e-3):
+    """Amostra a solução exata em [a, b] inserindo NaN no polo para não ligar os ramos."""
+    t = np.linspace(a, b, n)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        y = np.asarray(prob.solucao(t), dtype=float)
+    y[np.abs(t - polo) < folga] = np.nan
+    return t, y
+
+
+def plot_singularidade(prob_ref, paineis, ks, intervalo, caminho, titulo, ylim,
+                       polo=-1.0, marker_density=25):
+    """Grade 2x2 (um painel por método) para um intervalo que contém o polo.
+
+    `paineis`: dict {titulo_do_painel: [caso, ...]}, onde cada caso é um dict com
+    'sol' = (t, U, stats), 'k' e 'prob' (o PVI usado, para marcar a condição inicial).
+    A cor/marcador identifica |k|; os dois lados do polo são PVIs distintos.
+    """
+    a, b = intervalo
+    largura = b - a
+    ks_abs = [abs(k) for k in ks]
+    cores = ESTILO["cores_ciclo"]
+
+    fig, eixos = plt.subplots(2, 2, figsize=(12.0, 8.2), sharex=True, sharey=True)
+    t_ex, y_ex = _solucao_exata_por_ramos(prob_ref, a, b, polo)
+
+    for ax, (titulo_painel, casos) in zip(eixos.flat, paineis.items()):
+        ax.axvline(polo, **ESTILO["assintota_ver"], zorder=1)
+        ax.axhline(0, color="gray", lw=0.8, zorder=1)
+        ax.plot(t_ex, y_ex, **ESTILO["exata"])
+
+        cis = set()
+        for caso in casos:
+            t, U, stats = caso["sol"]
+            idx = ks_abs.index(abs(caso["k"]))
+            cor, marc = cores[idx % len(cores)], MARCADORES_BASE[idx % len(MARCADORES_BASE)]
+            passo = _passo_marcadores(largura, caso["k"], marker_density)
+            ax.plot(t, U, "--", color=cor, marker=marc, ms=4.0, lw=1.2,
+                    markevery=(0, passo), zorder=3)
+            # Ponto onde a integração parou (antes do instante final pedido)
+            if stats.get("motivo", "concluido") != "concluido":
+                ax.plot(t[-1], U[-1], "X", color=cor, mec="k", ms=8, zorder=6)
+            cis.add((caso["prob"].t0, caso["prob"].y0))
+
+        for t0, y0 in cis:
+            ax.plot(t0, y0, **ESTILO["cond_inicial"])
+
+        ax.set(title=titulo_painel, xlim=(a, b), ylim=ylim)
+
+    for ax in eixos[1, :]:
+        ax.set_xlabel("$t$")
+    for ax in eixos[:, 0]:
+        ax.set_ylabel("$y$")
+
+    # Legenda única para a figura
+    from matplotlib.lines import Line2D
+    handles = [Line2D([], [], **ESTILO["exata"], label="solução exata"),
+               Line2D([], [], **ESTILO["assintota_ver"], label=f"polo $t = {polo:g}$"),
+               Line2D([], [], linestyle="", **ESTILO["cond_inicial"], label="condição inicial")]
+    handles += [Line2D([], [], linestyle="--", color=cores[i % len(cores)],
+                       marker=MARCADORES_BASE[i % len(MARCADORES_BASE)], ms=4.0, lw=1.2,
+                       label=f"$|k| = {k:g}$") for i, k in enumerate(ks_abs)]
+    handles.append(Line2D([], [], linestyle="", marker="X", color="w", mec="k", ms=8,
+                          label="parada antecipada"))
+    fig.legend(handles=handles, loc="lower center", ncol=len(handles), fontsize=9.5,
+               bbox_to_anchor=(0.5, -0.005))
+    fig.suptitle(titulo, fontsize=13)
+    fig.tight_layout(rect=(0, 0.04, 1, 1))
+    _salvar(fig, caminho)
+
+
+
+# =============================================================================
+# 7. ITEM D: INTERVALOS QUE CONTÊM A SINGULARIDADE t = -1
+# =============================================================================
+def _solucao_exata_por_ramos(prob, a, b, polo=-1.0, n=3000, folga=1e-3):
+    """Amostra a solução exata em [a, b] inserindo NaN no polo para não ligar os ramos."""
+    t = np.linspace(a, b, n)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        y = np.asarray(prob.solucao(t), dtype=float)
+    y[np.abs(t - polo) < folga] = np.nan
+    return t, y
+
+
+def plot_singularidade(prob_ref, paineis, ks, intervalo, caminho, titulo, ylim,
+                       polo=-1.0, marker_density=25):
+    """Grade 2x2 (um painel por método) para um intervalo que contém o polo.
+
+    `paineis`: dict {titulo_do_painel: [caso, ...]}, onde cada caso é um dict com
+    'sol' = (t, U, stats), 'k' e 'prob' (o PVI usado, para marcar a condição inicial).
+    A cor/marcador identifica |k|; os dois lados do polo são PVIs distintos.
+    """
+    a, b = intervalo
+    largura = b - a
+    ks_abs = [abs(k) for k in ks]
+    cores = ESTILO["cores_ciclo"]
+
+    fig, eixos = plt.subplots(2, 2, figsize=(12.0, 8.2), sharex=True, sharey=True)
+    t_ex, y_ex = _solucao_exata_por_ramos(prob_ref, a, b, polo)
+
+    for ax, (titulo_painel, casos) in zip(eixos.flat, paineis.items()):
+        ax.axvline(polo, **ESTILO["assintota_ver"], zorder=1)
+        ax.axhline(0, color="gray", lw=0.8, zorder=1)
+        ax.plot(t_ex, y_ex, **ESTILO["exata"])
+
+        cis = set()
+        for caso in casos:
+            t, U, stats = caso["sol"]
+            idx = ks_abs.index(abs(caso["k"]))
+            cor, marc = cores[idx % len(cores)], MARCADORES_BASE[idx % len(MARCADORES_BASE)]
+            passo = _passo_marcadores(largura, caso["k"], marker_density)
+            ax.plot(t, U, "--", color=cor, marker=marc, ms=4.0, lw=1.2,
+                    markevery=(0, passo), zorder=3)
+            # Ponto onde a integração parou (antes do instante final pedido)
+            if stats.get("motivo", "concluido") != "concluido":
+                ax.plot(t[-1], U[-1], "X", color=cor, mec="k", ms=8, zorder=6)
+            cis.add((caso["prob"].t0, caso["prob"].y0))
+
+        for t0, y0 in cis:
+            ax.plot(t0, y0, **ESTILO["cond_inicial"])
+
+        ax.set(title=titulo_painel, xlim=(a, b), ylim=ylim)
+
+    for ax in eixos[1, :]:
+        ax.set_xlabel("$t$")
+    for ax in eixos[:, 0]:
+        ax.set_ylabel("$y$")
+
+    # Legenda única para a figura
+    from matplotlib.lines import Line2D
+    handles = [Line2D([], [], **ESTILO["exata"], label="solução exata"),
+               Line2D([], [], **ESTILO["assintota_ver"], label=f"polo $t = {polo:g}$"),
+               Line2D([], [], linestyle="", **ESTILO["cond_inicial"], label="condição inicial")]
+    handles += [Line2D([], [], linestyle="--", color=cores[i % len(cores)],
+                       marker=MARCADORES_BASE[i % len(MARCADORES_BASE)], ms=4.0, lw=1.2,
+                       label=f"$|k| = {k:g}$") for i, k in enumerate(ks_abs)]
+    handles.append(Line2D([], [], linestyle="", marker="X", color="w", mec="k", ms=8,
+                          label="parada antecipada"))
+    fig.legend(handles=handles, loc="lower center", ncol=len(handles), fontsize=9.5,
+               bbox_to_anchor=(0.5, -0.005))
+    fig.suptitle(titulo, fontsize=13)
+    fig.tight_layout(rect=(0, 0.04, 1, 1))
     _salvar(fig, caminho)
