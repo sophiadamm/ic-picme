@@ -10,6 +10,11 @@ class PVI:
     t0: float
     solucao: Callable[[float | np.ndarray], float | np.ndarray] | None
     nome: str
+    # --- Metadados opcionais (usados no item d).
+    singularidades: tuple[float, ...] = ()
+    parar_na_singularidade: bool = True
+    # Limiar de |U| acima do qual a trajetória é considerada explodida (None = só inf/NaN).
+    limite_explosao: float | None = None
 
 def g(t):
     try:
@@ -17,7 +22,9 @@ def g(t):
     except ZeroDivisionError:
         return np.inf
 
-def motivacao() -> PVI:
+def motivacao(t0: float = 0.0, y0: float | None = None,
+              limite_explosao: float | None = None,
+              parar_na_singularidade: bool = True) -> PVI:
     def f(t, y):
         try:
             return y**2 - g(t)
@@ -36,4 +43,11 @@ def motivacao() -> PVI:
         except ZeroDivisionError:
             return np.inf
     
-    return PVI(f=f, dfdy=dfdy, y0=2.0, t0=0.0, solucao=solucao, nome="PVI Motivação")
+    if y0 is None:
+        y0 = float(solucao(t0))
+
+    return PVI(f=f, dfdy=dfdy, y0=y0, t0=t0, solucao=solucao,
+               nome="PVI Motivação",
+               singularidades=(-1.0,),
+               parar_na_singularidade=parar_na_singularidade,
+               limite_explosao=limite_explosao)

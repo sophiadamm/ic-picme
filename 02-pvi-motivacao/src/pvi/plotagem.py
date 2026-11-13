@@ -431,136 +431,114 @@ def _solucao_exata_por_ramos(prob, a, b, polo=-1.0, n=3000, folga=1e-3):
     return t, y
 
 
-def plot_singularidade(prob_ref, paineis, ks, intervalo, caminho, titulo, ylim,
-                       polo=-1.0, marker_density=25):
-    """Grade 2x2 (um painel por método) para um intervalo que contém o polo.
+_MOTIVO_CURTO = {
+    'concluido': 'concluiu',
+    'explosao': 'explodiu',
+    'newton': 'Newton falhou',
+    'singularidade': 'parou antes do polo',
+}
 
-    `paineis`: dict {titulo_do_painel: [caso, ...]}, onde cada caso é um dict com
-    'sol' = (t, U, stats), 'k' e 'prob' (o PVI usado, para marcar a condição inicial).
-    A cor/marcador identifica |k|; os dois lados do polo são PVIs distintos.
-    """
+
+def _indice_travessia(t, polo):
+    """Índice i do passo [t_i, t_{i+1}] que contém/atravessa o polo (ou None)."""
+    lado = np.sign(np.asarray(t) - polo)
+    idx = np.where(lado[:-1] * lado[1:] <= 0)[0]
+    return int(idx[0]) if len(idx) else None
+
+
+def plot_singularidade(prob_ref, paineis, intervalo, caminho, titulo, *,
+                       xlim=None, ylim=(-1e6, 1e6), linthresh=10.0,
+                       polo=-1.0, ramo_proprio="ambos", marker_density=40):
+    from matplotlib.lines import Line2D
+    from matplotlib.patches import Patch
+
     a, b = intervalo
-    largura = b - a
-    ks_abs = [abs(k) for k in ks]
-    cores = ESTILO["cores_ciclo"]
+    xlim = xlim or (a, b)
+    largura = xlim[1] - xlim[0]
 
-    fig, eixos = plt.subplots(2, 2, figsize=(12.0, 8.2), sharex=True, sharey=True)
-    t_ex, y_ex = _solucao_exata_por_ramos(prob_ref, a, b, polo)
+    fig, eixos = plt.subplots(2, 2, figsize=(12.0, 8.6), sharex=True, sharey=True)
+    t_ex, y_ex = _solucao_exata_por_ramos(prob_ref, xlim[0], xlim[1], polo)
+    esq = t_ex < polo
+    y_esq, y_dir = np.where(esq, y_ex, np.nan), np.where(~esq, y_ex, np.nan)
+    estilo_outro = dict(color="0.6", lw=1.4, ls=":", zorder=2)
+    ha_travessia = False
 
     for ax, (titulo_painel, casos) in zip(eixos.flat, paineis.items()):
+        # Domínio do PVI e solução exata
+        if ramo_proprio == "esq":
+            ax.axvspan(polo, xlim[1], color="0.85", alpha=0.5, zorder=0)
+            ax.plot(t_ex, y_esq, **ESTILO["exata"])
+            ax.plot(t_ex, y_dir, **estilo_outro)
+        elif ramo_proprio == "dir":
+            ax.axvspan(xlim[0], polo, color="0.85", alpha=0.5, zorder=0)
+            ax.plot(t_ex, y_esq, **estilo_outro)
+            ax.plot(t_ex, y_dir, **ESTILO["exata"])
+        else:
+            ax.plot(t_ex, y_ex, **ESTILO["exata"])
         ax.axvline(polo, **ESTILO["assintota_ver"], zorder=1)
         ax.axhline(0, color="gray", lw=0.8, zorder=1)
-        ax.plot(t_ex, y_ex, **ESTILO["exata"])
 
-        cis = set()
+        linhas_txt, cis = [], set()
         for caso in casos:
             t, U, stats = caso["sol"]
-            idx = ks_abs.index(abs(caso["k"]))
-            cor, marc = cores[idx % len(cores)], MARCADORES_BASE[idx % len(MARCADORES_BASE)]
+            cor, marc = caso.get("cor", "#1f77b4"), caso.get("marker", "o")
             passo = _passo_marcadores(largura, caso["k"], marker_density)
             ax.plot(t, U, "--", color=cor, marker=marc, ms=4.0, lw=1.2,
-                    markevery=(0, passo), zorder=3)
-            # Ponto onde a integração parou (antes do instante final pedido)
-            if stats.get("motivo", "concluido") != "concluido":
-                ax.plot(t[-1], U[-1], "X", color=cor, mec="k", ms=8, zorder=6)
+                    markevery=(0, passo), zorder=4)
+
+            # Passo que atravessa o polo (só existe sem a salvaguarda)
+            i = _indice_travessia(t, polo) if stats.get("cruzamentos") else None
+            if i is not None and i + 1 < len(t):
+                ax.plot(t[i:i + 2], U[i:i + 2], color="#ff7f0e", lw=5, alpha=0.45,
+                        solid_capstyle="round", zorder=3)
+                ha_travessia = True
+
+            motivo = stats.get("motivo", "concluido")
+            if motivo != "concluido":
+                ax.plot(t[-1], U[-1], "X", color=cor, mec="k", ms=9, zorder=6)
             cis.add((caso["prob"].t0, caso["prob"].y0))
+
+            texto = f"{_MOTIVO_CURTO.get(motivo, motivo)} em $t={t[-1]:.2f}$"
+            if stats.get("cruzamentos"):
+                texto += " (atravessou o polo)"
+            prefixo = f"{caso['ramo']}: " if caso.get("ramo") else ""
+            linhas_txt.append(prefixo + texto)
 
         for t0, y0 in cis:
             ax.plot(t0, y0, **ESTILO["cond_inicial"])
 
-        ax.set(title=titulo_painel, xlim=(a, b), ylim=ylim)
+        ax.set_yscale("symlog", linthresh=linthresh, linscale=1.5)
+        ax.set(title=titulo_painel, xlim=xlim, ylim=ylim)
+        ax.text(0.98, 0.03, "\n".join(linhas_txt), transform=ax.transAxes,
+                ha="right", va="bottom", fontsize=8.3, zorder=10,
+                bbox=dict(boxstyle="round,pad=0.35", fc="white", ec="0.7", alpha=0.92))
 
     for ax in eixos[1, :]:
         ax.set_xlabel("$t$")
     for ax in eixos[:, 0]:
-        ax.set_ylabel("$y$")
+        ax.set_ylabel("$y$ (escala symlog)")
 
-    # Legenda única para a figura
-    from matplotlib.lines import Line2D
-    handles = [Line2D([], [], **ESTILO["exata"], label="solução exata"),
-               Line2D([], [], **ESTILO["assintota_ver"], label=f"polo $t = {polo:g}$"),
-               Line2D([], [], linestyle="", **ESTILO["cond_inicial"], label="condição inicial")]
-    handles += [Line2D([], [], linestyle="--", color=cores[i % len(cores)],
-                       marker=MARCADORES_BASE[i % len(MARCADORES_BASE)], ms=4.0, lw=1.2,
-                       label=f"$|k| = {k:g}$") for i, k in enumerate(ks_abs)]
-    handles.append(Line2D([], [], linestyle="", marker="X", color="w", mec="k", ms=8,
-                          label="parada antecipada"))
-    fig.legend(handles=handles, loc="lower center", ncol=len(handles), fontsize=9.5,
+    # Legenda única
+    handles = [Line2D([], [], **ESTILO["exata"], label="solução exata do PVI"),
+               Line2D([], [], **ESTILO["assintota_ver"], label=f"polo $t = {polo:g}$")]
+    if ramo_proprio in ("esq", "dir"):
+        handles += [Line2D([], [], **estilo_outro, label="ramo de outro PVI"),
+                    Patch(color="0.85", alpha=0.5, label="fora do domínio do PVI")]
+    handles.append(Line2D([], [], linestyle="", **ESTILO["cond_inicial"], label="condição inicial"))
+    vistos = set()
+    for lista in paineis.values():
+        for c in lista:
+            if c.get("label") and c["label"] not in vistos:
+                vistos.add(c["label"])
+                handles.append(Line2D([], [], ls="--", color=c.get("cor"), marker=c.get("marker", "o"),
+                                      ms=4.0, lw=1.2, label=c["label"]))
+    if ha_travessia:
+        handles.append(Line2D([], [], color="#ff7f0e", lw=5, alpha=0.45, label="passo que atravessa o polo"))
+    handles.append(Line2D([], [], ls="", marker="X", color="w", mec="k", ms=9, label="interrupção"))
+
+    fig.legend(handles=handles, loc="lower center", ncol=min(len(handles), 4), fontsize=9.2,
                bbox_to_anchor=(0.5, -0.005))
-    fig.suptitle(titulo, fontsize=13)
-    fig.tight_layout(rect=(0, 0.04, 1, 1))
-    _salvar(fig, caminho)
-
-
-
-# =============================================================================
-# 7. ITEM D: INTERVALOS QUE CONTÊM A SINGULARIDADE t = -1
-# =============================================================================
-def _solucao_exata_por_ramos(prob, a, b, polo=-1.0, n=3000, folga=1e-3):
-    """Amostra a solução exata em [a, b] inserindo NaN no polo para não ligar os ramos."""
-    t = np.linspace(a, b, n)
-    with np.errstate(divide="ignore", invalid="ignore"):
-        y = np.asarray(prob.solucao(t), dtype=float)
-    y[np.abs(t - polo) < folga] = np.nan
-    return t, y
-
-
-def plot_singularidade(prob_ref, paineis, ks, intervalo, caminho, titulo, ylim,
-                       polo=-1.0, marker_density=25):
-    """Grade 2x2 (um painel por método) para um intervalo que contém o polo.
-
-    `paineis`: dict {titulo_do_painel: [caso, ...]}, onde cada caso é um dict com
-    'sol' = (t, U, stats), 'k' e 'prob' (o PVI usado, para marcar a condição inicial).
-    A cor/marcador identifica |k|; os dois lados do polo são PVIs distintos.
-    """
-    a, b = intervalo
-    largura = b - a
-    ks_abs = [abs(k) for k in ks]
-    cores = ESTILO["cores_ciclo"]
-
-    fig, eixos = plt.subplots(2, 2, figsize=(12.0, 8.2), sharex=True, sharey=True)
-    t_ex, y_ex = _solucao_exata_por_ramos(prob_ref, a, b, polo)
-
-    for ax, (titulo_painel, casos) in zip(eixos.flat, paineis.items()):
-        ax.axvline(polo, **ESTILO["assintota_ver"], zorder=1)
-        ax.axhline(0, color="gray", lw=0.8, zorder=1)
-        ax.plot(t_ex, y_ex, **ESTILO["exata"])
-
-        cis = set()
-        for caso in casos:
-            t, U, stats = caso["sol"]
-            idx = ks_abs.index(abs(caso["k"]))
-            cor, marc = cores[idx % len(cores)], MARCADORES_BASE[idx % len(MARCADORES_BASE)]
-            passo = _passo_marcadores(largura, caso["k"], marker_density)
-            ax.plot(t, U, "--", color=cor, marker=marc, ms=4.0, lw=1.2,
-                    markevery=(0, passo), zorder=3)
-            # Ponto onde a integração parou (antes do instante final pedido)
-            if stats.get("motivo", "concluido") != "concluido":
-                ax.plot(t[-1], U[-1], "X", color=cor, mec="k", ms=8, zorder=6)
-            cis.add((caso["prob"].t0, caso["prob"].y0))
-
-        for t0, y0 in cis:
-            ax.plot(t0, y0, **ESTILO["cond_inicial"])
-
-        ax.set(title=titulo_painel, xlim=(a, b), ylim=ylim)
-
-    for ax in eixos[1, :]:
-        ax.set_xlabel("$t$")
-    for ax in eixos[:, 0]:
-        ax.set_ylabel("$y$")
-
-    # Legenda única para a figura
-    from matplotlib.lines import Line2D
-    handles = [Line2D([], [], **ESTILO["exata"], label="solução exata"),
-               Line2D([], [], **ESTILO["assintota_ver"], label=f"polo $t = {polo:g}$"),
-               Line2D([], [], linestyle="", **ESTILO["cond_inicial"], label="condição inicial")]
-    handles += [Line2D([], [], linestyle="--", color=cores[i % len(cores)],
-                       marker=MARCADORES_BASE[i % len(MARCADORES_BASE)], ms=4.0, lw=1.2,
-                       label=f"$|k| = {k:g}$") for i, k in enumerate(ks_abs)]
-    handles.append(Line2D([], [], linestyle="", marker="X", color="w", mec="k", ms=8,
-                          label="parada antecipada"))
-    fig.legend(handles=handles, loc="lower center", ncol=len(handles), fontsize=9.5,
-               bbox_to_anchor=(0.5, -0.005))
-    fig.suptitle(titulo, fontsize=13)
-    fig.tight_layout(rect=(0, 0.04, 1, 1))
+    fig.suptitle(titulo, fontsize=12.5)
+    nlin = -(-len(handles) // 4)
+    fig.tight_layout(rect=(0, 0.035 * nlin, 1, 0.98))
     _salvar(fig, caminho)

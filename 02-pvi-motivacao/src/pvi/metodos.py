@@ -2,6 +2,55 @@ import time
 import numpy as np 
 from scipy.optimize import newton
 
+
+# -----------------------------------------------------------------------------
+# Salvaguardas comuns (item d). Com os padrões do PVI (sem limite de explosão e
+# singularidades fora do intervalo) o comportamento dos itens a-c é idêntico.
+# -----------------------------------------------------------------------------
+def _singularidade_no_passo(pvi, tn, tn1):
+    """Devolve a singularidade s de f contida no passo [tn, tn1] (qualquer sentido), ou None."""
+    for s in getattr(pvi, "singularidades", ()):
+        if (tn - s) * (tn1 - s) <= 0.0:
+            return s
+    return None
+
+
+def _explodiu(pvi, U):
+    """True se U é inf/NaN ou excede o limiar opcional de explosão do PVI."""
+    if not np.isfinite(U):
+        return True
+    lim = getattr(pvi, "limite_explosao", None)
+    return lim is not None and abs(U) > lim
+
+
+def _checar_singularidade(pvi, nome, tn, tn1, k, cruzamentos):
+    """Trata um passo que contém singularidade. Devolve True se o método deve parar."""
+    s = _singularidade_no_passo(pvi, tn, tn1)
+    if s is None:
+        return False
+    if getattr(pvi, "parar_na_singularidade", True):
+        print(f"{nome}: passo [{tn:.4f}, {tn1:.4f}] contém a singularidade t = {s:g} "
+              f"(k = {k}); integração interrompida")
+        return True
+    # Modo "ingênuo": apenas registra que a malha atravessou o polo e segue.
+    print(f"{nome}: AVISO, passo [{tn:.4f}, {tn1:.4f}] atravessa a singularidade t = {s:g} (k = {k})")
+    cruzamentos.append(s)
+    return False
+
+
+def _stats(t0_cpu, nfev, motivo, t_parada, cruzamentos):
+    return {
+        'nfev': nfev,
+        'runtime': time.perf_counter() - t0_cpu,
+        # 'concluido' | 'explosao' | 'newton' | 'singularidade'
+        'motivo': motivo,
+        # último instante aceito na malha
+        't_parada': t_parada,
+        # singularidades atravessadas (só quando parar_na_singularidade=False)
+        'cruzamentos': cruzamentos,
+    }
+
+
 def euler_explicito(pvi, n, k):
     # Marca o início de execução para medição do tempo de CPU
     t0_cpu = time.perf_counter()
@@ -18,18 +67,25 @@ def euler_explicito(pvi, n, k):
     
     # Contador de pontos válidos (para truncamento caso ocorra divergência)
     pts = 1 
+    motivo, cruzamentos = 'concluido', []
 
     for i in range(n):
         # Cálculo exato do instante tn+1 para evitar acúmulo de erro numérico
         tn1 = pvi.t0 + (i + 1) * k   
+
+        # Salvaguarda: o passo não pode conter um ponto onde f não está definida
+        if _checar_singularidade(pvi, "Euler explícito", tn, tn1, k, cruzamentos):
+            motivo = 'singularidade'
+            break
         
         # Passo do Euler Explícito: U_{n+1} = U_n + k * f(t_n, U_n)
         Un1 = Un + k * pvi.f(tn, Un)
         nfev += 1  
 
-        # Interrupção preventiva caso a solução exploda (NaN ou Inf)
-        if not np.isfinite(Un1):
+        # Interrupção preventiva caso a solução exploda (NaN, Inf ou |U| > limite)
+        if _explodiu(pvi, Un1):
             print(f"Euler explícito explodiu em t = {tn1:.4f} (com passo k = {k})")
+            motivo = 'explosao'
             break
         
         t_vals[i+1] = tn1
@@ -39,14 +95,8 @@ def euler_explicito(pvi, n, k):
         
         pts += 1
 
-    # Marca o fim da execução do método    
-    tf_cpu = time.perf_counter()
-
     # Empacotamento das estatísticas computacionais
-    stats = {
-        'nfev': nfev,
-        'runtime': tf_cpu - t0_cpu,
-    }
+    stats = _stats(t0_cpu, nfev, motivo, tn, cruzamentos)
     
     return t_vals[:pts], y_vals[:pts], stats
 
@@ -67,10 +117,16 @@ def euler_implicito(pvi, n, k):
     
     # Contador de pontos válidos (para truncamento caso ocorra divergência)
     pts = 1  
+    motivo, cruzamentos = 'concluido', []
 
     for i in range(n):
         # Instante t_{n+1} calculado diretamente da malha
         tn1 = pvi.t0 + (i + 1) * k   
+
+        # Salvaguarda: o passo não pode conter um ponto onde f não está definida
+        if _checar_singularidade(pvi, "Euler implícito", tn, tn1, k, cruzamentos):
+            motivo = 'singularidade'
+            break
 
         # Resíduo da equação implícita: F(U) = U - U_n - k * f(t_{n+1}, U) = 0
         F  = lambda U: U - Un - k * pvi.f(tn1, U)
@@ -89,8 +145,9 @@ def euler_implicito(pvi, n, k):
         nfev += info.iterations * 2
 
         # Interrupção se o método de Newton falhar em convergir ou gerar valor não finito
-        if not info.converged or not np.isfinite(Un1):
+        if not info.converged or _explodiu(pvi, Un1):
             print(f"Euler implícito falhou em t = {tn1:.4f} (com passo k = {k})")
+            motivo = 'newton' if not info.converged else 'explosao'
             break 
 
         t_vals[i+1] = tn1
@@ -100,14 +157,8 @@ def euler_implicito(pvi, n, k):
         
         pts += 1 
 
-    # Marca o fim da execução do método
-    tf_cpu = time.perf_counter()  
-    
     # Empacotamento das estatísticas computacionais
-    stats = {
-        'nfev': nfev,
-        'runtime': tf_cpu - t0_cpu,
-    }
+    stats = _stats(t0_cpu, nfev, motivo, tn, cruzamentos)
 
     return t_vals[:pts], y_vals[:pts], stats
 
@@ -128,8 +179,17 @@ def rk4(pvi, n, k):
     
     # Contador de pontos válidos (para truncamento caso ocorra divergência)
     pts = 1 
+    motivo, cruzamentos = 'concluido', []
 
     for i in range(n):
+        tn1 = pvi.t0 + (i + 1) * k
+
+        # Salvaguarda: o passo (e seus estágios em tn + k/2, tn + k) não pode conter
+        # um ponto onde f não está definida
+        if _checar_singularidade(pvi, "RK4", tn, tn1, k, cruzamentos):
+            motivo = 'singularidade'
+            break
+
         # Estágio 1: inclinação no início do passo (tn)
         Y1 = Un
         F1 = pvi.f(tn, Y1)
@@ -148,14 +208,14 @@ def rk4(pvi, n, k):
         
         # Combinação ponderada (regra de Simpson) para obter U_{n+1}
         Un1 = Un + (k / 6.0) * (F1 + 2*F2 + 2*F3 + F4)
-        tn1 = pvi.t0 + (i + 1) * k
         
         # O método RK4 clássico avalia a função f exatamente 4 vezes por passo
         nfev += 4  
 
-        # Interrupção preventiva caso a solução exploda (NaN ou Inf)
-        if not np.isfinite(Un1):
+        # Interrupção preventiva caso a solução exploda (NaN, Inf ou |U| > limite)
+        if _explodiu(pvi, Un1):
             print(f"RK4 explodiu em t = {tn1:.4f} (com passo k = {k})")
+            motivo = 'explosao'
             break
 
         t_vals[i+1] = tn1
@@ -165,14 +225,8 @@ def rk4(pvi, n, k):
         
         pts += 1
         
-    # Marca o fim da execução do método
-    tf_cpu = time.perf_counter()
-    
     # Empacotamento das estatísticas computacionais
-    stats = {
-        'nfev': nfev,
-        'runtime': tf_cpu - t0_cpu,
-    }
+    stats = _stats(t0_cpu, nfev, motivo, tn, cruzamentos)
     
     return t_vals[:pts], y_vals[:pts], stats
 
@@ -189,15 +243,18 @@ def adams_moulton(pvi, n, k):
 
     nfev = 0  # Contador de avaliações de funções (f e dfdy)
     pts = 1
+    motivo, cruzamentos = 'concluido', []
 
     if n >= 1:
         # Inicialização do 1º passo (U_1 em t_1) via RK4 de 4ª ordem
+        # (as salvaguardas de singularidade/explosão são herdadas do próprio rk4)
         t_init, y_init, stats_init = rk4(pvi, 1, k)
         nfev += stats_init['nfev']
+        cruzamentos += stats_init['cruzamentos']
 
         if len(y_init) < 2 or not np.isfinite(y_init[1]):
-            tf_cpu = time.perf_counter()
-            return t_vals[:pts], y_vals[:pts], {'nfev': nfev, 'runtime': tf_cpu - t0_cpu}
+            return t_vals[:pts], y_vals[:pts], _stats(t0_cpu, nfev, stats_init['motivo'],
+                                                      pvi.t0, cruzamentos)
 
         t_vals[1] = t_init[1]
         y_vals[1] = y_init[1]
@@ -213,6 +270,11 @@ def adams_moulton(pvi, n, k):
         # Laço principal do método Adams-Moulton de 2 passos (de i = 1 até n - 1)
         for i in range(1, n):
             tn1 = pvi.t0 + (i + 1) * k
+
+            # Salvaguarda: o passo [t_i, t_{i+1}] não pode conter um ponto onde f não está definida
+            if _checar_singularidade(pvi, "Adams-Moulton (2-step)", t_vals[i], tn1, k, cruzamentos):
+                motivo = 'singularidade'
+                break
 
             # Resíduo de Adams-Moulton (2-step): U - U_i - (k/12)*(-f_{i-1} + 8*f_i + 5*f(t_{i+1}, U)) = 0
             F  = lambda U: U - Un - (k / 12.0) * (-fn_1 + 8.0 * fn + 5.0 * pvi.f(tn1, U))
@@ -230,8 +292,9 @@ def adams_moulton(pvi, n, k):
             nfev += info.iterations * 2
 
             # Interrupção caso Newton falhe em convergir ou gere valor não finito
-            if not info.converged or not np.isfinite(Un1):
+            if not info.converged or _explodiu(pvi, Un1):
                 print(f"Adams-Moulton (2-step) falhou em t = {tn1:.4f} (com passo k = {k})")
+                motivo = 'newton' if not info.converged else 'explosao'
                 break
 
             t_vals[i+1] = tn1
@@ -245,13 +308,7 @@ def adams_moulton(pvi, n, k):
 
             pts += 1
 
-    # Marca o fim da execução do método
-    tf_cpu = time.perf_counter()
-
     # Empacotamento das estatísticas computacionais
-    stats = {
-        'nfev': nfev,
-        'runtime': tf_cpu - t0_cpu,
-    }
+    stats = _stats(t0_cpu, nfev, motivo, t_vals[pts - 1], cruzamentos)
 
     return t_vals[:pts], y_vals[:pts], stats

@@ -381,12 +381,6 @@ def exportar_tabela_discriminante(
                 
     return dados
 
-
-# Alias para retrocompatibilidade
-exportar_tabela_discriminante_tex = exportar_tabela_discriminante
-
-
-
 # --------------------------------------------------------------------------------------------------------------------------------
 # Item d: integração em intervalos que contêm a singularidade t = -1
 # --------------------------------------------------------------------------------------------------------------------------------

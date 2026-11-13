@@ -1,0 +1,16 @@
+\begin{table}[H]
+    \centering
+    \small
+    \begin{tabular}{llcccccl}
+        \hline
+        Método & Ramo & $k$ & $t$ pedido & $t$ de parada & $U$ final & $y(t)$ exato & Motivo \\
+        \hline
+        Euler explícito & direto & 0.1 & 40 & -1.000 & -2.459e+02 & inf & explosão (atravessou t = -1) \\
+        Euler implícito & direto & 0.1 & 40 & -1.100 & -6.725e+01 & -6.510e+01 & Newton não convergiu (atravessou t = -1) \\
+        RK4 & direto & 0.1 & 40 & -1.100 & 1.234e+02 & -6.510e+01 & explosão (atravessou t = -1) \\
+        Adams-Moulton 2 & direto & 0.1 & 40 & -1.100 & -6.574e+01 & -6.510e+01 & Newton não convergiu (atravessou t = -1) \\
+        \hline
+    \end{tabular}
+    \caption{Integração do PVI de motivação em $[-5,\, 40]$: sem decomposição, malha cai no polo ($k = 0.1$).}
+    \label{tab:m5_40_sem_decomp_cai_polo}
+\end{table}

@@ -1,0 +1,16 @@
+\begin{table}[H]
+    \centering
+    \small
+    \begin{tabular}{llcccccl}
+        \hline
+        Método & Ramo & $k$ & $t$ pedido & $t$ de parada & $U$ final & $y(t)$ exato & Motivo \\
+        \hline
+        Euler explícito & direto & 0.07 & 2 & -0.950 & -5.381e+03 & 1.150e+02 & explosão (atravessou t = -1) \\
+        Euler implícito & direto & 0.07 & 2 & -0.880 & 7.375e+01 & 4.512e+01 & Newton não convergiu (atravessou t = -1) \\
+        RK4 & direto & 0.07 & 2 & -1.160 & 1.040e+02 & -4.266e+01 & explosão \\
+        Adams-Moulton 2 & direto & 0.07 & 2 & -0.950 & -1.790e+02 & 1.150e+02 & Newton não convergiu (atravessou t = -1) \\
+        \hline
+    \end{tabular}
+    \caption{Integração do PVI de motivação em $[-2,\, 2]$: sem decomposição, malha pula o polo ($k = 0.07$).}
+    \label{tab:m2_2_sd_pula_polo}
+\end{table}

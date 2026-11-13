@@ -1,0 +1,24 @@
+\begin{table}[H]
+    \centering
+    \small
+    \begin{tabular}{llcccccl}
+        \hline
+        Método & Ramo & $k$ & $t$ pedido & $t$ de parada & $U$ final & $y(t)$ exato & Motivo \\
+        \hline
+        Euler explícito & esq. & 0.1 & 40 & -1.100 & -5.402e+01 & -6.510e+01 & parou antes do polo \\
+        Euler explícito & dir. (trás) & -0.1 & -5 & -0.900 & 4.700e+01 & 5.510e+01 & parou antes do polo \\
+        Euler explícito & dir. (frente) & 0.1 & 40 & 21.900 & 6.683e+03 & 1.816e+01 & explosão \\
+        Euler implícito & esq. & 0.1 & 40 & -1.100 & -6.725e+01 & -6.510e+01 & parou antes do polo \\
+        Euler implícito & dir. (trás) & -0.1 & -5 & -0.900 & 5.762e+01 & 5.510e+01 & parou antes do polo \\
+        Euler implícito & dir. (frente) & 0.1 & 40 & 2.100 & 2.587e+00 & 3.548e-02 & Newton não convergiu \\
+        RK4 & esq. & 0.1 & 40 & -1.100 & 1.234e+02 & -6.510e+01 & parou antes do polo \\
+        RK4 & dir. (trás) & -0.1 & -5 & -0.900 & -3.164e+03 & 5.510e+01 & parou antes do polo \\
+        RK4 & dir. (frente) & 0.1 & 40 & 24.900 & 4.643e+05 & 2.113e+01 & explosão \\
+        Adams-Moulton 2 & esq. & 0.1 & 40 & -1.100 & -6.574e+01 & -6.510e+01 & parou antes do polo \\
+        Adams-Moulton 2 & dir. (trás) & -0.1 & -5 & -0.900 & 5.584e+01 & 5.510e+01 & parou antes do polo \\
+        Adams-Moulton 2 & dir. (frente) & 0.1 & 40 & 5.400 & 5.400e+00 & 2.338e+00 & Newton não convergiu \\
+        \hline
+    \end{tabular}
+    \caption{Integração do PVI de motivação em $[-5,\, 40]$: com decomposição de ramos ($k = 0.1$).}
+    \label{tab:m5_40_cd}
+\end{table}

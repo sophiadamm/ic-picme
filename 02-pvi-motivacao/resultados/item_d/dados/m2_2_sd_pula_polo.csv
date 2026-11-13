@@ -1,0 +1,5 @@
+metodo,ramo,k,t_pedido,t_parada,passos,nfev,U_final,y_exato,erro_final,erro_max,motivo
+Euler explícito,direto,0.07,2.0,-0.950000,15,16,-5.3810153494e+03,1.1505000000e+02,5.4960653494e+03,5.4960653494e+03,explosão (atravessou t = -1)
+Euler implícito,direto,0.07,2.0,-0.880000,16,269,7.3746630138e+01,4.5120000000e+01,2.8626630138e+01,2.5039927717e+02,Newton não convergiu (atravessou t = -1)
+RK4,direto,0.07,2.0,-1.160000,12,52,1.0403305871e+02,-4.2660000000e+01,1.4669305871e+02,1.4669305871e+02,explosão
+Adams-Moulton 2,direto,0.07,2.0,-0.950000,15,238,-1.7899452322e+02,1.1505000000e+02,2.9404452322e+02,2.9404452322e+02,Newton não convergiu (atravessou t = -1)

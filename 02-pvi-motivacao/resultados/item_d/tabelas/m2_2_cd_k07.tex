@@ -1,0 +1,24 @@
+\begin{table}[H]
+    \centering
+    \small
+    \begin{tabular}{llcccccl}
+        \hline
+        Método & Ramo & $k$ & $t$ pedido & $t$ de parada & $U$ final & $y(t)$ exato & Motivo \\
+        \hline
+        Euler explícito & esq. & 0.07 & 2 & -1.020 & -1.838e+02 & -3.050e+02 & parou antes do polo \\
+        Euler explícito & dir. (trás) & -0.07 & -2 & -0.980 & 1.601e+02 & 2.950e+02 & parou antes do polo \\
+        Euler explícito & dir. (frente) & 0.07 & 2 & 2.030 & -1.929e-01 & 1.020e-02 & concluído \\
+        Euler implícito & esq. & 0.07 & 2 & -1.020 & -3.232e+02 & -3.050e+02 & parou antes do polo \\
+        Euler implícito & dir. (trás) & -0.07 & -2 & -0.980 & 3.138e+02 & 2.950e+02 & parou antes do polo \\
+        Euler implícito & dir. (frente) & 0.07 & 2 & 2.030 & 6.064e-01 & 1.020e-02 & concluído \\
+        RK4 & esq. & 0.07 & 2 & -1.160 & 1.040e+02 & -4.266e+01 & explosão \\
+        RK4 & dir. (trás) & -0.07 & -2 & -0.910 & -5.382e+02 & 6.176e+01 & explosão \\
+        RK4 & dir. (frente) & 0.07 & 2 & 2.030 & 1.011e-02 & 1.020e-02 & concluído \\
+        Adams-Moulton 2 & esq. & 0.07 & 2 & -1.020 & -3.173e+02 & -3.050e+02 & parou antes do polo \\
+        Adams-Moulton 2 & dir. (trás) & -0.07 & -2 & -0.980 & 3.077e+02 & 2.950e+02 & parou antes do polo \\
+        Adams-Moulton 2 & dir. (frente) & 0.07 & 2 & 2.030 & 1.081e-02 & 1.020e-02 & concluído \\
+        \hline
+    \end{tabular}
+    \caption{Integração do PVI de motivação em $[-2,\, 2]$: com decomposição de ramos ($k = 0.07$).}
+    \label{tab:m2_2_cd_k07}
+\end{table}
