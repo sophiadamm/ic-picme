@@ -444,7 +444,7 @@ colapsando invariavelmente para qualquer partição com $n \le 12$ ($k \ge 0{,}1
 Nas Tabelas~\ref{tab:erros_euler_avancado} e~\ref{tab:erros_euler_recuado}, à medida que $k \to 0$, a ordem empírica $p_{\text{obs}}$\footnote{A teoria assintótica estabelece que, para passos $k$ suficientemente pequenos, o erro global máximo $E(k) = \max_n |U_n - y(t_n)|$ comporta-se como $E(k) \approx C \cdot k^p$, onde $p$ é a ordem do método e $C$ é uma constante independente de $k$. Ao dividir sucessivamente o passo pela metade ($k_{\text{novo}} = k/2$), tem-se $\frac{E(2k)}{E(k)} \approx 2^p$, donde $p_{\text{obs}} = \log_2\bigl(E(2k)/E(k)\bigr)$.} de ambos os métodos converge para o valor teórico $p = 1$. O valor aparente $p_{\text{obs}} = 1{,}83$ na transição de $k = 0{,}1$ para $k = 0{,}05$ no Euler recuado não indica ganho de ordem: ocorre porque $k = 0{,}1$ situa-se próximo ao limiar de colapso ($k_{\text{crit}} \approx 0{,}1231$), sofrendo forte amplificação pré-assintótica. Em todas as malhas convergentes, o Euler avançado apresenta erro absoluto inferior ao Euler recuado.
 
 \paragraph{4. Custo computacional.}
-As colunas de \emph{NFEV} e \emph{Tempo CPU} das Tabelas~\ref{tab:erros_euler_avancado} e~\ref{tab:erros_euler_recuado} quantificam a sobrecarga do esquema implícito: enquanto o Euler avançado requer exatamente uma avaliação por passo ($\text{NFEV} = N$), as iterações de Newton do Euler recuado demandam de $6$ a $9$ avaliações por passo ($3.104$ contra $512$ NFEV em $k = 0{,}003125$), elevando o tempo de CPU em cerca de $30$ vezes ($51{,}97\,\text{ms}$ contra $1{,}64\,\text{ms}$) sem entregar ganho de precisão.
+As colunas de \emph{NFEV} e \emph{Tempo CPU} das Tabelas~\ref{tab:erros_euler_avancado} e~\ref{tab:erros_euler_recuado} quantificam a sobrecarga do esquema implícito: enquanto o Euler avançado requer exatamente uma avaliação por passo ($\text{NFEV} = N$), as iterações de Newton do Euler recuado demandam de $6$ a $9$ avaliações por passo ($3.104$ contra $512$ NFEV em $k = 0{,}003125$), elevando o tempo de CPU em cerca de $36$ vezes ($24{,}14\,\text{ms}$ contra $0{,}67\,\text{ms}$) sem entregar ganho de precisão.
 
 %-------------------------------------------------------------------------------------
 \subsubsection{Intervalo Estendido $[0,\,5]$ com Malhas Clássicas}
@@ -553,7 +553,7 @@ O desempenho quantitativo completo das $10$ partições em $[0,\, 5]$ é consoli
 
 \begin{enumerate}
   \item \emph{Regime de convergência e ordens observadas:} No Euler avançado, à medida que o cruzamento da isóclina é postergado, o erro máximo recua gradualmente de $3{,}175$ ($k = 0{,}2$) para $0{,}313$ ($k = 0{,}000390625$), com a ordem observada $p_{\text{obs}}$ subindo monotonicamente de $0{,}01$ até $0{,}87$ (aproximando-se de $p = 1$, mas ainda penalizada pela inflexão final em $t = 4{,}89$). No Euler recuado, nas seis primeiras malhas ($k \ge 0{,}00625$), a redução de $k$ permite que a simulação avance mais fundo na região de explosão antes de travar por $\Delta_n < 0$, elevando o último valor registrado antes da parada (de $0{,}861$ até $41{,}51$) e gerando ordens aparentes negativas. Na transição de $k = 0{,}003125$ ($E = 21{,}87$) para $k = 0{,}0015625$ ($E = 2{,}43$), a desativação do regime quadrático $+e^2$ produz um salto superlinear aparente ($p_{\text{obs}} = 3{,}17$), após o qual o método finalmente ingressa na convergência assintótica de primeira ordem ($p_{\text{obs}} = 1{,}46 \to 1{,}18$, atingindo $E = 0{,}388$ em $k = 0{,}000390625$).
-  \item \emph{Escalada do custo computacional:} O preço pago para contornar a instabilidade via refinamento de malha em métodos de primeira ordem é severo. Para reduzir o erro à faixa de $\approx 0{,}3\text{--}0{,}4$, ambos exigem $12.800$ passos. Enquanto o Euler avançado realiza exatamente $12.800$ avaliações de função ($\text{NFEV} = N$) em $\approx 15{,}9\,\text{ms}$, o Euler recuado — penalizado pelas iterações do método de Newton a cada passo — escala para $63.984$ avaliações de função ($\approx 5{,}0$ NFEV/passo) e $\approx 417{,}7\,\text{ms}$ de tempo de CPU. Ou seja, na partição mais refinada, o método implícito demanda $5$ vezes mais avaliações funcionais e um tempo de execução mais de $26$ vezes superior ao explícito para entregar um erro final ainda ligeiramente maior ($0{,}388$ contra $0{,}313$).
+  \item \emph{Escalada do custo computacional:} O preço pago para contornar a instabilidade via refinamento de malha em métodos de primeira ordem é severo. Para reduzir o erro à faixa de $\approx 0{,}3\text{--}0{,}4$, ambos exigem $12.800$ passos. Enquanto o Euler avançado realiza exatamente $12.800$ avaliações de função ($\text{NFEV} = N$) em $\approx 16{,}57\,\text{ms}$, o Euler recuado — penalizado pelas iterações do método de Newton a cada passo — escala para $63.984$ avaliações de função ($\approx 5{,}0$ NFEV/passo) e $\approx 350{,}95\,\text{ms}$ de tempo de CPU. Ou seja, na partição mais refinada, o método implícito demanda $5$ vezes mais avaliações funcionais e um tempo de execução mais de $21$ vezes superior ao explícito para entregar um erro final ainda ligeiramente maior ($0{,}388$ contra $0{,}313$).
 \end{enumerate}
 
 %-------------------------------------------------------------------------------------
@@ -562,7 +562,7 @@ O desempenho quantitativo completo das $10$ partições em $[0,\, 5]$ é consoli
 
 A observação dos resultados dos experimentos evidencia duas patologias dominantes em longo prazo: Enquanto no método explícito temos uma \textbf{convergência para ramo espúrio}, no método implícito, temos o fenômeno de \textbf{explosão para o infinito (\emph{blow-up})}.
 
-Em suma, como o PVI não possui rigidez dissipativa ($\lambda_{\min} \approx -0{,}202$, Tabela~\ref{tab:autovalores-regimes}) e opera majoritariamente sob $\lambda(t) > 0$, a $A$-estabilidade do Euler recuado é inócua. Pior: ao pagar o alto custo de Newton por passo e incorrer na patologia da explosão ($e_n > 0$), o método implícito entrega menor robustez, maior erro e tempo de execução $26$ a $30$ vezes superior ao explícito. Por outro lado, a aparente sobrevida numérica do Euler explícito cobra o preço da atração por um ramo espúrio. Simultaneamente, o Cenário~3 expõe o limite de qualquer método de primeira ordem ($p = 1$) diante da amplificação $\Phi(0, 5) \approx 665{,}1$: reduzir a semente de erro apenas linearmente ($\mathcal{O}(k)$) exige malhas proibitivas ($N = 12.800$) para uma precisão sofrível ($E \approx 0{,}3\text{--}0{,}4$). Superar a instabilidade intrínseca da EDO com eficiência exige \textbf{elevar a ordem de convergência ($p > 1$)} para comprimir a semente inicial $\mathcal{O}(k^p)$ antes que $\Phi(0, t)$ a amplifique — diretriz que motiva a transição para o RK4 ($p = 4$) no Item~(b) e para o Adams-Moulton de 2 passos ($p = 3$) no Item~(c).
+Em suma, como o PVI não possui rigidez dissipativa ($\lambda_{\min} \approx -0{,}202$, Tabela~\ref{tab:autovalores-regimes}) e opera majoritariamente sob $\lambda(t) > 0$, a $A$-estabilidade do Euler recuado é inócua. Pior: ao pagar o alto custo de Newton por passo e incorrer na patologia da explosão ($e_n > 0$), o método implícito entrega menor robustez, maior erro e tempo de execução $21$ a $36$ vezes superior ao explícito. Por outro lado, a aparente sobrevida numérica do Euler explícito cobra o preço da atração por um ramo espúrio. Simultaneamente, o Cenário~3 expõe o limite de qualquer método de primeira ordem ($p = 1$) diante da amplificação $\Phi(0, 5) \approx 665{,}1$: reduzir a semente de erro apenas linearmente ($\mathcal{O}(k)$) exige malhas proibitivas ($N = 12.800$) para uma precisão sofrível ($E \approx 0{,}3\text{--}0{,}4$). Superar a instabilidade intrínseca da EDO com eficiência exige \textbf{elevar a ordem de convergência ($p > 1$)} para comprimir a semente inicial $\mathcal{O}(k^p)$ antes que $\Phi(0, t)$ a amplifique — diretriz que motiva a transição para o RK4 ($p = 4$) no Item~(b) e para o Adams-Moulton de 2 passos ($p = 3$) no Item~(c).
 
 %=====================================================================================
 \section{Item (b): Método Explícito de Runge-Kutta de Quarta Ordem}
@@ -714,7 +714,7 @@ Para investigar os limites do RK4 sob horizontes mais longos e autovalor positiv
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{b_rk4T10}
-    \caption{Trajetórias numéricas do RK4 em $[0,\, 10]$ sob passos refinados, ilustrando o mergulho na isóclina atratora.}
+    \caption{Trajetórias numéricas do RK4 em $[0,\, 10]$ sob passos refinados ($k \in \{0{,}00625;\, 0{,}003125;\, 0{,}0015625\}$), ilustrando o mergulho na isóclina atratora.}
     \label{fig:rk4_T10}
 \end{figure}
 
@@ -752,18 +752,18 @@ A Tabela~\ref{tab:b-confronto-direto} consolida lado a lado as métricas computa
 \textbf{Passo $k$} & \textbf{Passos $N$} & \textbf{CPU (ms)} & \textbf{Erro Máx. $E_{\text{FE}}$} & \textbf{$p_{\text{obs}}$} & \textbf{CPU (ms)} & \textbf{Erro Máx. $E_{\text{RK4}}$} & \textbf{$p_{\text{obs}}$} & \textbf{$E_{\text{FE}} / E_{\text{RK4}}$} \\
 \midrule
 \multicolumn{9}{l}{\textit{\textbf{Cenário Curto Prazo: Intervalo $t \in [0,\, 1{,}6]$} ($\Phi(0, 1{,}6) \approx 3{,}4$)}} \\
-$0{,}2$         & $8$    & $0{,}07$ & $6{,}297 \times 10^{-1}$ & ---     & $0{,}06$ & $4{,}274 \times 10^{-3}$  & ---     & $1{,}47 \times 10^{2}$ \\
-$0{,}05$        & $32$   & $0{,}05$ & $1{,}940 \times 10^{-1}$ & $0{,}87$ & $0{,}08$ & $2{,}702 \times 10^{-5}$  & $3{,}80$ & $7{,}18 \times 10^{3}$ \\
-$0{,}0125$      & $128$  & $0{,}18$ & $5{,}310 \times 10^{-2}$ & $0{,}95$ & $0{,}31$ & $1{,}151 \times 10^{-7}$  & $3{,}96$ & $4{,}61 \times 10^{5}$ \\
-$0{,}003125$    & $512$  & $0{,}85$ & $1{,}365 \times 10^{-2}$ & $0{,}99$ & $1{,}31$ & $4{,}581 \times 10^{-10}$ & $3{,}99$ & $2{,}98 \times 10^{7}$ \\
-$0{,}000390625$ & $4096$ & $7{,}90$ & $1{,}721 \times 10^{-3}$ & $1{,}00$ & $10{,}74$& $1{,}136 \times 10^{-13}$ & $3{,}98$ & $1{,}52 \times 10^{10}$ \\
+$0{,}2$         & $8$    & $0{,}04$ & $6{,}297 \times 10^{-1}$ & ---     & $0{,}06$ & $4{,}274 \times 10^{-3}$  & ---     & $1{,}47 \times 10^{2}$ \\
+$0{,}05$        & $32$   & $0{,}05$ & $1{,}940 \times 10^{-1}$ & $0{,}87$ & $0{,}10$ & $2{,}702 \times 10^{-5}$  & $3{,}80$ & $7{,}18 \times 10^{3}$ \\
+$0{,}0125$      & $128$  & $0{,}16$ & $5{,}310 \times 10^{-2}$ & $0{,}95$ & $0{,}41$ & $1{,}151 \times 10^{-7}$  & $3{,}96$ & $4{,}61 \times 10^{5}$ \\
+$0{,}003125$    & $512$  & $0{,}67$ & $1{,}365 \times 10^{-2}$ & $0{,}99$ & $1{,}78$ & $4{,}581 \times 10^{-10}$ & $3{,}99$ & $2{,}98 \times 10^{7}$ \\
+$0{,}000390625$ & $4096$ & $5{,}44$ & $1{,}721 \times 10^{-3}$ & $1{,}00$ & $13{,}86$& $1{,}136 \times 10^{-13}$ & $3{,}98$ & $1{,}52 \times 10^{10}$ \\
 \midrule
 \multicolumn{9}{l}{\textit{\textbf{Cenário Médio Prazo: Intervalo Estendido $t \in [0,\, 5]$} ($\Phi(0, 5) \approx 665{,}1$)}} \\
 $0{,}2$         & $25$    & $0{,}08$ & $3{,}175 \times 10^{0}$  & ---     & $0{,}07$ & $6{,}183 \times 10^{-1}$  & ---     & $5{,}14 \times 10^{0}$ \\
-$0{,}05$        & $100$   & $0{,}12$ & $3{,}056 \times 10^{0}$  & $0{,}05$ & $0{,}26$ & $4{,}802 \times 10^{-3}$  & $3{,}77$ & $6{,}36 \times 10^{2}$ \\
-$0{,}0125$      & $400$   & $0{,}49$ & $2{,}526 \times 10^{0}$  & $0{,}18$ & $1{,}04$ & $2{,}048 \times 10^{-5}$  & $3{,}96$ & $1{,}23 \times 10^{5}$ \\
-$0{,}003125$    & $1600$  & $2{,}05$ & $1{,}497 \times 10^{0}$  & $0{,}46$ & $4{,}45$ & $8{,}155 \times 10^{-8}$  & $3{,}99$ & $1{,}84 \times 10^{7}$ \\
-$0{,}000390625$ & $12800$ & $15{,}68$& $3{,}129 \times 10^{-1}$ & $0{,}87$ & $33{,}40$& $2{,}026 \times 10^{-11}$ & $3{,}98$ & $1{,}54 \times 10^{10}$ \\
+$0{,}05$        & $100$   & $0{,}12$ & $3{,}056 \times 10^{0}$  & $0{,}05$ & $0{,}25$ & $4{,}802 \times 10^{-3}$  & $3{,}77$ & $6{,}36 \times 10^{2}$ \\
+$0{,}0125$      & $400$   & $0{,}48$ & $2{,}526 \times 10^{0}$  & $0{,}18$ & $1{,}14$ & $2{,}048 \times 10^{-5}$  & $3{,}96$ & $1{,}23 \times 10^{5}$ \\
+$0{,}003125$    & $1600$  & $1{,}92$ & $1{,}497 \times 10^{0}$  & $0{,}46$ & $4{,}26$ & $8{,}155 \times 10^{-8}$  & $3{,}99$ & $1{,}84 \times 10^{7}$ \\
+$0{,}000390625$ & $12800$ & $16{,}57$& $3{,}129 \times 10^{-1}$ & $0{,}87$ & $38{,}90$& $2{,}026 \times 10^{-11}$ & $3{,}98$ & $1{,}54 \times 10^{10}$ \\
 \bottomrule
 \end{tabular}%
 }
@@ -772,7 +772,7 @@ $0{,}000390625$ & $12800$ & $15{,}68$& $3{,}129 \times 10^{-1}$ & $0{,}87$ & $33
 O confronto sintetizado na Tabela~\ref{tab:b-confronto-direto} evidencia dois pontos conclusivos:
 
 \paragraph{1. Eficiência Computacional Global vs. Custo por Passo.}
-Embora o RK4 exija $4$ avaliações funcionais por passo ($\text{NFEV} = 4N$, contra $N$ no Euler), elevando o tempo de CPU para uma mesma malha em $\approx 1{,}5\text{--}2{,}2\times$, a eficiência prática mede-se pelo \textbf{custo para atingir uma tolerância fixa}. Como cada bisseção $k \to k/2$ reduz o erro do RK4 por um fator $2^4 = 16$ (contra $2^1 = 2$ no Euler), a vantagem global do RK4 é esmagadora: em $[0,\, 1{,}6]$, o RK4 já na malha mais grossa ($k = 0{,}2$, $8$ passos, $32$ NFEV, $0{,}06\,\text{ms}$) entrega $E = 4{,}27 \times 10^{-3}$, superando a precisão que o Euler só alcança após $2.048$ passos ($64\times$ mais avaliações e $50\times$ mais tempo). Em $[0,\, 5]$, enquanto o Euler com $N = 12.800$ passos ainda estaciona em $E = 0{,}313$, o RK4 com apenas $N = 50$ passos ($k = 0{,}1$, $0{,}13\,\text{ms}$) já atinge $E = 6{,}56 \times 10^{-2}$, chegando a $2{,}03 \times 10^{-11}$ em $N = 12.800$ (precisão $1{,}54 \times 10^{10}$ vezes superior).
+Embora o RK4 exija $4$ avaliações funcionais por passo ($\text{NFEV} = 4N$, contra $N$ no Euler), elevando o tempo de CPU para uma mesma malha em $\approx 1{,}5\text{--}2{,}7\times$, a eficiência prática mede-se pelo \textbf{custo para atingir uma tolerância fixa}. Como cada bisseção $k \to k/2$ reduz o erro do RK4 por um fator $2^4 = 16$ (contra $2^1 = 2$ no Euler), a vantagem global do RK4 é esmagadora: em $[0,\, 1{,}6]$, o RK4 já na malha mais grossa ($k = 0{,}2$, $8$ passos, $32$ NFEV, $0{,}06\,\text{ms}$) entrega $E = 4{,}27 \times 10^{-3}$, superando a precisão que o Euler só alcança após $2.048$ passos ($64\times$ mais avaliações e $50\times$ mais tempo). Em $[0,\, 5]$, enquanto o Euler com $N = 12.800$ passos ainda estaciona em $E = 0{,}313$, o RK4 com apenas $N = 50$ passos ($k = 0{,}1$, $0{,}13\,\text{ms}$) já atinge $E = 6{,}56 \times 10^{-2}$, chegando a $2{,}03 \times 10^{-11}$ em $N = 12.800$ (precisão $1{,}54 \times 10^{10}$ vezes superior).
 
 \paragraph{2. Ganho de Alcance vs. Limite Assintótico em Fluxos Repulsores.}
 Conforme demonstrado na Seção~\ref{sec:b-cenario-t10} (Equação~\eqref{eq:condicao-inversao}), elevar a ordem explícita de $p = 1$ para $p = 4$ resolve por completo a instabilidade em horizontes moderados ($T = 5$), mas não altera a natureza repulsora do fluxo contínuo ($\lambda(t) > 0$). Em horizontes longos ($T = 10$), ambos os métodos explícitos compartilham o mesmo destino geométrico (captura pela isóclina), com a ordem superior comprando um retardo temporal de $\Delta t \approx +3{,}3$ unidades de tempo contra o crescimento superexponencial de $\Phi(0, t)$ — o que motiva examinar, no Item~(c), se um método implícito de ordem superior altera esse quadro.
@@ -992,7 +992,7 @@ Em paralelo ao teste estendido do RK4 (Seção~\ref{sec:b-cenario-t10}), integro
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{c_am_T10.png}
-    \caption{Trajetórias do método AM2 em $[0,\, 10]$ sob malhas refinadas.}
+    \caption{Trajetórias do método AM2 em $[0,\, 10]$ sob passos refinados ($k \in \{0{,}00625;\, 0{,}003125;\, 0{,}0015625\}$).}
     \label{fig:c_T10}
 \end{figure}
 
